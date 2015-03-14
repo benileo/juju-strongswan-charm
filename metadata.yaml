@@ -1,6 +1,6 @@
 name: strongswan
-summary: IPsec VPN solution metapackage
-maintainer: jammin <jammin@ADARA>
+summary: IPsec VPN solution
+maintainer: jammin-irving <jammin.irving@gmail.com>
 description: |
   The strongSwan VPN suite is based on the IPsec stack in standard Linux
   kernels. It supports both the IKEv1 and IKEv2 protocols.  This
@@ -10,12 +10,12 @@ tags:
  - network
  - security
 subordinate: false
-provides:
-  provides-relation:
-    interface: interface-name
-requires:
-  requires-relation:
-    interface: interface-name
-peers:
-  peer-relation:
-    interface: interface-name
+# provides:
+#   provides-relation:
+#     interface: interface-name
+# requires:
+#   requires-relation:
+#     interface: interface-name
+# peers:
+#   peer-relation:
+#     interface: interface-name
