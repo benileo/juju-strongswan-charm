@@ -1,16 +1,37 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-import setup
-setup.pre_install()
+# import os
+# import sys
+# import subprocess
+
+from lib.helpers import (
+	packages
+)
 
 from charmhelpers.core import hookenv
+from charmhelpers.fetch import (
+	apt_update,
+	apt_install
+)
 
 
+# Install StrongSwan
 def install():
+    
     hookenv.log('Installing strongswan')
-    # add steps for installing dependencies and packages here
-    # e.g.: from charmhelpers import fetch
-    #       fetch.apt_install(fetch.filter_installed_packages(['nginx']))
+    
+    # update packages 
+    apt_update(fatal=False)
+
+    # get the required packages based on configuration
+    pkgs = packages()
+
+    # install the packages
+    apt_install(packages=pkgs,fatal=True)
+
+    hookenv.log('done installing strongswan')
+
+
 
 
 if __name__ == "__main__":
