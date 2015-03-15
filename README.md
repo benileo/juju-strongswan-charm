@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Overview
 
 Describe the intended usage of this charm and anything unique about how this charm relates to others here.
@@ -39,3 +40,7 @@ Though this will be listed in the charm store itself don't assume a user will kn
 - Upstream bug tracker
 - Upstream mailing list or contact information
 - Feel free to add things if it's useful for users
+=======
+# juju-strongswan-charm
+Juju charm for StrongSwan
+>>>>>>> origin/master
