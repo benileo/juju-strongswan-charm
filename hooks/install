@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 
-# import os
-# import sys
-# import subprocess
 
-from lib.helpers import (
-	packages
+from lib.sshelpers import (
+	ss_packages
 )
 
 from charmhelpers.core import hookenv
@@ -24,15 +21,13 @@ def install():
     apt_update(fatal=False)
 
     # get the required packages based on configuration
-    pkgs = packages()
+    pkgs = ss_packages()
 
     # install the packages
     apt_install(packages=pkgs,fatal=True)
 
     hookenv.log('done installing strongswan')
-
-
-
+    
 
 if __name__ == "__main__":
     install()
