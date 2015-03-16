@@ -3,4 +3,4 @@
 from charmhelpers.core.host import (
 	service_stop
 )
-service_stop('stop', 'strongswan' )
+service_stop('strongswan')

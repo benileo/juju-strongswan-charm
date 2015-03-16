@@ -3,5 +3,5 @@
 from charmhelpers.core.host import(
 	service_start
 )
-service_start('start', 'strongswan')
+service_start('strongswan')
 
