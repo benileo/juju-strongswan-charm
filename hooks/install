@@ -2,32 +2,37 @@
 
 
 from lib.sshelpers import (
-	ss_packages
+	ss_packages,
+	ss_sysctl
 )
-
-from charmhelpers.core import hookenv
+from charmhelpers.core import (
+	hookenv
+)
 from charmhelpers.fetch import (
 	apt_update,
 	apt_install
 )
 
 
-# Install StrongSwan
-def install():
-    
-    hookenv.log('Installing strongswan')
-    
-    # update packages 
-    apt_update(fatal=False)
+class Strongswan():
+	def __init__(self):
+		self.config = hookenv.config()
 
-    # get the required packages based on configuration
-    pkgs = ss_packages()
+	def pre_install(self):
+		ss_sysctl(self.config)
 
-    # install the packages
-    apt_install(packages=pkgs,fatal=True)
+	def install(self):
+		hookenv.log("Calling apt to install strongswan packages based on config.yaml")
+		apt_update(fatal=False) 
+		pkgs = ss_packages(self.config) # Get list of packages to install	
+		apt_install(packages=pkgs,fatal=True)
+		hookenv.log("Installation of Strongswan packages complete")
 
-    hookenv.log('done installing strongswan')
-    
+
+
 
 if __name__ == "__main__":
-    install()
+    strongswan = Strongswan()
+    strongswan.pre_install()
+    strongswan.install()
+
