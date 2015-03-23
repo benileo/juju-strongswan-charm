@@ -8,6 +8,9 @@ import subprocess as sp
 
 from charmhelper.core import hookenv
 
+IPV4_FORWARD = "net.ipv4.ip_forward"
+IPV6_FORWARD = "net.ipv6.conf.all.forwarding"
+
 # returns the essential strongswan packages 
 # other packages are added based on initial launch options
 # other features can added be added later
@@ -40,20 +43,39 @@ def ss_apt_pkgs( config ):
 
 def ss_sysctl( config ):
 
-	# Open the sysctl file for reading and writing
+	hookenv.log("Opening /etc/sysctl.conf")
 	if os.path.exists( '/etc/sysctl.conf' ) : 
 		sysctl_file = open( '/etc/sysctl.conf', 'r+' ) # need read and write
 	else:
 		hookenv.log(' unable to find the sysctl file')
 
 	# load all current sys ctl values
-	sysctl_dict = dict_from_sysctl_conf(sysctl_file)
+	hookenv.log("Parsing sysctl.conf....")
+	sysctl_dict = dict_from_sysctl_file(sysctl_file)
 
-	
+	# sync dictionairy to config.yaml
+	if config.get("ip_forward") :
+		sysctl_dict[IPV4_FORWARD] = "1"
+	else:
+		if sysctl_dict.get(IPV4_FORWARD):
+			del(sysctl_dict[IPV4_FORWARD])
+			
+
+
+
+
+
+	if config.get("ip6_forward") :
+		pass
+
+	# open a new file for writing
+	# write the new values to the file
+	# restart sys control 
+
 
 
 # Parses a sys ctl file and returns a dictioniary of all values
-def dict_from_sysctl_conf( sysctl_file ):
+def dict_from_sysctl_file( sysctl_file ):
 
 	_dict = {}
 
@@ -66,9 +88,9 @@ def dict_from_sysctl_conf( sysctl_file ):
 			elif ch != ' ':
 				buf += ch
 
-		if len(buf) > 0:
+		if len(buf) > 0 :
 			key_val = buf.split('=')
-			if key_val == 2:
+			if key_val == 2 :
 				_dict[key_val[0]] = key_val[1]
 			else:
 				hookenv("Error: Config error in sysctl.conf. Fatal.")
