@@ -3,19 +3,33 @@
 File containing wrapper and helpers functions
 """
 
+import subprocess as sp 
 
 # returns the essential strongswan packages 
 # other packages are added based on initial launch options
 # other features can added be added later
 # depending on how you want to set up strongswan this can differ
-def ss_packages( config ):
-	ss_essential = [ "libstrongswan" , "strongswan-ike", "strongswan-plugin-openssl"
-	, "strongswan-starter", "strongswan" ]
+def ss_apt_packages( config ):
 
-	# fill as config options 
-	ss_extra = []
-	
-	return (ss_essential + ss_extra)
+	avail_pkgs = []
+
+	# load all available strongswan packages  
+	handler = sp.Popen( ["apt-cache", "search", "strongswan"], 
+						stdout=sp.PIPE, stderr=sp.PIPE)
+	try:
+		data = handler.communicate()[0].decode('utf-8') # convert stdout to python string
+	except: 
+		pass
+
+	for s in ( data.split('\n') ):
+		t = s.split(' ')
+		avail_pkgs.append(t[0])
+
+	if len(avail_pkgs) != 0 :
+		# Log the available packages
+		pass
+
+	return [ "strongswan" ]
 
 
 # based on the config passed to this function
@@ -25,7 +39,15 @@ def ss_packages( config ):
 
 def ss_sysctl( config ):
 
-	if config['ip_forward'] :
+
+
+
+	if config['ip_forward'] : # this is a bad way to read from a dictionairy in python
+							# everyone knows that.
 		# modify the sys ctl file
 		
 
+
+
+def ss_iptables():
+	pass
