@@ -40,37 +40,19 @@ def ss_apt_pkgs( config ):
 
 def ss_sysctl( config ):
 
+	# Open the sysctl file for reading and writing
 	if os.path.exists( '/etc/sysctl.conf' ) : 
 		sysctl_file = open( '/etc/sysctl.conf', 'r+' ) # need read and write
 	else:
 		hookenv.log(' unable to find the sysctl file')
 
-	# parse the current values of the sysctl file into a dictionairy
-	# start with a list of lines with config items
-	for line in sysctl_file.readlines():
-		buf = ""
-		for ch in line:
-			if ch is '#' or ch is '\n':
-				break
-			elif ch is ' ':
-				pass
-			else:
-				buf += ch
-		if len(buf) > 0 :
-			two_values = buf.split('=')
-			if len(two_values) != 2 :
-				hookenv.log("There is an error in sysctl.conf. That is not good. Raising Exception")
-				raise Exception("ERROR: sysctl.conf file has a configuration error, this is fatal")
-			else:
+	# load all current sys ctl values
+	sysctl_dict = dict_from_sysctl_conf(sysctl_file)
+
+	
 
 
-
-	#parse out values in the existing config file.
-	#check to see if the rule for ip_forwarding exists
-	#if it does not exist then write the rule to the file
-	#reload the file
-	#either way open this file. 
-
+# Parses a sys ctl file and returns a dictioniary of all values
 def dict_from_sysctl_conf( sysctl_file ):
 
 	_dict = {}
