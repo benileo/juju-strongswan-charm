@@ -3,49 +3,42 @@
 File containing wrapper and helpers functions
 """
 
-import subprocess as sp 
+import subprocess as sp
+
+from charmhelper.core import hookenv
 
 # returns the essential strongswan packages 
 # other packages are added based on initial launch options
 # other features can added be added later
 # depending on how you want to set up strongswan this can differ
-def ss_apt_packages( config ):
+def ss_apt_pkgs( config ):
 
 	avail_pkgs = []
 
-	# load all available strongswan packages  
-	handler = sp.Popen( ["apt-cache", "search", "strongswan"], 
-						stdout=sp.PIPE, stderr=sp.PIPE)
+	cmd = ["apt-cache", "search", "strongswan"]
 	try:
-		data = handler.communicate()[0].decode('utf-8') # convert stdout to python string
-	except: 
-		pass
+		handler = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE )
+		data = handler.communicate()[0].decode('utf-8') 
+	except (OSError, sp.TimeoutExpired, ValueError) as error : 
+		hookenv.log(error)
 
 	for s in ( data.split('\n') ):
 		t = s.split(' ')
 		avail_pkgs.append(t[0])
 
-	if len(avail_pkgs) != 0 :
-		# Log the available packages
-		pass
+	if len(avail_pkgs) > 0 :
+		hookenv.log('Strongswan Packages:')
+		for pkg in avail_pkgs:
+			hookenv.log(pkg)
 
+	# just install strongswan.. for now... 
 	return [ "strongswan" ]
 
 
-# based on the config passed to this function
-# strongswan will be set up as packet forwarder or not
-# what if the config changes?
-# w
+
 
 def ss_sysctl( config ):
-
-
-
-
-	if config['ip_forward'] : # this is a bad way to read from a dictionairy in python
-							# everyone knows that.
-		# modify the sys ctl file
-		
+	pass
 
 
 
