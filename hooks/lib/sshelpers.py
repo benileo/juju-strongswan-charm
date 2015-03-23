@@ -3,6 +3,7 @@
 File containing wrapper and helpers functions
 """
 
+import os
 import subprocess as sp
 
 from charmhelper.core import hookenv
@@ -31,14 +32,40 @@ def ss_apt_pkgs( config ):
 		for pkg in avail_pkgs:
 			hookenv.log(pkg)
 
-	# just install strongswan.. for now... 
+	# just return 1 package: strongswan.. for now... 
 	return [ "strongswan" ]
 
 
 
 
 def ss_sysctl( config ):
-	pass
+
+	if os.path.exists( '/etc/sysctl.conf' ) : 
+		sysctl_file = open( '/etc/sysctl.conf', 'r+' ) # need read and write
+	else:
+		hookenv.log(' unable to find the sysctl file')
+
+	# parse the current values of the sysctl file into a dictionairy
+	# start with a list of lines with config items
+	for line in sysctl_file.readlines():
+		buf = []
+		for ch in line:
+			if ch is '#' or ch is '\n':
+				if len(buf) == 0 : 
+					break
+				else:
+					pass
+					#this line contains a config item:
+			elif ch is ' ':
+				pass
+			else:
+				buf.append(ch)
+		
+	#parse out values in the existing config file.
+	#check to see if the rule for ip_forwarding exists
+	#if it does not exist then write the rule to the file
+	#reload the file
+	#either way open this file. 
 
 
 
