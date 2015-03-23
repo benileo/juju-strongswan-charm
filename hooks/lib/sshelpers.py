@@ -10,14 +10,10 @@ from charmhelper.core import hookenv
 
 # Global Variable Declaration
 IPV4_FORWARD = "net.ipv4.ip_forward"
-SYSCTL_FILE_PATH = "/etc/sysctl.conf"
-
 
 
 def ss_iptables():
 	pass
-
-
 
 
 # returns the essential strongswan packages 
@@ -34,7 +30,8 @@ def ss_apt_pkgs( config ):
 	else:
 		hookenv.log('No packages........Something is up....Not throwing exception though')
 
-	# just return 1 package: strongswan.. for now... 
+	hookenv.log('installing packages: ')
+	hookenv.log('strongswan')
 	return [ "strongswan" ]
 
 
@@ -43,42 +40,10 @@ def ss_apt_pkgs( config ):
 # comments denote the start of a new function
 # let the code write itself
 def ss_sysctl( config ):
-
-	hookenv.log("/etc/sysctl.conf whats up")
-	if os.path.exists(SYSCTL_FILE_PATH) : 
-		sysctl_file = open(SYSCTL_FILE_PATH, 'r' )
-	else:
-		hookenv.log('Error: Unable to find the sysctl file')
-		Exception('Error: Unable to find the sysctl file')
-
-	# load all current sys ctl values
-	hookenv.log("Parsing sysctl.conf....")
-	sysctl_dict = dict_from_sysctl_file(sysctl_file)
-
-	# sync dictionairy to config.yaml
-	hookenv.log("Updating ip_forward to match up to charm config.yaml file")
-	if config.get("ip_forward") :
-		sysctl_dict[IPV4_FORWARD] = "1"
-	else:
-		if sysctl_dict.get(IPV4_FORWARD):
-			del(sysctl_dict[IPV4_FORWARD])
-
-	# close for reading and open file for writing
-	sysctl_file.close()
-	sysctl_file = open(SYSCTL_FILE_PATH, "w")
-	for key in sysctl_dict:
-		s = key + '=' + sysctl[key] + '\n'
-		hookenv.log(s)
-		sysctl_file.write(s)
-	sysctl_file.close()
-
-	# restart sys control
-	cmd = ["sysctl", "-p", SYSCTL_FILE_PATH ]
-	r_val = sp.check_call(cmd)
-	if r_val != 0:
-		hookenv.log('Error: command to reload sysctl file has failed for unknown reasons')
-		raise Exception('Error: command to reload sysctl file has failed for unknown reasons')
-
+	sysctl_path = get_sysctl_file_path() # get path of sysctl file
+	sysctl_dict = dict_from_sysctl_file(sysctl_path) # parse sysctl into dictionairy 
+	update_sysctl()  # update sysctl dictionairy write new file
+	restart_sysctl() # restart sys control
 	return
 
 
@@ -86,6 +51,8 @@ def ss_sysctl( config ):
 
 # Parses a sys ctl file and returns a dictioniary of all values
 def dict_from_sysctl_file( sysctl_file ):
+
+	hookenv.log("Info: Parsing sysctl.conf")
 
 	_dict = {}
 
@@ -125,3 +92,37 @@ def ss_apt_cache():
 		avail_pkgs.append(t[0])
 
 	return avail_pkgs
+
+def restart_sysctl():
+	cmd = ["sysctl", "-p", SYSCTL_FILE_PATH ]
+	r_val = sp.check_call(cmd)
+	if r_val != 0:
+		hookenv.log('Error: command to reload sysctl file has failed for unknown reasons')
+		raise Exception('Error: command to reload sysctl file has failed for unknown reasons')
+
+def get_sysctl_file_path():
+	hookenv.log("Checking default file path for sysctl.conf file")
+	if os.path.exists(SYSCTL_FILE_PATH) : 
+		sysctl_file = open(SYSCTL_FILE_PATH, 'r' )
+	else:
+		hookenv.log('Error: Unable to find the sysctl file')
+		Exception('Error: Unable to find the sysctl file')
+	return sysctl_file
+
+def update_sysctl():
+	# sync dictionairy to config.yaml
+	hookenv.log("Updating ip_forward to match up to charm config.yaml file")
+	if config.get("ip_forward") :
+		sysctl_dict[IPV4_FORWARD] = "1"
+	else:
+		if sysctl_dict.get(IPV4_FORWARD):
+			del(sysctl_dict[IPV4_FORWARD])
+
+	# close for reading and open file for writing
+	sysctl_file.close()
+	sysctl_file = open(SYSCTL_FILE_PATH, "w")
+	for key in sysctl_dict:
+		s = key + '=' + sysctl[key] + '\n'
+		hookenv.log(s)
+		sysctl_file.write(s)
+	sysctl_file.close()	
