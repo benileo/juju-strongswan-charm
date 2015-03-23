@@ -5,7 +5,8 @@
 # Use from <package> import <functions> () 
 from lib.sshelpers import (
 	ss_apt_pkgs,
-	ss_sysctl
+	ss_sysctl,
+	ss_iptables
 )
 from charmhelpers.core import (
 	hookenv
@@ -21,17 +22,17 @@ class Strongswan():
 
 	def pre_install(self):
 		ss_sysctl(self.config) #make the call to sys ctl to make necessary adjustments to sysctl 
+		ss_iptables()
 
 	def install(self):
 		hookenv.log("Calling apt to install strongswan packages based on config.yaml")
-		apt_update(fatal=False) # keep updating until you get something. 
+		apt_update(fatal=False) ## TODO ## keep updating until you get something. 
 		pkgs = ss_apt_pkgs(self.config) # get names of strongswan packages to install	
 		apt_install(packages=pkgs,fatal=True) # install the packages 
 		hookenv.log("Installation of Strongswan packages complete")
 
-	def post_install():
+	def post_install(self):
 		pass
-
 
 
 if __name__ == "__main__":
@@ -39,4 +40,3 @@ if __name__ == "__main__":
     strongswan.pre_install()
     strongswan.install()
     strongswan.post_install()
-

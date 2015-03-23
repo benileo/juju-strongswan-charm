@@ -5,16 +5,16 @@ File containing wrapper and helpers functions
 
 import os
 import subprocess as sp
-from charmhelper.core import hookenv
+from charmhelpers.core import hookenv
 
 
 IPV4_FORWARD = "net.ipv4.ip_forward"
 
 def ss_sysctl( config ):
 	sysctl_fd = get_sysctl_fd('r') # get fd of sysctl file in read mode
-	sysctl_dict = dict_from_sysctl_file(sysctl_fd) # parse sysctl into dictionairy 
-	update_sysctl( config, sysctl_dict )  # update sysctl dictionairy write new file
-	restart_sysctl( sysctl_path ) # restart sys control
+	sysctl_dict = dict_from_sysctl_file(sysctl_fd) # parse sysctl into dict 
+	update_sysctl( config, sysctl_dict )  # update sysctl dict write new file
+	restart_sysctl( '/etc/sysctl.conf' ) # restart sys control
 	return
 
 
@@ -51,7 +51,7 @@ def dict_from_sysctl_file( sysctl_file ):
 
 	_dict = {}
 
-	for line in sysctl_file.readlines:
+	for line in sysctl_file.readlines():
 		buf = ""
 
 		for ch in line:
@@ -65,7 +65,7 @@ def dict_from_sysctl_file( sysctl_file ):
 			if key_val == 2 :
 				_dict[key_val[0]] = key_val[1]
 			else:
-				hookenv("Error: Config error in sysctl.conf. Fatal.")
+				hookenv.log("Error: Config error in sysctl.conf. Fatal.")
 				Exception("Error: Config error in sysctl.conf")
 
 	sysctl_file.close()
@@ -100,7 +100,7 @@ def update_sysctl( config, sysctl_dict ):
 	# write dictionairy to sysctl file
 	sysctl_file = get_sysctl_fd('w')
 	for key in sysctl_dict:
-		s = key + '=' + sysctl[key] + '\n'
+		s = key + '=' + sysctl_dict[key] + '\n'
 		hookenv.log(s)
 		sysctl_file.write(s)
 	sysctl_file.close()	
