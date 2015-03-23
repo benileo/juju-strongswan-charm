@@ -48,26 +48,51 @@ def ss_sysctl( config ):
 	# parse the current values of the sysctl file into a dictionairy
 	# start with a list of lines with config items
 	for line in sysctl_file.readlines():
-		buf = []
+		buf = ""
 		for ch in line:
 			if ch is '#' or ch is '\n':
-				if len(buf) == 0 : 
-					break
-				else:
-					pass
-					#this line contains a config item:
+				break
 			elif ch is ' ':
 				pass
 			else:
-				buf.append(ch)
-		
+				buf += ch
+		if len(buf) > 0 :
+			two_values = buf.split('=')
+			if len(two_values) != 2 :
+				hookenv.log("There is an error in sysctl.conf. That is not good. Raising Exception")
+				raise Exception("ERROR: sysctl.conf file has a configuration error, this is fatal")
+			else:
+
+
+
 	#parse out values in the existing config file.
 	#check to see if the rule for ip_forwarding exists
 	#if it does not exist then write the rule to the file
 	#reload the file
 	#either way open this file. 
 
+def dict_from_sysctl_conf( sysctl_file ):
 
+	_dict = {}
+
+	for line in sysctl_file.readlines:
+		buf = ""
+
+		for ch in line:
+			if ch == '\n' or  ch == '#':
+				break
+			elif ch != ' ':
+				buf += ch
+
+		if len(buf) > 0:
+			key_val = buf.split('=')
+			if key_val == 2:
+				_dict[key_val[0]] = key_val[1]
+			else:
+				hookenv("Error: Config error in sysctl.conf. Fatal.")
+				Exception("Error: Config error in sysctl.conf")
+
+	return _dict
 
 def ss_iptables():
 	pass
