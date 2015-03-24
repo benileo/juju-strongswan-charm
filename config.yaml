@@ -5,6 +5,5 @@ options:
     description: "IPv4 traffic forwarding"
   ip6_forward:
     type: boolean
-    default: False # this fill eventually default to true
+    default: True 
     description: "IPv6 traffic forwarding."
-

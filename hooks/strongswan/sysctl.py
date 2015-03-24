@@ -25,7 +25,7 @@ def sysctl( config ):
 # Parses a sys ctl file and returns a dictioniary of all values
 def dict_from_sysctl_file( sysctl_file ):
 
-	hookenv.log("Info: Parsing sysctl.conf")
+	hookenv.log("Info: Parsing sysctl.conf ---------->")
 
 	_dict = {}
 
@@ -80,6 +80,8 @@ def update_sysctl_dict( config , sysctl_dict ):
 		if sysctl_dict.get(IPV6_FORWARD):
 			del(sysctl_dict[IPV6_FORWARD])
 
+	hookenv.log('Updated sysctl dictionary:')
+	hookenv.log(sysctl_dict)
 	return
 
 

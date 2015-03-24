@@ -25,19 +25,17 @@ class Strongswan():
 		sysctl(self.config) # load settings to system
 
 	def install(self):
-		hookenv.log("Calling apt to install strongswan packages based on config.yaml")
+		hookenv.log("Calling apt-get update ----------> ")
 		apt_update(fatal=False) ## TODO ## keep updating until you get something. 
 		pkgs = ss_apt_pkgs(self.config) # get names of strongswan packages to install	
 		apt_install(packages=pkgs,fatal=True) # install the packages 
-		hookenv.log("Installation of Strongswan packages complete")
+		hookenv.log("Install complete ------------>")
 
 	def post_install(self):
 		pass
 
 
 if __name__ == "__main__":
-
-	exit(1)
     strongswan = Strongswan()
     strongswan.pre_install()
     strongswan.install()
