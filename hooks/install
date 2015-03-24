@@ -5,7 +5,8 @@ from strongswan.apt import (
 	ss_apt_pkgs
 )
 from strongswan.sysctl import(
-	sysctl
+	sysctl,
+	cp_sysctl
 )
 from charmhelpers.core import (
 	hookenv
@@ -20,7 +21,8 @@ class Strongswan():
 		self.config = hookenv.config()
 
 	def pre_install(self):
-		sysctl(self.config) # set up sysctl
+		cp_sysctl() # make original copy of sysctl file
+		sysctl(self.config) # load settings to system
 
 	def install(self):
 		hookenv.log("Calling apt to install strongswan packages based on config.yaml")
@@ -34,7 +36,8 @@ class Strongswan():
 
 
 if __name__ == "__main__":
-	exit(1) # debug
+
+	exit(1)
     strongswan = Strongswan()
     strongswan.pre_install()
     strongswan.install()
