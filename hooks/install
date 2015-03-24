@@ -3,10 +3,12 @@
 # Anything with 'ss' is custom code for StrongSwan Deployment
 # Functions should have _ for readability
 # Use from <package> import <functions> () 
-from lib.sshelpers import (
-	ss_apt_pkgs,
-	ss_sysctl,
-	ss_iptables
+
+from strongswan.apt import (
+	ss_apt_pkgs
+)
+from strongswan.sysctl import(
+	sysctl
 )
 from charmhelpers.core import (
 	hookenv
@@ -21,9 +23,8 @@ class Strongswan():
 		self.config = hookenv.config()
 
 	def pre_install(self):
-		ss_sysctl(self.config) #make the call to sys ctl to make necessary adjustments to sysctl 
-		ss_iptables()
-
+		sysctl(self.config) # set up sysctl
+		
 	def install(self):
 		hookenv.log("Calling apt to install strongswan packages based on config.yaml")
 		apt_update(fatal=False) ## TODO ## keep updating until you get something. 
