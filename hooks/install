@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-# Anything with 'ss' is custom code for StrongSwan Deployment
-# Functions should have _ for readability
-# Use from <package> import <functions> () 
 
 from strongswan.apt import (
 	ss_apt_pkgs
@@ -24,7 +21,7 @@ class Strongswan():
 
 	def pre_install(self):
 		sysctl(self.config) # set up sysctl
-		
+
 	def install(self):
 		hookenv.log("Calling apt to install strongswan packages based on config.yaml")
 		apt_update(fatal=False) ## TODO ## keep updating until you get something. 
@@ -37,6 +34,7 @@ class Strongswan():
 
 
 if __name__ == "__main__":
+	exit(1) # debug
     strongswan = Strongswan()
     strongswan.pre_install()
     strongswan.install()

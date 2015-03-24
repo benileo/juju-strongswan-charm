@@ -3,7 +3,6 @@
 File containing wrapper and helpers functions
 """
 
-import os
 import subprocess as sp
 from charmhelpers.core import hookenv
 
