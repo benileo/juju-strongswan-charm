@@ -81,7 +81,7 @@ def update_sysctl_dict( config , sysctl_dict ):
 			del(sysctl_dict[IPV6_FORWARD])
 
 	hookenv.log('Updated sysctl dictionary:')
-	hookenv.log(sysctl_dict)
+	hookenv.log(sysctl_dict)	
 	return
 
 
@@ -94,7 +94,7 @@ def create_sysctl_file( sysctl_dict ):
 	sysctl_file.close()
 	return
 
-def cp_sysctl():
+def cp_sysctl_file():
 	cmd = ['cp', '/etc/sysctl.conf', '/etc/syctl.conf.original']
 	rval = sp.check_call(cmd)
 	if rval != 0 : 
