@@ -14,29 +14,46 @@ FORWARD = "FORWARD"
 MANGLE_TABLE = "mangle"
 NAT_TABLE = "nat"
 IPTABLES = "iptables"
+UDP = 'udp'
 ESP = "50"
 AH = "51"
-
+IKE = "500"
 
 class IPtables():
 	def __init__(self):
 		pass
 
 	def filter_rules( self ):
+
+		# INPUT chain, allow ESP
 		if not ( rule_exists([IPTABLES, "-C", INPUT, '-p', ESP, '-j', ACCEPT) ) :
-			make_rule( [IPTABLES, "A", INPUT, '-p', ESP, '-j', ACCEPT ] )
+			make_rule( [IPTABLES, "-A", INPUT, '-p', ESP, '-j', ACCEPT ] )
+
+		# OUTPUT chain, allow ESP
 		if not ( rule_exists([IPTABLES, "-C", OUTPUT, '-p', ESP, '-j', ACCEPT ]) ) : 
-			make_rule( [IPTABLES, "A", OUTPUT, '-p', ESP, '-j', ACCEPT]) 
+			make_rule( [IPTABLES, "-A", OUTPUT, '-p', ESP, '-j', ACCEPT] )
+
+		# INPUT chain, allow IKE
+		if not ( rule_exists([ IPTABLES, '-C', INPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ]) ):
+			make_rule([ IPTABLES, '-A', INPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ])
+
+		# OUTPUT chain, allow IKE
+		if not ( rule_exists([ IPTABLES, '-C', OUTPUT, '-p', UDP , '--dport' , IKE , '-j', ACCEPT ]) ):
+			make_rule([ IPTABLES, '-A', OUTPUT, '-p', UDP , '--dport' , IKE , '-j', ACCEPT ])
 
 
 
-	def rule_exists(self, rule):
+	# if the rule does not already exist, make the rule.
+	def make_rule(self, rule):
 		try:
+			rule.insert(1, "-C")
 			rval = sp.check_call(rule)
 		except sp.CalledProcessError:
-			return False
-		if rval == 0: 
-			return True
+			return
+		else:
+			rule[1] = "-A"
+			sp.check_output(rule)
+			return 		
 
 
 
