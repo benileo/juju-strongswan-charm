@@ -26,27 +26,25 @@ class IPtables():
 	def filter_rules( self ):
 
 		# INPUT chain, allow ESP
-		if not ( rule_exists([IPTABLES, "-C", INPUT, '-p', ESP, '-j', ACCEPT) ) :
-			make_rule( [IPTABLES, "-A", INPUT, '-p', ESP, '-j', ACCEPT ] )
+		make_rule( [INPUT, '-p', ESP, '-j', ACCEPT ] )
 
 		# OUTPUT chain, allow ESP
-		if not ( rule_exists([IPTABLES, "-C", OUTPUT, '-p', ESP, '-j', ACCEPT ]) ) : 
-			make_rule( [IPTABLES, "-A", OUTPUT, '-p', ESP, '-j', ACCEPT] )
+		make_rule( [OUTPUT, '-p', ESP, '-j', ACCEPT] )
 
 		# INPUT chain, allow IKE
-		if not ( rule_exists([ IPTABLES, '-C', INPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ]) ):
-			make_rule([ IPTABLES, '-A', INPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ])
+		make_rule( [INPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ])
 
 		# OUTPUT chain, allow IKE
-		if not ( rule_exists([ IPTABLES, '-C', OUTPUT, '-p', UDP , '--dport' , IKE , '-j', ACCEPT ]) ):
-			make_rule([ IPTABLES, '-A', OUTPUT, '-p', UDP , '--dport' , IKE , '-j', ACCEPT ])
+		make_rule( [OUTPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ])
 
 
+		
 
 	# if the rule does not already exist, make the rule.
 	def make_rule(self, rule):
 		try:
-			rule.insert(1, "-C")
+			rule.insert(0, "-C")
+			rule.insert(0, IPTABLES)
 			rval = sp.check_call(rule)
 		except sp.CalledProcessError:
 			return
