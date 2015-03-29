@@ -1,9 +1,37 @@
 options:
+
+  # ipv4 Packet forwarding is enabled by default, not ipv6
   ip_forward:
     type: boolean
     default: True
     description: "IPv4 traffic forwarding"
   ip6_forward:
     type: boolean
-    default: True 
+    default: False
     description: "IPv6 traffic forwarding."
+
+  # use the newest version of IKE by default (2)
+  ike_version:
+    type: int
+    default:  2
+    description: "IKE Version"
+
+  # the default method of authentication should be X.509
+  authentication_method:
+    type: string
+    default: "X.509"
+    description: "Method of IPsec peer authentication"
+
+  ipsec_protocol:
+    type: string
+    default: "esp"
+    description: "IPsec protocol"
+
+# types: 	host-host
+# 			site-site
+#			roadwarrior
+# local area network subnets
+# virtual IP subnets
+# AH or ESP 
+
+
