@@ -15,40 +15,33 @@ MANGLE_TABLE = "mangle"
 NAT_TABLE = "nat"
 IPTABLES = "iptables"
 UDP = 'udp'
+TCP = 'tcp'
 ESP = "50"
 AH = "51"
 IKE = "500"
 NAT_T = "4500"
+SSH = '22'
+
 
 class IPtables():
-	def __init__(self):
-		pass
+	def __init__(self, config):
+		self.config = config
 
 	def filter( self ):
 
-		# INPUT chain, allow ESP
-		make_rule( [INPUT, '-p', ESP, '-j', ACCEPT ] )
-
-		# OUTPUT chain, allow ESP
-		make_rule( [OUTPUT, '-p', ESP, '-j', ACCEPT] )
-		
-		# INPUT chain, allow AH
-		make_rule( [INPUT, '-p', AH, '-j', ACCEPT ] )
-
-		# OUTPUT chain, allow AH
-		make_rule( [OUTPUT, '-p', AH, '-j', ACCEPT] )
-
-		# INPUT chain, allow IKE
+		# Allow IKE and NAT-T
 		make_rule( [INPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ])
-
-		# OUTPUT chain, allow IKE
-		make_rule( [OUTPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ])
-
-		# INPUT chain, allow nat-t 
 		make_rule( [INPUT, '-p', UDP, '--dport', NAT_T , '--sport', NAT_T, '-j', ACCEPT ] )
 
-		# OUTPUT chain allow nat-t 
-		make_rule( [OUTPUT, '-p', UDP, '--dport', NAT_T, '--sport', NAT_T, '-j', ACCEPT ] )
+		if self.config.get("ipsec_protocol") == "esp" :
+			make_rule( [INPUT, '-p', ESP, '-j', ACCEPT ] )
+		else:
+			make_rule( [INPUT, '-p', AH, '-j', ACCEPT ] )
+
+		sp.check_output( [IPTABLES, '-I', INPUT, '-p', 'tcp', '--dport',  SSH , '-j', ACCEPT ] )
+		# Nothing else gets through
+		sp.check_output( [IPTABLES, '-I', INPUT, '-m', 'conntrack', '--ctstate', 'ESTABLISHED', '-j', ACCEPT ] )
+		sp.check_output( [IPTABLES, '-A', INPUT, '-j', DROP ] )
 
 		return 
 
@@ -73,12 +66,12 @@ def make_rule(rule):
 		rule.insert(0, IPTABLES)
 		rval = sp.check_call(rule)
 	except sp.CalledProcessError:
-		rule[1] = "-A"
+		rule[1] = "-I"
 		sp.check_output(rule)
 	return
  
 def iptables_configure( config ):
-	iptables = IPtables()
+	iptables = IPtables( config )
 	iptables.filter()
 	iptables.nat()
 	iptables.mangle()
