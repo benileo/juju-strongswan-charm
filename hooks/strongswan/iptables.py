@@ -18,18 +18,25 @@ UDP = 'udp'
 ESP = "50"
 AH = "51"
 IKE = "500"
+NAT_T = "4500"
 
 class IPtables():
 	def __init__(self):
 		pass
 
-	def filter_rules( self ):
+	def filter( self ):
 
 		# INPUT chain, allow ESP
 		make_rule( [INPUT, '-p', ESP, '-j', ACCEPT ] )
 
 		# OUTPUT chain, allow ESP
 		make_rule( [OUTPUT, '-p', ESP, '-j', ACCEPT] )
+		
+		# INPUT chain, allow AH
+		make_rule( [INPUT, '-p', AH, '-j', ACCEPT ] )
+
+		# OUTPUT chain, allow AH
+		make_rule( [OUTPUT, '-p', AH, '-j', ACCEPT] )
 
 		# INPUT chain, allow IKE
 		make_rule( [INPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ])
@@ -37,55 +44,44 @@ class IPtables():
 		# OUTPUT chain, allow IKE
 		make_rule( [OUTPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ])
 
+		# INPUT chain, allow nat-t 
+		make_rule( [INPUT, '-p', UDP, '--dport', NAT_T , '--sport', NAT_T, '-j', ACCEPT ] )
 
-		
+		# OUTPUT chain allow nat-t 
+		make_rule( [OUTPUT, '-p', UDP, '--dport', NAT_T, '--sport', NAT_T, '-j', ACCEPT ] )
 
-	# if the rule does not already exist, make the rule.
-	def make_rule(self, rule):
-		try:
-			rule.insert(0, "-C")
-			rule.insert(0, IPTABLES)
-			rval = sp.check_call(rule)
-		except sp.CalledProcessError:
-			return
-		else:
-			rule[1] = "-A"
-			sp.check_output(rule)
-			return 		
+		return 
 
 
+	def nat(self):
+		pass
+
+	def mangle(self):
+		pass
+
+	def security(self):
+		pass
+
+	def raw(self):
+		pass
 
 
-
-
-
-
-
-
-
-# # this needs to be called again and again
-# def iptables():
-# 	# load in the current config 
-# 	# make the logical decisions needed to setting U
-# 	cmd = [ "iptables" ]
-# 	tbls = ["nat", "filter", "mangle", "raw", "security"]
-# 	pass
-
-
-
-
-# load table rules into a data structure
-
-# What rules are needed for the linux host to talk
-# inbound 500 and 4500 of course udp 
-# 
-
-# iptables -A INPUT  -p udp --sport 500 --dport 500 -j ACCEPT
-# iptables -A OUTPUT -p udp --sport 500 --dport 500 -j ACCEPT
-# # ESP encrypton and authentication
-# iptables -A INPUT  -p 50 -j ACCEPT
-# iptables -A OUTPUT -p 50 -j ACCEPT
-# uncomment for AH authentication header
-# iptables -A INPUT  -p 51 -j ACCEPT
-# iptables -A OUTPUT -p 51 -j ACCEPT
-# if the setup is site to site, then, right 
+# if the rule does not already exist, make the rule.
+def make_rule(rule):
+	try:
+		rule.insert(0, "-C")
+		rule.insert(0, IPTABLES)
+		rval = sp.check_call(rule)
+	except sp.CalledProcessError:
+		rule[1] = "-A"
+		sp.check_output(rule)
+	return
+ 
+def iptables_configure( config ):
+	iptables = IPtables()
+	iptables.filter()
+	iptables.nat()
+	iptables.mangle()
+	iptables.raw()
+	iptables.security()
+	return

@@ -3,6 +3,9 @@
 from strongswan.sysctl import(
 	sysctl
 )
+from strongswan.iptables import(
+	iptables_configure
+)
 from charmhelpers.core import (
 	hookenv
 )
@@ -13,6 +16,9 @@ class Strongswan:
 
 	def update_config(self):
 		sysctl(self.config)
+		iptables_configure(self.config)
+
+
 
 
 if __name__ == "__main__":

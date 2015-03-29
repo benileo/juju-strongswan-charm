@@ -21,10 +21,9 @@ def sysctl( config ):
 	return
 
 
-# TODO i think this parser will break when encountering values with white space.
+# TODO : white space after the = sign
 # Parses a sys ctl file and returns a dictioniary of all values
 def dict_from_sysctl_file( sysctl_file ):
-
 	hookenv.log("Info: Parsing sysctl.conf ---------->")
 
 	_dict = {}
