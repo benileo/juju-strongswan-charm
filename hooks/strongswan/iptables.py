@@ -33,14 +33,19 @@ class IPtables():
 		make_rule( [INPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ])
 		make_rule( [INPUT, '-p', UDP, '--dport', NAT_T , '--sport', NAT_T, '-j', ACCEPT ] )
 
+		# allow ESP or AH depending on gateway settings
 		if self.config.get("ipsec_protocol") == "esp" :
 			make_rule( [INPUT, '-p', ESP, '-j', ACCEPT ] )
 		else:
 			make_rule( [INPUT, '-p', AH, '-j', ACCEPT ] )
 
+		# allow SSH
 		sp.check_output( [IPTABLES, '-I', INPUT, '-p', 'tcp', '--dport',  SSH , '-j', ACCEPT ] )
-		# Nothing else gets through
+
+		# all established connections can get back in.
 		sp.check_output( [IPTABLES, '-I', INPUT, '-m', 'conntrack', '--ctstate', 'ESTABLISHED', '-j', ACCEPT ] )
+
+		# block everything else 
 		sp.check_output( [IPTABLES, '-A', INPUT, '-j', DROP ] )
 
 		return 
