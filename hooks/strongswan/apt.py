@@ -7,9 +7,6 @@ import subprocess as sp
 from charmhelpers.core import hookenv
 import time
 
-import sys
-hookenv.log("""Apt Python Version: {0}""".format(sys.version))
-
 def ss_apt_pkgs( config ):
 	avail_pkgs = ss_apt_cache()
 
@@ -41,44 +38,47 @@ def ss_apt_cache():
 	return avail_pkgs
 
 def ss_apt_update():
-
-	cmd = [ 'apt-get' , 'update' ]
+	hookenv.log("INFO:\tCalling apt-get update -qq")
+	cmd = [ 'apt-get' , 'update' , '-qq' ]
 
 	apt_retry_count = 0
 	apt_retry_max = 0
 	apt_retry_wait = 10
 	dpkg_lock_error = 100
-
 	timed_out = False
-
 	result = None
 
 	while result is None or result == dpkg_lock_error :
 		try:
-			sp.call( cmd, timeout=30 )
+			result = sp.check_call( cmd, timeout=30 )
+
 		except sp.CalledProcessError as e:
 			apt_retry_count += 1
 			if apt_retry_count > apt_retry_max : 
 				raise
 			result = e.returncode
-			hookenv.log("Couldn't aquire DPKG lock trying again in {0}".format(apt_retry_wait) )
+			hookenv.log("ERROR:\tCouldn't aquire DPKG lock trying again in {0}".format(apt_retry_wait) )
 			time.sleep(apt_retry_wait)
-		except sp.TimeoutExpired as e:
+
+		except sp.TimeoutExpired:
+			hookenv("ERROR:\tApt-get update command has timed out.")
 			if not timed_out :
 				timed_out = True
 				dns_entries = get_archive_ip_addrs()
 				if not dns_entries:
-					hookenv.log('Error:  Do we have a DNS issue? Can\'t Resolve archive.ubuntu.com. This is fatal.')
+					hookenv.log('ERROR:\tDo we have a DNS issue? Can\'t Resolve archive.ubuntu.com.')
 					raise
 			if not dns_entries:
-				hookenv.log('Error:   Unable to contact an archive server. This is fatal.')
+				hookenv.log('ERROR:\tUnable to contact an archive server.')
 				raise
 			else:
 				update_hosts_file( dns_entries.pop() )
-		else:
-			result = 0
+				
+	hookenv.log("INFO:\tApt-get update has completed. ")
+
 			
 def get_archive_ip_addrs():
+	hookenv.log("INFO:\tObtaining IP addresses.")
 	ip_list = []
 	dig = sp.check_output(['dig', 'archive.ubuntu.com'])
 	dig = dig.decode('utf-8').split('\n')
