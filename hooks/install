@@ -24,7 +24,7 @@ def pre_install():
 	# i've seen apt-get update fail because one of the archive servers is not responding...
 		
 def install():
-	
+	ss_apt_update()
 	pkgs = ss_apt_pkgs(config)
 	apt_install(packages=pkgs,fatal=True)
 
