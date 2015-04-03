@@ -39,15 +39,18 @@ def ss_apt_cache():
 
 def ss_apt_update():
 
-	cmd = ['apt-get' , 'update' ]
+	cmd = [ 'apt-get' , 'update' ]
 
 	apt_retry_count = 0
 	apt_retry_max = 0
 	apt_retry_wait = 10
+	dpkg_lock_error = 100
+
+	timed_out = False
 
 	result = None
 
-	while result == None or result == 100 :
+	while result is None or result == dpkg_lock_error :
 		try:
 			sp.call( cmd, timeout=30 )
 		except sp.CalledProcessError as e:
@@ -58,4 +61,31 @@ def ss_apt_update():
 			hookenv.log("Couldn't aquire DPKG lock trying again in {0}".format(apt_retry_wait) )
 			time.sleep(apt_retry_wait)
 		except sp.TimeoutExpired as e:
-			pass
+			if not timed_out :
+				timed_out = True
+				dns_entries = get_archive_ip_addrs()
+				if not dns_entries:
+					hookenv.log('Error:  Do we have a DNS issue? Can\'t Resolve archive.ubuntu.com. This is fatal.')
+					raise
+			if not dns_entries:
+				hookenv.log('Error:   Unable to contact an archive server. This is fatal.')
+				raise
+			else:
+				update_hosts_file( dns_entries.pop() )
+
+	return
+
+			
+def get_archive_ip_addrs():
+	ip_list = []
+	dig = sp.check_output(['dig', 'archive.ubuntu.com'])
+	dig = dig.decode('utf-8').split('\n')
+	for i in dig:
+		i = i.split('\t')
+		if i:
+			if i[0] == 'archive.ubuntu.com.' :
+				ip_list.append(i[4])
+	return ip_list
+
+def update_hosts_file( ip_addr ):
+	pass
