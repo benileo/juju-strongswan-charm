@@ -15,25 +15,27 @@ from charmhelpers.fetch import (
 	apt_install
 )
 
-class Strongswan():
-	def __init__(self):
-		self.config = hookenv.config()
+# global config 
+config = hookenv.config()
 
-	def pre_install(self):
-		cp_sysctl_file() # make original copy of sysctl file
+# make a copy of the sysctl file for reference
+def pre_install():
+	cp_sysctl_file()
 		
 
-	def install(self):
-		apt_update(fatal=False) ## TODO ## keep updating until you get something. 
-		pkgs = ss_apt_pkgs(self.config) # get names of strongswan packages to install	
-		apt_install(packages=pkgs,fatal=True) # install the packages 
-		hookenv.log("!!!!!!!!!!!!!!!!!! - Done Install - !!!!!!!!!!!!!!!!!!!!")
+def install():
+	#update packages 
+	apt_update(fatal=True)
 
-	def post_install(self):
-		pass
+	# Get lists of package to install 
+	pkgs = ss_apt_pkgs(config)
+
+	# install them
+	apt_install(packages=pkgs,fatal=True) # install the packages 
+
 
 if __name__ == "__main__":
-	hookenv.log("!!!!!!!!!!!!!!!!!! - Install - !!!!!!!!!!!!!!!!!!!!")
-	strongswan = Strongswan()
-	strongswan.pre_install()
-	strongswan.install()
+	hookenv.log("INFO:   Running the install hook")
+	pre_install()
+	install()
+	hookenv.log("INFO:   Install hook has completed.")
