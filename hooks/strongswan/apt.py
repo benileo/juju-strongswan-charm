@@ -7,6 +7,9 @@ import subprocess as sp
 from charmhelpers.core import hookenv
 import time
 
+import sys
+hookenv.log("""Apt Python Version: {0}""".format(sys.version))
+
 def ss_apt_pkgs( config ):
 	avail_pkgs = ss_apt_cache()
 
@@ -72,9 +75,8 @@ def ss_apt_update():
 				raise
 			else:
 				update_hosts_file( dns_entries.pop() )
-
-	return
-
+		else:
+			result = 0
 			
 def get_archive_ip_addrs():
 	ip_list = []
