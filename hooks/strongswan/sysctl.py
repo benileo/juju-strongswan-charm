@@ -94,15 +94,10 @@ def create_sysctl_file( sysctl_dict ):
 	sysctl_file.close()
 	return
 
-def cp_sysctl_file():
-	cmd = ['cp', '/etc/sysctl.conf', '/etc/syctl.conf.original']
-	rval = sp.check_call(cmd)
-	if rval != 0 : 
-		hookenv.log("Failed to copy sysctl.conf file")
-	else:
-		hookenv.log("Original copy of sysctl file created: /etc/sysctl.conf.original")
-	return
-
-
-
-
+def cp_config_files():
+	cmd = ['cp', '/etc/sysctl.conf', '/etc/sysctl.conf.original']
+	sp.call(cmd)
+	cmd = ['cp', '/etc/hosts', '/etc/hosts.original' ]
+	sp.call(cmd)
+	hookenv.log("INFO\tCopy of sysctl file created: /etc/sysctl.conf.original")
+	hookenv.log("INFO\tCopy of hosts file created: /etc/hosts.original")

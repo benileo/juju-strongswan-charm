@@ -6,7 +6,7 @@ from strongswan.apt import (
 	ss_apt_update
 )
 from strongswan.sysctl import(
-	cp_sysctl_file
+	cp_config_files
 )
 from charmhelpers.core import (
 	hookenv
@@ -15,16 +15,13 @@ from charmhelpers.fetch import (
 	apt_install
 )
 
-import sys
-hookenv.log("""Python Version: {0}""".format(sys.version))
-
 # global config 
 config = hookenv.config()
 
 def pre_install():
-	cp_sysctl_file()
-	# do we have the network
-	# i've seen apt-get update fail because one of the archive servers is not responding...
+	#iptables
+	cp_config_files()
+	
 		
 def install():
 	ss_apt_update()
