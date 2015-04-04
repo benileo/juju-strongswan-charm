@@ -90,4 +90,6 @@ def update_hosts_file( ip_addr , hostname ):
 
 	with open('/etc/hosts' , 'r+') as hosts :
 		for line in hosts:
-			re.findall('^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\s\w+' , line )
+			elem = re.findall('^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\s\w+' , line )
+			if elem:
+				elem[0].split()
