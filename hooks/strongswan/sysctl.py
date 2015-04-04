@@ -25,7 +25,7 @@ def sysctl( config ):
 # TODO : white space after the = sign
 # Parses a sys ctl file and returns a dictioniary of all values
 def dict_from_sysctl_file( sysctl_file ):
-	hookenv.log("Info: Parsing sysctl.conf ---------->")
+	hookenv.log("INFO:\tParsing /etc/sysctl.conf")
 
 	_dict = {}
 
@@ -43,8 +43,7 @@ def dict_from_sysctl_file( sysctl_file ):
 			if key_val == 2 :
 				_dict[key_val[0]] = key_val[1]
 			else:
-				hookenv.log("Error: Config error in sysctl.conf. Fatal.")
-				Exception("Error: Config error in sysctl.conf")
+				Exception("ERROR:\tConfiguration error in /etc/sysctl.conf")
 
 	sysctl_file.close()
 	return _dict
@@ -54,15 +53,13 @@ def restart_sysctl( sctl_file_path ):
 	cmd = ["sysctl", "-p", sctl_file_path ]
 	r_val = sp.check_call(cmd)	
 	if r_val != 0:
-		hookenv.log('Error: command to reload sysctl file has failed for unknown reasons')
-		raise Exception('Error: command to reload sysctl file has failed for unknown reasons')
+		raise Exception('ERROR:\tUnable to reload sysctl.conf file')
 
 def get_sysctl_fd( mode ):
 	if os.path.exists('/etc/sysctl.conf') : 
 		sysctl_file = open( '/etc/sysctl.conf' , mode )
 	else:
-		hookenv.log('Error: Unable to find the sysctl file')
-		Exception('Error: Unable to find the sysctl.conf in default ubuntu path')
+		Exception('ERROR:\tUnable to find the /etc/sysctl.conf in default ubuntu path')
 	return sysctl_file
 
 
@@ -80,9 +77,7 @@ def update_sysctl_dict( config , sysctl_dict ):
 		if sysctl_dict.get(IPV6_FORWARD):
 			del(sysctl_dict[IPV6_FORWARD])
 
-	hookenv.log('Updated sysctl dictionary:')
-	hookenv.log(sysctl_dict)	
-	return
+	hookenv.log('INFO:\t Updated sysctl dictionary: {0}'.format(sysctl_dict))
 
 
 def create_sysctl_file( sysctl_dict ):
