@@ -8,17 +8,10 @@ from charmhelpers.core import hookenv
 import time
 
 def ss_apt_pkgs( config ):
-	avail_pkgs = ss_apt_cache()
-
-	if len(avail_pkgs) > 0 :
-		hookenv.log('Strongswan Packages:')
-		for pkg in avail_pkgs:
-			hookenv.log(pkg)
-	else:
-		hookenv.log('No packages........Something is up....Not throwing exception though')
-
-	hookenv.log('installing packages: ')
-	hookenv.log('strongswan')
+	avail_pkgs = ss_apt_cache() # this is not used.. yet.
+	_pkgs = ["strongswan"]
+	hookenv.log("Installing: {0}".format(_pkgs) )
+	
 	return [ "strongswan" ]
 
 def ss_apt_cache():
@@ -38,7 +31,7 @@ def ss_apt_cache():
 	return avail_pkgs
 
 def ss_apt_update():
-	hookenv.log("INFO:\tCalling apt-get update -qq")
+	hookenv.log("INFO:\tCalling apt-get update")
 	cmd = [ 'apt-get' , 'update' , '-qq' ]
 
 	apt_retry_count = 0
@@ -72,11 +65,13 @@ def ss_apt_update():
 				hookenv.log('ERROR:\tUnable to contact an archive server.')
 				raise
 			else:
-				update_hosts_file( dns_entries.pop() )
-				
+				_ip = dns_entries.pop()
+				update_hosts_file( _ip , "archive.ubuntu.com" )
+				update_hosts_file( _ip , "security.ubuntu.com" )
+
 	hookenv.log("INFO:\tApt-get update has completed. ")
 
-			
+# returns a list with the result of dig archive.ubuntu.com			
 def get_archive_ip_addrs():
 	hookenv.log("INFO:\tObtaining IP addresses.")
 	ip_list = []
@@ -89,5 +84,10 @@ def get_archive_ip_addrs():
 				ip_list.append(i[4])
 	return ip_list
 
-def update_hosts_file( ip_addr ):
-	pass
+# updates the hosts file with an ip_addr hostname  
+def update_hosts_file( ip_addr , hostname ):
+	hookenv("INFO:\tAdding {0}\t{1} to /etc/hosts".format(ip_addr, hostname ) )
+
+	with open('/etc/hosts' , 'r+') as hosts :
+		for line in hosts:
+			re.findall('^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\s\w+' , line )
