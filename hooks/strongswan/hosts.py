@@ -13,7 +13,7 @@ def cp_hosts_file():
 
 # flush hosts file of archive/security.ubuntu.com
 def flush_hosts_file():
-	hookenv('INFO:\tFlushing /etc/hosts of entries added during install')
+	hookenv.log('INFO:\tFlushing /etc/hosts of entries added during install')
 	update_hosts_file( '#1.2.3.4', 'archive.ubuntu.com' )
 	update_hosts_file( '#1.2.3.4', 'security.ubuntu.com' )
 
