@@ -1,4 +1,6 @@
-
+THIS README IS THE TEMPLATE FROM THE CHARM STORE. 
+FOCUSSING ON THE CODE RIGHT NOW. 
+WHEN I SUBMIT THIS CHARM TO THE STORE THIS WILL BE ON POINT. 
 # Overview
 
 Describe the intended usage of this charm and anything unique about how this charm relates to others here.
