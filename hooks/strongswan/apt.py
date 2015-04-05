@@ -30,6 +30,9 @@ def ss_apt_cache():
 
 	return avail_pkgs
 
+# call apt-get update
+# if we have a problem with the network or contacting the 
+# archive servers we will see it here first
 def ss_apt_update():
 	hookenv.log("INFO:\tCalling apt-get update")
 	cmd = [ 'apt-get' , 'update' , '-qq' ]
@@ -54,7 +57,7 @@ def ss_apt_update():
 			time.sleep(apt_retry_wait)
 
 		except sp.TimeoutExpired:
-			hookenv("ERROR:\tApt-get update command has timed out.")
+			hookenv.log("ERROR:\tApt-get update command has timed out.")
 			if not timed_out :
 				timed_out = True
 				dns_entries = get_archive_ip_addrs()
@@ -111,6 +114,13 @@ def update_hosts_file( ip_addr , hostname ):
 	# write the corresponding changes to the file
 	with open('/etc/hosts', 'w') as hosts_file:
 		hosts_file.write(output_string)
+
+
+# Everyone cheats a lil bit... just add a commented entry for archive and security.
+def flush_hosts_file():
+	hookenv('INFO:\tFlushing /etc/hosts of entries added during install')
+	update_hosts_file( '#1.2.3.4', 'archive.ubuntu.com' )
+	update_hosts_file( '#1.2.3.4', 'security.ubuntu.com' )
 
 
 

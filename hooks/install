@@ -3,10 +3,14 @@
 
 from strongswan.apt import (
 	ss_apt_pkgs,
-	ss_apt_update
+	ss_apt_update,
+	flush_hosts_file # this will be in its own file shortly......
 )
 from strongswan.sysctl import(
 	cp_config_files
+)
+from strongswan.iptables import(
+	iptables_configure
 )
 from charmhelpers.core import (
 	hookenv
@@ -19,7 +23,7 @@ from charmhelpers.fetch import (
 config = hookenv.config()
 
 def pre_install():
-	#iptables
+	iptables_configure(config)
 	cp_config_files()
 	
 		
@@ -27,6 +31,7 @@ def install():
 	ss_apt_update()
 	pkgs = ss_apt_pkgs(config)
 	apt_install(packages=pkgs,fatal=True)
+	flush_hosts_file()
 
 
 if __name__ == "__main__":

@@ -65,12 +65,14 @@ def get_sysctl_fd( mode ):
 
 def update_sysctl_dict( config , sysctl_dict ):
 	
+	# Set IP 4 Forward
 	if config.get("ip_forward") :
 		sysctl_dict[IPV4_FORWARD] = "1"
 	else:
 		if sysctl_dict.get(IPV4_FORWARD):
 			del(sysctl_dict[IPV4_FORWARD])
 
+	# Set IP 6 Forward 
 	if config.get("ip6_forward") :
 		sysctl_dict[IPV6_FORWARD] = "1"
 	else:
@@ -80,6 +82,7 @@ def update_sysctl_dict( config , sysctl_dict ):
 	hookenv.log('INFO:\t Updated sysctl dictionary: {0}'.format(sysctl_dict))
 
 
+# Create a sysctl.conf file from key,value pairs
 def create_sysctl_file( sysctl_dict ):
 	sysctl_file = get_sysctl_fd('w')
 	for key in sysctl_dict:
@@ -89,6 +92,7 @@ def create_sysctl_file( sysctl_dict ):
 	sysctl_file.close()
 	return
 
+# Make copy of sysctl.conf and /etc/hosts for sys admin reference
 def cp_config_files():
 	cmd = ['cp', '/etc/sysctl.conf', '/etc/sysctl.conf.original']
 	sp.call(cmd)
