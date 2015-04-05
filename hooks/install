@@ -30,7 +30,7 @@ def pre_install():
 		
 def install():
 	_apt_command( ["apt-get" , "update", "-qq"] , 30 )
-	cmd = ["apt-get" , "install", "-y"]
+	cmd = ["apt-get" , "install", "-y", "-qq"]
 	cmd.extend( ss_apt_pkgs(config) ) 
 	_apt_command( cmd, 60 )
 	flush_hosts_file()
