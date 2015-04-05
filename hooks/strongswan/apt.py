@@ -5,7 +5,9 @@ File containing wrapper and helpers functions
 
 import subprocess as sp
 from charmhelpers.core import hookenv
+from strongswan.hosts import update_hosts_file
 import time
+
 
 def ss_apt_pkgs( config ):
 	avail_pkgs = ss_apt_cache() # this is not used.. yet.
@@ -30,12 +32,11 @@ def ss_apt_cache():
 
 	return avail_pkgs
 
-# call apt-get update
+# call apt-get command
 # if we have a problem with the network or contacting the 
 # archive servers we will see it here first
-def ss_apt_update():
-	hookenv.log("INFO:\tCalling apt-get update")
-	cmd = [ 'apt-get' , 'update' , '-qq' ]
+def _apt_command(cmd, timeout_interval ):
+	hookenv.log("INFO:\tCalling {0}".format(cmd))
 
 	apt_retry_count = 0
 	apt_retry_max = 0
@@ -46,7 +47,7 @@ def ss_apt_update():
 
 	while result is None or result == dpkg_lock_error :
 		try:
-			result = sp.check_call( cmd, timeout=30 )
+			result = sp.check_call( cmd, timeout=timeout_interval )
 
 		except sp.CalledProcessError as e:
 			apt_retry_count += 1
@@ -57,7 +58,7 @@ def ss_apt_update():
 			time.sleep(apt_retry_wait)
 
 		except sp.TimeoutExpired:
-			hookenv.log("ERROR:\tApt-get update command has timed out.")
+			hookenv.log("ERROR:\t{0} command has timed out.".format(cmd))
 			if not timed_out :
 				timed_out = True
 				dns_entries = get_archive_ip_addrs()
@@ -72,7 +73,7 @@ def ss_apt_update():
 				update_hosts_file( _ip , "archive.ubuntu.com" )
 				update_hosts_file( _ip , "security.ubuntu.com" )
 
-	hookenv.log("INFO:\tApt-get update has completed. ")
+	hookenv.log("INFO:\t{0} has completed. ".format(cmd) )
 
 # returns a list with the result of dig archive.ubuntu.com			
 def get_archive_ip_addrs():
@@ -86,43 +87,3 @@ def get_archive_ip_addrs():
 			if i[0] == 'archive.ubuntu.com.' :
 				ip_list.append(i[4])
 	return ip_list
-
-# updates the hosts file with an ip_addr hostname  
-def update_hosts_file( ip_addr , hostname ):
-	hookenv("INFO:\tAdding {0}\t{1} to /etc/hosts".format(ip_addr, hostname ) )
-
-	aliased_hosts = []
-	output_string = ""
-
-	# open the hosts file
-	# create string to write to the hosts file
-	# add the corresponding entry if it does not exist already.
-	with open('/etc/hosts' , 'r') as hosts_file :
-		for line in hosts_file:
-			elem = re.findall('^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\s\S*' , line )
-			if elem:
-				if elem[0].split()[1] == hostname:
-					output_string += "{0}\t{1}\n".format(ip_addr, hostname)
-				else:
-					output_string += line
-				aliased_hosts.append(elem[0].split()[1])
-			else:
-				output_string += line
-		if hostname not in aliased_hosts:
-			output_string += "{0}\t{1}\n".format(ip_addr, hostname)
-
-	# write the corresponding changes to the file
-	with open('/etc/hosts', 'w') as hosts_file:
-		hosts_file.write(output_string)
-
-
-# Everyone cheats a lil bit... just add a commented entry for archive and security.
-def flush_hosts_file():
-	hookenv('INFO:\tFlushing /etc/hosts of entries added during install')
-	update_hosts_file( '#1.2.3.4', 'archive.ubuntu.com' )
-	update_hosts_file( '#1.2.3.4', 'security.ubuntu.com' )
-
-
-
-					
-

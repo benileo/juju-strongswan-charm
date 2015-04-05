@@ -93,10 +93,8 @@ def create_sysctl_file( sysctl_dict ):
 	return
 
 # Make copy of sysctl.conf and /etc/hosts for sys admin reference
-def cp_config_files():
+def cp_sysctl_file():
 	cmd = ['cp', '/etc/sysctl.conf', '/etc/sysctl.conf.original']
 	sp.call(cmd)
-	cmd = ['cp', '/etc/hosts', '/etc/hosts.original' ]
-	sp.call(cmd)
 	hookenv.log("INFO\tCopy of sysctl file created: /etc/sysctl.conf.original")
-	hookenv.log("INFO\tCopy of hosts file created: /etc/hosts.original")
+	
