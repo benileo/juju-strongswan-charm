@@ -35,7 +35,7 @@ def ss_apt_cache():
 # call apt-get command
 # if we have a problem with the network or contacting the 
 # archive servers we will see it here first
-def _apt_command(cmd, timeout_interval ):
+def run_apt_command(cmd, timeout_interval ):
 	hookenv.log("INFO:\tCalling {0}".format(cmd))
 
 	apt_retry_count = 0
