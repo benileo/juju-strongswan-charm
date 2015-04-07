@@ -23,7 +23,7 @@ from charmhelpers.core import (
 config = hookenv.config()
 
 def pre_install():
-	iptables()
+	iptables() # configure firewall
 	cp_sysctl_file()
 	cp_hosts_file()
 	
@@ -37,7 +37,7 @@ def install():
 
 
 if __name__ == "__main__":
-	hookenv.log("INFO:   Running the install hook")
+	hookenv.log("INFO:\tRunning the install hook")
 	pre_install()
 	install()
-	hookenv.log("INFO:   Install hook has completed.")
+	hookenv.log("INFO:\tInstall hook has completed.")

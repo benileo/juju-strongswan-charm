@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from strongswan.sysctl import(
 	sysctl
@@ -10,18 +10,20 @@ from charmhelpers.core import (
 	hookenv
 )
 
-class Strongswan:
-	def __init__(self):
-		self.config = hookenv.config()
-
-	def update_config(self):
-		sysctl(self.config)
-		iptables()
+config = hookenv.config()
 
 
 
+
+
+
+
+def _update():
+	sysctl()
+	iptables()
 
 if __name__ == "__main__":
-	hookenv.log("!!!!!!!!!!!!!!!!!! - Config Changed - !!!!!!!!!!!!!!!!!!!!")
-	strongswan = Strongswan()
-	strongswan.update_config()
+	hookenv.log("INFO\tRunning the configuration changed hook")
+	_update()
+	hookenv.log("INFO\tRunning the configuration changed hook")
+

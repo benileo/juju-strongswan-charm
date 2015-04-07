@@ -7,16 +7,13 @@ import os
 import subprocess as sp
 from charmhelpers.core import hookenv
 
-# GLOBAL VARS #
-IPV4_FORWARD = "net.ipv4.ip_forward"
-IPV6_FORWARD = "net.ipv6.conf.all.forwarding"
-
+config = hookenv.config()
 
 # Everytime config changes you need to run this updating sys control accord.
-def sysctl( config ):
+def sysctl():
 	sysctl_fd = get_sysctl_fd('r') # get fd of sysctl file in read mode
 	sysctl_dict = dict_from_sysctl_file(sysctl_fd) # parse sysctl into dict 
-	update_sysctl_dict( config, sysctl_dict )
+	update_sysctl_dict(sysctl_dict )
 	create_sysctl_file( sysctl_dict )  
 	restart_sysctl( '/etc/sysctl.conf' ) # restart sys control
 	return
@@ -63,7 +60,7 @@ def get_sysctl_fd( mode ):
 	return sysctl_file
 
 
-def update_sysctl_dict( config , sysctl_dict ):
+def update_sysctl_dict(sysctl_dict ):
 	
 	# Set IP 4 Forward
 	if config.get("ip_forward") :
