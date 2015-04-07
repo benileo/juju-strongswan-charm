@@ -4,64 +4,34 @@ IP Tables
 """
 
 import subprocess as sp
+from charmhelpers.core import hookenv
 
 
-ACCEPT = "ACCEPT"
-DROP = "DROP"
-INPUT = "INPUT"
-OUTPUT = "OUTPUT"
-FORWARD = "FORWARD"
-MANGLE_TABLE = "mangle"
-NAT_TABLE = "nat"
-IPTABLES = "iptables"
-UDP = 'udp'
-TCP = 'tcp'
-ESP = "50"
-AH = "51"
-IKE = "500"
-NAT_T = "4500"
-SSH = '22'
+config = hookenv.config()
 
 
-class IPtables():
-	def __init__(self, config):
-		self.config = config
-
-	def filter( self ):
-
-		# Allow IKE and NAT-T
-		make_rule( [INPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ])
-		make_rule( [INPUT, '-p', UDP, '--dport', NAT_T , '--sport', NAT_T, '-j', ACCEPT ] )
-
-		# allow ESP or AH depending on gateway settings
-		if self.config.get("ipsec_protocol") == "esp" :
-			make_rule( [INPUT, '-p', ESP, '-j', ACCEPT ] )
-		else:
-			make_rule( [INPUT, '-p', AH, '-j', ACCEPT ] )
-
-		# allow SSH
-		sp.check_output( [IPTABLES, '-I', INPUT, '-p', 'tcp', '--dport',  SSH , '-j', ACCEPT ] )
-
-		# all established connections can get back in.
-		sp.check_output( [IPTABLES, '-I', INPUT, '-m', 'conntrack', '--ctstate', 'ESTABLISHED', '-j', ACCEPT ] )
-
-		# block everything else 
-		sp.check_output( [IPTABLES, '-A', INPUT, '-j', DROP ] )
-
-		return 
+def iptables():
+	_filter()
+	_nat()
 
 
-	def nat(self):
-		pass
+def _filter():
 
-	def mangle(self):
-		pass
+	# allow NAT-T and IKE no questions asked.
+	make_rule( [INPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ])
+	make_rule( [INPUT, '-p', UDP, '--dport', NAT_T , '--sport', NAT_T, '-j', ACCEPT ] )
 
-	def security(self):
-		pass
+	# allow either AH or ESP
+	if config.get("ipsec_protocol") == "esp":
+		make_rule( [INPUT, '-p', ESP, '-j', ACCEPT ] )
+	else:
+		make_rule( [INPUT, '-p', AH, '-j', ACCEPT ] )
 
-	def raw(self):
-		pass
+	# that's it for now....
+	return 
+
+def _nat():
+	pass
 
 
 # if the rule does not already exist, make the rule.
@@ -69,17 +39,8 @@ def make_rule(rule):
 	try:
 		rule.insert(0, "-C")
 		rule.insert(0, IPTABLES)
-		rval = sp.check_call(rule)
+		rval = sp.check_call( rule, stdout=sp.DEVNULL, stderr=sp.DEVNULL )
 	except sp.CalledProcessError:
 		rule[1] = "-I"
 		sp.check_output(rule)
-	return
- 
-def iptables_configure( config ):
-	iptables = IPtables( config )
-	iptables.filter()
-	iptables.nat()
-	iptables.mangle()
-	iptables.raw()
-	iptables.security()
 	return
