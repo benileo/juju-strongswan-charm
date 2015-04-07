@@ -1,22 +1,20 @@
 options:
 
-  # ipv4 Packet forwarding is enabled by default, not ipv6
   ip_forward:
     type: boolean
     default: True
     description: "IPv4 traffic forwarding"
+
   ip6_forward:
     type: boolean
     default: False
     description: "IPv6 traffic forwarding."
 
-  # use the newest version of IKE by default (2)
   ike_version:
     type: int
     default:  2
     description: "IKE Version"
 
-  # the default method of authentication should be X.509
   authentication_method:
     type: string
     default: "X.509"
@@ -27,11 +25,23 @@ options:
     default: "esp"
     description: "IPsec protocol"
 
-# types: 	host-host
-# 			site-site
-#			roadwarrior
-# local area network subnets
-# virtual IP subnets
-# AH or ESP 
+  virtual_ip:
+    type: boolean
+    default: True thi
+    description: "Virtual IPs enabled"
+
+  virtual_ip_range:
+    type: string
+    default: '10.50.9.0/24'
+    description: 'Virtual IP address range'
+
+
+
+
+  #
+  vpn_type:
+    type: int
+    default:
+
 
 
