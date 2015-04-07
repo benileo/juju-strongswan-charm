@@ -4,6 +4,19 @@ IP Tables
 """
 
 import subprocess as sp
+
+from strongswan import (
+	IKE,
+	INPUT,
+	ACCEPT,
+	INSERT,
+	UDP,
+	ESP,
+	AH,
+	IPTABLES,
+	NAT_T,
+	IPTABLES_SAVE
+)
 from charmhelpers.core import (
 	hookenv
 )

@@ -16,8 +16,6 @@ config = hookenv.config()
 
 
 
-
-
 def _update():
 	sysctl()
 	iptables()

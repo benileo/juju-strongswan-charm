@@ -5,7 +5,13 @@ Code for strongswan sysctl
 
 import os
 import subprocess as sp
-from charmhelpers.core import hookenv
+from charmhelpers.core import (
+	hookenv
+)
+from strongswan import (
+	IPV6_FORWARD,
+	IPV4_FORWARD
+)
 
 config = hookenv.config()
 

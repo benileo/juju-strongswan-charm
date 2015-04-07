@@ -25,23 +25,36 @@ options:
     default: "esp"
     description: "IPsec protocol"
 
-  virtual_ip:
+  virtual_ip_enabled:
     type: boolean
-    default: True thi
-    description: "Virtual IPs enabled"
+    default: True
+    description: "Virtual IP"
 
-  virtual_ip_range:
+  virtual_ip_subnet:
     type: string
     default: '10.50.9.0/24'
-    description: 'Virtual IP address range'
+    description: 'Virtual IP subnet'
 
+  internal_network_enabled:
+    type: boolean
+    default: False
+    description: 'Will the security gateway provide access to an internal subnet?'
 
+  internal_network_subnet:
+    type: string
+    default: ''
+    description: 'What subnet will the security gateway provide access to'
 
+  public_network_enabled:
+    type: boolean
+    default: True
+    description: 'Will the security gateway '
 
-  #
-  vpn_type:
-    type: int
-    default:
+  # this is a major work in progress....
+  # vpn_type:
+  #   type: int
+  #   default: 1
+  #   description: "the default vpn type is rw--internal-"
 
 
 
