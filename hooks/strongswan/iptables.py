@@ -19,7 +19,7 @@ def _filter():
 
 	# allow NAT-T and IKE no questions asked.
 	make_rule( [INPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ])
-	make_rule( [INPUT, '-p', UDP, '--dport', NAT_T , '--sport', NAT_T, '-j', ACCEPT ] )
+	make_rule( [INPUT, '-p', UDP, '--dport', NAT_T , '-j', ACCEPT ] )
 
 	# allow either AH or ESP
 	if config.get("ipsec_protocol") == "esp":
@@ -27,11 +27,12 @@ def _filter():
 	else:
 		make_rule( [INPUT, '-p', AH, '-j', ACCEPT ] )
 
-	# that's it for now....
+	# iptables-save.	
 	return 
 
 def _nat():
 	pass
+
 
 
 # if the rule does not already exist, make the rule.
