@@ -9,7 +9,7 @@ from strongswan.sysctl import(
 	cp_sysctl_file
 )
 from strongswan.iptables import(
-	iptables_configure
+	iptables
 )
 from strongswan.hosts import(
 	cp_hosts_file,
@@ -23,7 +23,7 @@ from charmhelpers.core import (
 config = hookenv.config()
 
 def pre_install():
-	iptables_configure(config)
+	iptables()
 	cp_sysctl_file()
 	cp_hosts_file()
 	
