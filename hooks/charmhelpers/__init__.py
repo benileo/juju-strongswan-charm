@@ -23,7 +23,7 @@ try:
     import six  # flake8: noqa
 except ImportError:
     if sys.version_info.major == 2:
-        subprocess.check_call(['apt-get', 'install', '-y', 'python-six'])
+        subprocess.check_call(['apt-get', 'install', '-y', 'python-six', '-qq'])
     else:
         subprocess.check_call(['apt-get', 'install', '-y', 'python3-six'])
     import six  # flake8: noqa
@@ -32,7 +32,7 @@ try:
     import yaml  # flake8: noqa
 except ImportError:
     if sys.version_info.major == 2:
-        subprocess.check_call(['apt-get', 'install', '-y', 'python-yaml'])
+        subprocess.check_call(['apt-get', 'install', '-y', 'python-yaml', '-qq'])
     else:
-        subprocess.check_call(['apt-get', 'install', '-y', 'python3-yaml'])
+        subprocess.check_call(['apt-get', 'install', '-y', 'python3-yaml', '-qq'])
     import yaml  # flake8: noqa
