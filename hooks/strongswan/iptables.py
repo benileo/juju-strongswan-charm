@@ -28,7 +28,7 @@ config = hookenv.config()
 def iptables():
 	_filter()
 	_nat()
-	check_call([IPTABLES_SAVE])
+	sp.check_call([IPTABLES_SAVE])
 	return
 
 
