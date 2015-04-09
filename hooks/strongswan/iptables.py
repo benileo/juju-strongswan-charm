@@ -28,8 +28,8 @@ config = hookenv.config()
 def iptables():
 	_filter()
 	_nat()
-	sp.check_call([IPTABLES_SAVE])
-	return
+	iptables_save()
+
 
 
 def _filter():
@@ -61,3 +61,15 @@ def make_rule(rule, rule_type):
 		rule[1] = rule_type
 		sp.call(rule)
 	return
+
+def iptables_save():
+	try:
+		sp.check_call([IPTABLES_SAVE])
+	except CalledProcessError as err:
+		hookenv.log("Error:\tUnable to run {}\n\tReturn Value:{}\n\tOutput:{}".format(
+			err.cmd,
+			err.returncode,
+			err.output
+			)
+		)
+		# Should an exception be raised....?

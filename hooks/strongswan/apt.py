@@ -4,32 +4,53 @@ File containing wrapper and helpers functions
 """
 
 import subprocess as sp
-from charmhelpers.core import hookenv
-from strongswan.hosts import update_hosts_file
-import time
+
+from charmhelpers.core import(
+	hookenv
+)
+from strongswan.hosts import(
+	update_hosts_file,
+	flush_hosts_file
+)
+from time import (
+	sleep
+)
 
 
-def ss_apt_pkgs( config ):
-	avail_pkgs = ss_apt_cache() # this is not used.. yet.
+config = hookenv.config()
+
+
+HOSTS_FILE_MOD_FLAG = False
+
+# installs the strongswan packages from the archives.
+def install_pkgs():
+
+	# call apt-get update
+	run_apt_command( ["apt-get" , "update", "-qq"] , 30 )
+
+	# get the available packages from apt-cache
+	avail_pkgs = _apt_cache()
+
+	# install these packages from the cache
 	_pkgs = ["strongswan"]
+	cmd = ["apt-get" , "install", "-y", "-qq"]
+	cmd.extend(_pkgs)
+	run_apt_command( cmd, 60 )
 	hookenv.log("Installing: {0}".format(_pkgs) )
 	
-	return [ "strongswan" ]
+	# if the hosts file is modifed we should flush these entries
+	if HOSTS_FILE_MOD_FLAG:
+		flush_hosts_file()
 
-def ss_apt_cache():
+# returns the available strongswan packages from the cache.
+def _apt_cache():
 	avail_pkgs = []
-
 	cmd = ["apt-cache", "search", "strongswan"]
-	try:
-		handler = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE )
-		data = handler.communicate()[0].decode('utf-8') 
-	except (OSError, sp.TimeoutExpired, ValueError) as error : 
-		hookenv.log(error)
-
+	data = check_output(cmd)
+	data = data.decode('utf-8')
 	for s in ( data.split('\n') ):
 		t = s.split(' ')
 		avail_pkgs.append(t[0])
-
 	return avail_pkgs
 
 # call apt-get command
@@ -55,7 +76,7 @@ def run_apt_command(cmd, timeout_interval ):
 				raise
 			result = e.returncode
 			hookenv.log("ERROR:\tCouldn't aquire DPKG lock trying again in {0}".format(apt_retry_wait) )
-			time.sleep(apt_retry_wait)
+			sleep(apt_retry_wait)
 
 		except sp.TimeoutExpired:
 			hookenv.log("ERROR:\t{0} command has timed out.".format(cmd))
@@ -72,6 +93,8 @@ def run_apt_command(cmd, timeout_interval ):
 				_ip = dns_entries.pop()
 				update_hosts_file( _ip , "archive.ubuntu.com" )
 				update_hosts_file( _ip , "security.ubuntu.com" )
+				if not HOSTS_FILE_MOD_FLAG:
+					HOSTS_FILE_MOD_FLAG = True
 
 	hookenv.log("INFO:\t{0} has completed. ".format(cmd) )
 

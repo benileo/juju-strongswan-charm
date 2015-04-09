@@ -2,6 +2,8 @@
 
 # GLOBAL VARS #
 
+
+# IP TABLES 
 ACCEPT = "ACCEPT"
 DROP = "DROP"
 INPUT = "INPUT"
@@ -20,5 +22,16 @@ SSH = '22'
 INSERT = '-I'
 APPEND = '-A'
 DELETE = '-D'
+
+
+
+# SYSTEM CONTROL
 IPV4_FORWARD = "net.ipv4.ip_forward"
 IPV6_FORWARD = "net.ipv6.conf.all.forwarding"
+
+
+
+
+# OPEN SSL 
+OPENSSL = 'openssl'
+X509 = 'x509'

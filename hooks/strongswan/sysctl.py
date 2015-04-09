@@ -56,17 +56,17 @@ def restart_sysctl( sctl_file_path ):
 	cmd = ["sysctl", "-p", sctl_file_path ]
 	r_val = sp.check_call(cmd)	
 	if r_val != 0:
-		raise Exception('ERROR:\tUnable to reload sysctl.conf file')
+		hookenv.log('ERROR:\tUnable to reload sysctl.conf file')
 
 def get_sysctl_fd( mode ):
 	if os.path.exists('/etc/sysctl.conf') : 
 		sysctl_file = open( '/etc/sysctl.conf' , mode )
 	else:
-		Exception('ERROR:\tUnable to find the /etc/sysctl.conf in default ubuntu path')
+		hookenv.log('ERROR:\tUnable to find the /etc/sysctl.conf in default ubuntu path')
 	return sysctl_file
 
 
-def update_sysctl_dict(sysctl_dict ):
+def update_sysctl_dict(sysctl_dict):
 	
 	# Set IP 4 Forward
 	if config.get("ip_forward") :
@@ -90,7 +90,6 @@ def create_sysctl_file( sysctl_dict ):
 	sysctl_file = get_sysctl_fd('w')
 	for key in sysctl_dict:
 		s = key + '=' + sysctl_dict[key] + '\n'
-		hookenv.log(s)
 		sysctl_file.write(s)
 	sysctl_file.close()
 	return
