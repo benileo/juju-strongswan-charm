@@ -2,6 +2,10 @@
 
 # GLOBAL VARS #
 
+import subprocess as sp
+
+from charmhelpers.core import hookenv
+
 
 # IP TABLES 
 ACCEPT = "ACCEPT"
@@ -34,4 +38,22 @@ IPV6_FORWARD = "net.ipv6.conf.all.forwarding"
 
 # OPEN SSL 
 OPENSSL = 'openssl'
-X509 = 'x509'
+REQ = 'req'
+CA = 'ca'
+
+
+
+
+#
+def _check_output( cmd , fatal=False ):
+	try:
+		sp.check_output( cmd )
+	except sp.CalledProcessError as err:
+		hookenv.log("ERROR:\tUnable to generate CA certificate.\n\tReturn Code: {}\n\tOutput: {}\n\t Command: {}\n\t".format(
+			err.returncode,
+			err.output,
+			err.cmd 
+			)
+		)
+		if fatal:
+			raise
