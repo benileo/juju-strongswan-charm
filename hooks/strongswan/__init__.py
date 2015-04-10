@@ -6,6 +6,13 @@ import subprocess as sp
 
 from charmhelpers.core import hookenv
 
+# Make sure the curl command is available
+try:
+	sp.call(['curl'], stderr=sp.DEVNULL )
+except FileNotFoundError :
+	sp.check_output( ["apt-get", "install", "-y" , "-qq" , "curl" ] )
+
+
 
 # IP TABLES 
 ACCEPT = "ACCEPT"
