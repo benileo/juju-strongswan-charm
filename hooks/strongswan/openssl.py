@@ -11,6 +11,10 @@ from strongswan import (
 	OPENSSL,
 	REQ,
 	CA,
+	IPSEC_D_PRIVATE,
+	IPSEC_D_CACERTS,
+	IPSEC_D_CERTS,
+	IPSEC_D_REQS,
 	_check_output
 )
 
@@ -21,48 +25,42 @@ from charmhelpers.core import (
 config = hookenv.config()
 
 def generate_ca():
-
 	cmd = [
 		OPENSSL,
 		REQ , '-x509',
-		'-days', '1460',
+		'-days', '3650',
 		'-newkey', 'rsa:4096',
-		'-keyout', '/etc/ipsec.d/private/caKey.pem',
-		'-out', '/etc/ipsec.d/cacerts/caCert.pem',
+		'-keyout', '{}cakey.pem'.format(IPSEC_D_PRIVATE),
+		'-out', '{}cacert.pem'.format(IPSEC_D_CACERTS),
 		'-nodes',
 	]
-
-	# append the cert info
-	cmd.extend( _cert_info() )
-
-	# create the CA
 	_check_output( cmd, fatal=True, message="CA generation" )
 
 
 
 
-def generate_cert( name ):
-
-	# create the host key and cert request
+def generate_csr( identity ):
 	cmd = [
 		OPENSSL,
 		REQ,
 		'-newkey', 'rsa:2048',
-		'-keyout', '/etc/ipsec.d/private/{}Key.pem'.format(name),  
-		'-out', 'hostReq.pem',
+		'-keyout', '{}{}Key.pem'.format( IPSEC_D_PRIVATE, identity ),  
+		'-out', '{}{}Req.pem'.format( IPSEC_D_REQS, identity )
 		'-nodes'
 	]
-	cmd.extend( _cert_info() )
 	_check_output( cmd, fatal=True, message="CSR generation" )
 
 
+
+
+def sign_cert( identity ):
 	# sign the certificate with the CA.
 	cmd = [
 		OPENSSL,
 		CA,
-		'-in', 'hostReq.pem',
-		'-days', '730',
-		'-out', '/etc/ipsec.d/certs/{}Cert.pem'.format(name),
+		'-in', '{}{}Req.pem'.format( IPSEC_D_REQS, identity ),
+		'-days', '1825',
+		'-out', '{}{}Cert.pem'.format( IPSEC_D_CERTS, identity ),
 		'-cert', '/etc/ipsec.d/cacerts/caCert.pem',
 		'-keyfile', '/etc/ipsec.d/private/caKey.pem',
 		'-notext', '-batch'
@@ -71,16 +69,7 @@ def generate_cert( name ):
 
 
 
-# obtain DN certificate information prior to creation of the CA.
-# honestly not sure I will deal with this.
-def _cert_info():
-
-	_subj = ""
-
-	if config.get("fqdn") :
-		_subj += '/subjectAltName=DNS:{}'.format( config.get("fqdn") )
-
-	if _subj :
-		return [ '-subj' , _subj ]
-	else:
-		return []
+#create openssl.cnf for ipsec.
+def _create():
+	pass
+	

@@ -50,6 +50,9 @@ SYSCTL_PATH = "/etc/sysctl.conf"
 OPENSSL = 'openssl'
 REQ = 'req'
 CA = 'ca'
+IPSEC_D_PRIVATE = '/etc/ipsec.d/private/'
+IPSEC_D_CACERTS = '/etc/ipsec.d/cacerts/'
+IPSEC_D_CERTS = '/etc/ipsec.d/certs/'
 
 
 

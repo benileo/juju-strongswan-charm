@@ -62,7 +62,8 @@ def post_install():
 	# check to make sure that /etc/ipsec.d/ directories were created
 	if config.get("authentication_method") == 'x509':
 		generate_ca()
-		generate_cert('server')
+		generate_csr('server')
+		sign_cert('server')
 
 
 if __name__ == "__main__":
