@@ -51,12 +51,13 @@ CA = 'ca'
 
 
 
-#
-def _check_output( cmd , fatal=False ):
+# wrapper to check_output
+def _check_output( cmd , fatal=False, message=None ):
 	try:
 		return ( sp.check_output( cmd ) )
 	except sp.CalledProcessError as err:
-		hookenv.log("ERROR:\tUnable to generate CA certificate.\n\tReturn Code: {}\n\tOutput: {}\n\t Command: {}\n\t".format(
+		hookenv.log("ERROR:\t{}\n\tReturn Code: {}\n\tOutput: {}\n\t Command: {}\n\t".format(
+			message,
 			err.returncode,
 			err.output,
 			err.cmd 

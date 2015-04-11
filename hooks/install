@@ -14,6 +14,10 @@ from strongswan.hosts import(
 	cp_hosts_file,
 	flush_hosts_file
 )
+from strongswan.openssl import(
+	generate_ca,
+	generate_cert
+)
 from charmhelpers.core import (
 	hookenv
 )
@@ -53,13 +57,15 @@ def install():
 
 
 def post_install():
-	# we need a check to make sure that /etc/ipsec.d/ directories were created
-	# i've seen them not created for upstream builds...
-	# run necessary openssl commands if we are using X.509s
-	pass
+	# check to make sure that /etc/ipsec.d/ directories were created
+	if config.get("authentication_method") == 'x509':
+		generate_ca()
+		generate_cert('server')
+
 
 if __name__ == "__main__":
 	hookenv.log("INFO:\tRunning the install hook")
 	pre_install()
 	install()
+	post_install()
 	hookenv.log("INFO:\tInstall hook has completed.")

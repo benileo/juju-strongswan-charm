@@ -46,7 +46,7 @@ def install_pkgs():
 def _apt_cache():
 	avail_pkgs = []
 	cmd = ["apt-cache", "search", "strongswan"]
-	data = check_output(cmd)
+	data = sp.check_output(cmd)
 	data = data.decode('utf-8')
 	for s in ( data.split('\n') ):
 		t = s.split(' ')
