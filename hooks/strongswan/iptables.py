@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 IP Tables
 """
@@ -34,9 +34,10 @@ def iptables():
 
 def _filter():
 
-	# allow NAT-T and IKE no questions asked.
+	# allow IKE no questions asked.
 	make_rule( [INPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ], INSERT )
-	make_rule( [INPUT, '-p', UDP, '--dport', NAT_T , '-j', ACCEPT ] , INSERT)
+	# NAT-T doesn't ALWAYS originate on port 4500
+	make_rule( [INPUT, '-p', UDP, '--dport', NAT_T , '-j', ACCEPT ] , INSERT) 
 
 	# allow either AH or ESP
 	if config.get("ipsec_protocol") == "esp":
@@ -73,3 +74,4 @@ def iptables_save():
 			)
 		)
 		# Should an exception be raised....?
+		# its not fatal to strongswan, we may have some issues though.....

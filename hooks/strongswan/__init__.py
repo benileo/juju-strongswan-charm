@@ -11,7 +11,7 @@ try:
 	sp.call(['curl'], stderr=sp.DEVNULL )
 except FileNotFoundError :
 	sp.check_output( ["apt-get", "install", "-y" , "-qq" , "curl" ] )
-
+	hookenv.log("INFO:\tInstalling curl command")
 
 
 # IP TABLES 
@@ -54,7 +54,7 @@ CA = 'ca'
 #
 def _check_output( cmd , fatal=False ):
 	try:
-		sp.check_output( cmd )
+		return ( sp.check_output( cmd ) )
 	except sp.CalledProcessError as err:
 		hookenv.log("ERROR:\tUnable to generate CA certificate.\n\tReturn Code: {}\n\tOutput: {}\n\t Command: {}\n\t".format(
 			err.returncode,

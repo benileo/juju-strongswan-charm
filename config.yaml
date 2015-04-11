@@ -22,7 +22,7 @@ options:
 
   authentication_method:
     type: string
-    default: "X.509"
+    default: "x509"
     description: "Method of IPsec peer authentication"
 
   ipsec_protocol:
@@ -54,6 +54,13 @@ options:
     type: boolean
     default: True
     description: 'Will the security gateway provide access to the rest of the internet?'
+
+  fqdn:
+    type: string
+    default: 'beenswervin.com'
+    description: "The fully qualified domain name of the IPsec gateway"
+
+  
 
   # this is a major work in progress....
   # vpn_type:
