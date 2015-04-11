@@ -5,7 +5,8 @@ from strongswan.apt import (
 	install_pkgs
 )
 from strongswan.sysctl import(
-	cp_sysctl_file
+	cp_sysctl_file,
+	sysctl
 )
 from strongswan.iptables import(
 	iptables
@@ -26,8 +27,9 @@ from charmhelpers.core import (
 config = hookenv.config()
 
 def pre_install():
-	iptables() # configure firewall
+	iptables()
 	cp_sysctl_file()
+	sysctl()
 	cp_hosts_file()
 	
 		

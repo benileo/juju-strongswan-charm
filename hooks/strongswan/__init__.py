@@ -39,6 +39,7 @@ DELETE = '-D'
 # SYSTEM CONTROL
 IPV4_FORWARD = "net.ipv4.ip_forward"
 IPV6_FORWARD = "net.ipv6.conf.all.forwarding"
+SYSCTL_PATH = "/etc/sysctl.conf"
 
 
 
