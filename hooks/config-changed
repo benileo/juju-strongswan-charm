@@ -19,7 +19,7 @@ def _update():
 	iptables()
 
 if __name__ == "__main__":
-	hookenv.log("INFO\tRunning the configuration changed hook")
+	hookenv.log("Running the configuration changed hook" , level=hookenv.INFO )
 	_update()
-	hookenv.log("INFO\tRunning the configuration changed hook")
+	hookenv.log("Running the configuration changed hook" , level=hookenv.INFO )
 

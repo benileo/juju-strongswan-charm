@@ -36,7 +36,7 @@ def generate_ca():
 	cmd.extend( _cert_info() )
 
 	# create the CA
-	_check_output( cmd, fatal=True )
+	_check_output( cmd, fatal=True, message="CA generation" )
 
 
 
@@ -53,7 +53,7 @@ def generate_cert( name ):
 		'-nodes'
 	]
 	cmd.extend( _cert_info() )
-	_check_output( cmd, fatal=True )
+	_check_output( cmd, fatal=True, message="CSR generation" )
 
 
 	# sign the certificate with the CA.
@@ -67,7 +67,7 @@ def generate_cert( name ):
 		'-keyfile', '/etc/ipsec.d/private/caKey.pem',
 		'-notext', '-batch'
 	]
-	_check_output( cmd, fatal=True )
+	_check_output( cmd, fatal=True, message="CA signing" )
 
 
 

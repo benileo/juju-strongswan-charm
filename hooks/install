@@ -36,9 +36,9 @@ def pre_install():
 def install():
 	install_src = config.get('source')
 
-	hookenv.log("INFO:\tAttempting to install Strongswan from {}".format(
+	hookenv.log("Attempting to install Strongswan from {}".format(
 		install_src
-		)
+		), level=hookenv.INFO
 	)
 	
 	# install from the archives
@@ -54,7 +54,7 @@ def install():
 		pass
 
 	else:
-		hookenv.log("ERROR:\tInstall Source does not exist.")
+		hookenv.log("Install Source does not exist", level=hookenv.ERROR )
 		raise
 
 
@@ -66,8 +66,8 @@ def post_install():
 
 
 if __name__ == "__main__":
-	hookenv.log("INFO:\tRunning the install hook")
+	hookenv.log("Running the install hook", level=hookenv.INFO )
 	pre_install()
 	install()
 	post_install()
-	hookenv.log("INFO:\tInstall hook has completed.")
+	hookenv.log("Install hook has completed", level=hookenv.INFO )

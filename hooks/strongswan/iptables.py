@@ -15,7 +15,8 @@ from strongswan import (
 	AH,
 	IPTABLES,
 	NAT_T,
-	IPTABLES_SAVE
+	IPTABLES_SAVE,
+	_check_output
 )
 from charmhelpers.core import (
 	hookenv
@@ -28,7 +29,7 @@ config = hookenv.config()
 def iptables():
 	_filter()
 	_nat()
-	iptables_save()
+	_check_output([IPTABLES_SAVE], message="iptables-save has failed in non-fatal mode")
 
 
 
@@ -62,16 +63,3 @@ def make_rule(rule, rule_type):
 		rule[1] = rule_type
 		sp.call(rule)
 	return
-
-def iptables_save():
-	try:
-		sp.check_call([IPTABLES_SAVE])
-	except CalledProcessError as err:
-		hookenv.log("Error:\tUnable to run {}\n\tReturn Value:{}\n\tOutput:{}".format(
-			err.cmd,
-			err.returncode,
-			err.output
-			)
-		)
-		# Should an exception be raised....?
-		# its not fatal to strongswan, we may have some issues though.....

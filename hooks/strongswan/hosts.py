@@ -8,19 +8,19 @@ from charmhelpers.core import hookenv
 def cp_hosts_file():
 	cmd = ['cp', '/etc/hosts', '/etc/hosts.original' ]
 	sp.call(cmd)
-	hookenv.log("INFO\tCopy of hosts file created: /etc/hosts.original")
+	hookenv.log("Copy of hosts file created: /etc/hosts.original", level=hookenv.INFO )
 
 
 # flush hosts file of archive/security.ubuntu.com
 def flush_hosts_file():
-	hookenv.log('INFO:\tFlushing /etc/hosts of entries added during install')
+	hookenv.log('Flushing /etc/hosts of entries added during install', level=hookenv.INFO )
 	update_hosts_file( '#1.2.3.4', 'archive.ubuntu.com' )
 	update_hosts_file( '#1.2.3.4', 'security.ubuntu.com' )
 
 
 # updates the hosts file with an ip_addr hostname  
 def update_hosts_file( ip_addr , hostname ):
-	hookenv.log("INFO:\tAdding {0}\t{1} to /etc/hosts".format(ip_addr, hostname ) )
+	hookenv.log("Adding {0}\t{1} to /etc/hosts".format(ip_addr, hostname ), level=hookenv.INFO )
 
 	aliased_hosts = []
 	output_string = ""

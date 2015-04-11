@@ -4,14 +4,16 @@
 
 import subprocess as sp
 
-from charmhelpers.core import hookenv
+from charmhelpers.core import (	
+	hookenv
+)
 
 # Make sure the curl command is available
 try:
 	sp.call(['curl'], stderr=sp.DEVNULL )
 except FileNotFoundError :
 	sp.check_output( ["apt-get", "install", "-y" , "-qq" , "curl" ] )
-	hookenv.log("INFO:\tInstalling curl command")
+	hookenv.log("Installing curl command", level=hookenv.INFO )
 
 
 # IP TABLES 
@@ -57,12 +59,12 @@ def _check_output( cmd , fatal=False, message=None ):
 	try:
 		return ( sp.check_output( cmd ) )
 	except sp.CalledProcessError as err:
-		hookenv.log("ERROR:\t{}\n\tReturn Code: {}\n\tOutput: {}\n\t Command: {}\n\t".format(
+		hookenv.log("\n\tMessage: {}\n\tReturn Code: {}\n\tOutput: {}\n\tCommand:{}\n\t".format(
 			message,
 			err.returncode,
 			err.output,
 			err.cmd 
-			)
+			), level=hookenv.ERROR
 		)
 		if fatal:
 			raise

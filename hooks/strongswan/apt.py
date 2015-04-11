@@ -36,7 +36,7 @@ def install_pkgs():
 	cmd = ["apt-get" , "install", "-y", "-qq"]
 	cmd.extend(_pkgs)
 	run_apt_command( cmd, 60 )
-	hookenv.log("Installing: {0}".format(_pkgs) )
+	hookenv.log("Installing: {0}".format(_pkgs) , level=hookenv.INFO )
 	
 	# if the hosts file is modifed we should flush these entries
 	if HOSTS_FILE_MOD_FLAG:
@@ -57,7 +57,7 @@ def _apt_cache():
 # if we have a problem with the network or contacting the 
 # archive servers we will see it here first
 def run_apt_command(cmd, timeout_interval ):
-	hookenv.log("INFO:\tCalling {0}".format(cmd))
+	hookenv.log("Calling {0}".format(cmd) , level=hookenv.INFO )
 
 	apt_retry_count = 0
 	apt_retry_max = 0
@@ -75,19 +75,19 @@ def run_apt_command(cmd, timeout_interval ):
 			if apt_retry_count > apt_retry_max : 
 				raise
 			result = e.returncode
-			hookenv.log("ERROR:\tCouldn't aquire DPKG lock trying again in {0}".format(apt_retry_wait) )
+			hookenv.log("Couldn't aquire DPKG lock trying again in {0}".format(apt_retry_wait) , level=hookenv.INFO )
 			sleep(apt_retry_wait)
 
 		except sp.TimeoutExpired:
-			hookenv.log("ERROR:\t{0} command has timed out.".format(cmd))
+			hookenv.log("{0} command has timed out.".format(cmd), level=hookenv.INFO )
 			if not timed_out :
 				timed_out = True
 				dns_entries = get_archive_ip_addrs()
 				if not dns_entries:
-					hookenv.log('ERROR:\tDo we have a DNS issue? Can\'t Resolve archive.ubuntu.com.')
+					hookenv.log('Do we have a DNS issue? Can\'t Resolve archive.ubuntu.com.', level=hookenv.ERROR )
 					raise
 			if not dns_entries:
-				hookenv.log('ERROR:\tUnable to contact an archive server.')
+				hookenv.log('Unable to contact an archive server.', level=hookenv.ERROR )
 				raise
 			else:
 				_ip = dns_entries.pop()
@@ -96,11 +96,11 @@ def run_apt_command(cmd, timeout_interval ):
 				if not HOSTS_FILE_MOD_FLAG:
 					HOSTS_FILE_MOD_FLAG = True
 
-	hookenv.log("INFO:\t{0} has completed. ".format(cmd) )
+	hookenv.log("{0} has completed. ".format(cmd) , level=hookenv.INFO )
 
 # returns a list with the result of dig archive.ubuntu.com			
 def get_archive_ip_addrs():
-	hookenv.log("INFO:\tObtaining IP addresses.")
+	hookenv.log("Running dig command to obtain archive IP addresses", level=hookenv.INFO )
 	ip_list = []
 	dig = sp.check_output(['dig', 'archive.ubuntu.com'])
 	dig = dig.decode('utf-8').split('\n')
