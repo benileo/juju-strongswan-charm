@@ -36,7 +36,7 @@ def iptables():
 def _filter():
 
 	# allow IKE no questions asked.
-	make_rule( [INPUT, '-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ], INSERT )
+	make_rule( [INPUT, '-p', UDP , '--dport' , IKE , '-j', ACCEPT ], INSERT )
 	# NAT-T doesn't ALWAYS originate on port 4500
 	make_rule( [INPUT, '-p', UDP, '--dport', NAT_T , '-j', ACCEPT ] , INSERT) 
 
