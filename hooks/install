@@ -63,7 +63,7 @@ def post_install():
 	if config.get("authentication_method") == 'x509':
 		generate_ca()
 		generate_csr('server')
-		sign_cert('server')
+		sign('server')
 
 
 if __name__ == "__main__":

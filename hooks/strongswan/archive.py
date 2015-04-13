@@ -15,6 +15,10 @@ from strongswan.hosts import(
 from time import (
 	sleep
 )
+from strongswan import (
+	CHARM_DEPENDENCIES
+)
+
 
 
 config = hookenv.config()
@@ -29,18 +33,23 @@ def install_pkgs():
 	run_apt_command( ["apt-get" , "update", "-qq"] , 30 )
 
 	# get the available packages from apt-cache
-	avail_pkgs = _apt_cache()
+	# avail_pkgs = _apt_cache()
 
-	# install these packages from the cache
 	_pkgs = ["strongswan"]
 	cmd = ["apt-get" , "install", "-y", "-qq"]
 	cmd.extend(_pkgs)
+	cmd.extend(CHARM_DEPENDENCIES)
+
 	run_apt_command( cmd, 60 )
+
 	hookenv.log("Installing: {0}".format(_pkgs) , level=hookenv.INFO )
 	
 	# if the hosts file is modifed we should flush these entries
 	if HOSTS_FILE_MOD_FLAG:
 		flush_hosts_file()
+
+	# install the openssl library for python 3
+	sp.check_output( ["pip3", "install" , "pyOpenSSL" ] )
 
 # returns the available strongswan packages from the cache.
 def _apt_cache():

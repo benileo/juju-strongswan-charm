@@ -8,13 +8,13 @@ from charmhelpers.core import (
 	hookenv
 )
 
-# Make sure the curl command is available
-try:
-	sp.call(['curl'], stderr=sp.DEVNULL )
-except FileNotFoundError :
-	sp.check_output( ["apt-get", "install", "-y" , "-qq" , "curl" ] )
-	hookenv.log("Installing curl command", level=hookenv.INFO )
-
+CHARM_DEPENDENCIES = [
+	"build-essential",
+	"libssl-dev",
+	"libffi-dev",
+	"python-dev",
+	"python3-pip"
+]
 
 # IP TABLES 
 ACCEPT = "ACCEPT"
@@ -50,9 +50,13 @@ SYSCTL_PATH = "/etc/sysctl.conf"
 OPENSSL = 'openssl'
 REQ = 'req'
 CA = 'ca'
-IPSEC_D_PRIVATE = '/etc/ipsec.d/private/'
-IPSEC_D_CACERTS = '/etc/ipsec.d/cacerts/'
-IPSEC_D_CERTS = '/etc/ipsec.d/certs/'
+
+# Strongswan directory structure
+IPSEC_D_PRIVATE 	= '/etc/ipsec.d/private/'
+IPSEC_D_CACERTS 	= '/etc/ipsec.d/cacerts/'
+IPSEC_D_CERTS 		= '/etc/ipsec.d/certs/'
+IPSEC_D_CRLS		= '/etc/ipsec.d/crls/'
+IPSEC_D_REQS 		= '/etc/ipsec.d/reqs/'
 
 
 
