@@ -26,7 +26,7 @@ from charmhelpers.core import (
 config = hookenv.config()
 
 
-def iptables():
+def configure_iptables():
 	_filter()
 	_nat()
 	_check_output([IPTABLES_SAVE], message="iptables-save has failed in non-fatal mode")

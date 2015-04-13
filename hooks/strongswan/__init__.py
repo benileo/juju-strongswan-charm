@@ -8,7 +8,12 @@ from charmhelpers.core import (
 	hookenv
 )
 
+# charm config constants
 CHARM_CONFIG = hookenv.config()
+AUTH = CHARM_CONFIG.get("authentication_method")
+SOURCE = CHARM_CONFIG.get("source")
+
+
 
 PYOPENSSL_DEPENDENCIES = [
 	"build-essential",
@@ -17,6 +22,8 @@ PYOPENSSL_DEPENDENCIES = [
 	"python-dev",
 	"python3-pip"
 ]
+
+
 
 # IP TABLES 
 ACCEPT = "ACCEPT"
@@ -61,6 +68,7 @@ CA_CERT				= 'caCert.pem'
 
 # wrapper to check_output
 def _check_output( cmd , fatal=False, message=None ):
+	hookenv.log("Calling {0}".format(cmd) , level=hookenv.INFO )
 	try:
 		return ( sp.check_output( cmd ) )
 	except sp.CalledProcessError as err:
@@ -73,3 +81,4 @@ def _check_output( cmd , fatal=False, message=None ):
 		)
 		if fatal:
 			raise
+	hookenv.log("{0} has completed. ".format(cmd) , level=hookenv.INFO )

@@ -25,7 +25,7 @@ except ImportError:
     if sys.version_info.major == 2:
         subprocess.check_call(['apt-get', 'install', '-y', 'python-six', '-qq'])
     else:
-        subprocess.check_call(['apt-get', 'install', '-y', 'python3-six'])
+        subprocess.check_call(['apt-get', 'install', '-y', 'python3-six', '-qq'] )
     import six  # flake8: noqa
 
 try:

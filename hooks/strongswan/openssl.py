@@ -3,73 +3,63 @@
 Generate CA certificate and host certificates using OpenSSL
 """
 
-
-### TO DO PATHS SHOULD BE STORED AS A MACROS
-
-
 from strongswan import (
-	OPENSSL,
-	REQ,
-	CA,
 	IPSEC_D_PRIVATE,
 	IPSEC_D_CACERTS,
 	IPSEC_D_CERTS,
 	IPSEC_D_REQS,
-	_check_output
+	CA_KEY,
+	CA_CERT
 )
+from OpenSSL import crypto
 
-from charmhelpers.core import (
-	hookenv
-)
-
-config = hookenv.config()
-
-def generate_ca():
-	cmd = [
-		OPENSSL,
-		REQ , '-x509',
-		'-days', '3650',
-		'-newkey', 'rsa:4096',
-		'-keyout', '{}cakey.pem'.format(IPSEC_D_PRIVATE),
-		'-out', '{}cacert.pem'.format(IPSEC_D_CACERTS),
-		'-nodes',
-	]
-	_check_output( cmd, fatal=True, message="CA generation" )
-
-
-
-
-def generate_csr( identity ):
-	cmd = [
-		OPENSSL,
-		REQ,
-		'-newkey', 'rsa:2048',
-		'-keyout', '{}{}Key.pem'.format( IPSEC_D_PRIVATE, identity ),  
-		'-out', '{}{}Req.pem'.format( IPSEC_D_REQS, identity )
-		'-nodes'
-	]
-	_check_output( cmd, fatal=True, message="CSR generation" )
+# Generate a CA root certificate and private key 
+# Writes private key to /etc/ipsec.d/private/caKey. 
+def create_ca_cert(  digest='sha1', **rdn ):
+	pkey = crypto.PKey()
+	pkey.generate_key( crypto.TYPE_RSA, 4096 )
+	req = crypto.X509Req()
+	subj = req.get_subject()
+	for (key, value) in rdn.items() :
+		setattr( subj, key, value )
+	req.set_pubkey( pkey )
+	req.sign( pkey, digest )
+	cert = crypto.X509()
+	cert.set_serial_number( 0 )
+	cert.gmtime_adj_notBefore( 0 )
+	cert.gmtime_adj_notAfter( 60*60*24*365*10 )
+	cert.set_issuer( req.get_subject() )
+	cert.set_subject( req.get_subject() )
+	cert.set_pubkey( req.get_pubkey() )
+	cert.sign( pkey, digest )
+	with open("{0}{1}".format(IPSEC_D_PRIVATE, CA_KEY ), 'bw') as fd:
+		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, pkey ) )
+	with open("{0}{1}".format(IPSEC_D_CACERTS, CA_CERT ), 'bw' ) as fd:
+		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, cert ) )
 
 
-
-
-def sign_cert( identity ):
-	# sign the certificate with the CA.
-	cmd = [
-		OPENSSL,
-		CA,
-		'-in', '{}{}Req.pem'.format( IPSEC_D_REQS, identity ),
-		'-days', '1825',
-		'-out', '{}{}Cert.pem'.format( IPSEC_D_CERTS, identity ),
-		'-cert', '/etc/ipsec.d/cacerts/caCert.pem',
-		'-keyfile', '/etc/ipsec.d/private/caKey.pem',
-		'-notext', '-batch'
-	]
-	_check_output( cmd, fatal=True, message="CA signing" )
-
-
-
-#create openssl.cnf for ipsec.
-def _create():
-	pass
-	
+def create_host_cert( handle , digest='sha1' , **rdn ) :
+	pkey = crypto.PKey()
+	pkey.generate_key( crypto.TYPE_RSA, 2048 )
+	req = crypto.X509Req()
+	subj = req.get_subject()
+	for (key, value) in rdn.items():
+		setattr(subj,key,value)
+	req.set_pubkey(pkey)
+	req.sign( pkey, digest )
+	cert = crypto.X509()
+	cert.set_serial_number( 1 )
+	cert.gmtime_adj_notBefore( 0 )
+	cert.gmtime_adj_notAfter( 60*60*24*365*5 )
+	with open("{0}{1}".format(IPSEC_D_CACERTS, CA_CERT ), 'br' ) as fd:
+		cacert = crypto.load_certificate( crypto.FILETYPE_PEM, fd.read() )
+	cert.set_issuer( cacert.get_subject() )
+	cert.set_subject( req.get_subject() )
+	cert.set_pubkey( req.get_pubkey() )
+	with open("{0}{1}".format(IPSEC_D_PRIVATE, CA_KEY ) , 'br' ) as fd:
+		cakey = crypto.load_privatekey( crypto.FILETYPE_PEM, fd.read() )
+	cert.sign(cakey, digest)
+	with open("{0}{1}Key.pem".format(IPSEC_D_PRIVATE, handle ), 'bw' ) as fd :
+		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, pkey ) )
+	with open("{0}{1}Cert.pem".format( IPSEC_D_CERTS, handle ) , 'bw' ) as fd :
+		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, cert ) )

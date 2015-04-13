@@ -23,10 +23,12 @@ from strongswan import (
 )
 
 def install_pyOpenSSL():
+	hookenv.log("Installing PyOpenSSL Dependencies" , level=hookenv.INFO )
+	run_apt_command( ["apt-get" , "update", "-qq"] , 30 )
 	cmd = ["apt-get" , "install", "-y", "-qq"]
-	cmd.extend(CHARM_DEPENDENCIES)
-	run_apt_command(cmd, 60)
-	_check_output( ["pip3", "install" , "pyOpenSSL" ] , fatal=True, 
+	cmd.extend(PYOPENSSL_DEPENDENCIES)
+	run_apt_command(cmd, 300)
+	_check_output( ["pip3", "install" , "pyOpenSSL"] , fatal=True, 
 		message="Installing pyOpenSSL into Python 3 installation" )
 
 def strongswan_pkgs():
@@ -35,15 +37,13 @@ def strongswan_pkgs():
 
 # installs the strongswan packages from the archives.
 def install_strongswan():
-	hookenv.log("Attempting to install Strongswan from the archives" , level=hookenv.INFO )
+	hookenv.log("Installing Strongswan from the archives" , level=hookenv.INFO )
 	run_apt_command( ["apt-get" , "update", "-qq"] , 30 )
 	cmd = ["apt-get" , "install", "-y", "-qq"]
 	cmd.extend( strongswan_pkgs() )
 	run_apt_command( cmd, 60 )
 	flush_hosts_file()
 	
-
-
 
 # runs apt-get command handles dpkg locks and archive server unavailability
 def run_apt_command(cmd, timeout_interval ):

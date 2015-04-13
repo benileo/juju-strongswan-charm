@@ -1,74 +1,72 @@
 #!/usr/bin/env python3
 
-
-from strongswan.archive import (
-	install_pkgs
-)
-from strongswan.sysctl import(
-	cp_sysctl_file,
-	sysctl
-)
-from strongswan.iptables import(
-	iptables
-)
-from strongswan.hosts import(
-	cp_hosts_file,
-	flush_hosts_file
-)
-from strongswan.openssl import(
-	generate_ca,
-	generate_cert
-)
 from charmhelpers.core import (
 	hookenv
 )
+from strongswan.sysctl import(
+	cp_sysctl_file,
+	configure_sysctl
+)
+from strongswan.iptables import(
+	configure_iptables
+)
+from strongswan.hosts import(
+	cp_hosts_file
+)
+from strongswan.archive import (
+	install_strongswan,
+	install_pyOpenSSL
+)
+from strongswan import(
+	CHARM_CONFIG,
+	AUTH,
+	SOURCE
+)
 
-# global config 
-config = hookenv.config()
+# If we are using x509 we will have to install other dependencies
+if AUTH == 'x509':
+	try:
+		import OpenSSL
+	except ImportError:
+		install_pyOpenSSL()
+	from strongswan.openssl import(
+		create_ca_cert,
+		create_host_cert
+	)
 
+
+# setup firewall
+# sytem control
+# make copies of important config files
 def pre_install():
-	iptables()
+	configure_iptables()
 	cp_sysctl_file()
-	sysctl()
+	configure_sysctl()
 	cp_hosts_file()
 	
 		
+
+# install strongswan
 def install():
-	install_src = config.get('source')
-
-	hookenv.log("Attempting to install Strongswan from {}".format(
-		install_src
-		), level=hookenv.INFO
-	)
-	
-	# install from the archives
-	if install_src == 'distro':
-		install_pkgs()
-
-	# install from upstream source (github)
-	elif install_src == 'upstream':
+	if SOURCE == 'distro':
+		install_strongswan()
+	elif SOURCE == 'upstream':
 		pass
-
-	#install from ppa
-	elif install_src == 'ppa' : 
-		pass
-
 	else:
 		hookenv.log("Install Source does not exist", level=hookenv.ERROR )
 		raise
 
 
+# some additional checks /etc/ipsec.d/
+# create Root CA if we are using certs
 def post_install():
-	# check to make sure that /etc/ipsec.d/ directories were created
-	if config.get("authentication_method") == 'x509':
-		generate_ca()
-		generate_csr('server')
-		sign('server')
+	if AUTH == 'x509':
+		create_ca_cert(CN="BeenswervingINC", L="Victoria", OU="Internet Security" )
+		create_host_cert( 'server', CN="BeenswervingINC", L="Victoria", OU="Internet Security")
+
 
 
 if __name__ == "__main__":
-	hookenv.log("Running the install hook", level=hookenv.INFO )
 	pre_install()
 	install()
 	post_install()
-	hookenv.log("Install hook has completed", level=hookenv.INFO )
