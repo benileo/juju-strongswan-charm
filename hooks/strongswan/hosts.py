@@ -12,6 +12,7 @@ def cp_hosts_file():
 
 
 # flush hosts file of archive/security.ubuntu.com
+# TO DO check modification date of file first.......
 def flush_hosts_file():
 	hookenv.log('Flushing /etc/hosts of entries added during install', level=hookenv.INFO )
 	update_hosts_file( '#1.2.3.4', 'archive.ubuntu.com' )
@@ -46,6 +47,16 @@ def update_hosts_file( ip_addr , hostname ):
 	with open('/etc/hosts', 'w') as hosts_file:
 		hosts_file.write(output_string)
 
-
-
+# returns a list with the result of dig archive.ubuntu.com			
+def get_archive_ip_addrs():
+	hookenv.log("Running dig command to obtain archive IP addresses", level=hookenv.INFO )
+	ip_list = []
+	dig = sp.check_output(['dig', 'archive.ubuntu.com'])
+	dig = dig.decode('utf-8').split('\n')
+	for i in dig:
+		i = i.split('\t')
+		if i:
+			if i[0] == 'archive.ubuntu.com.' :
+				ip_list.append(i[4])
+	return ip_list
 

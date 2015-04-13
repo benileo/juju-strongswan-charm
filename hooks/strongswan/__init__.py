@@ -8,7 +8,9 @@ from charmhelpers.core import (
 	hookenv
 )
 
-CHARM_DEPENDENCIES = [
+CHARM_CONFIG = hookenv.config()
+
+PYOPENSSL_DEPENDENCIES = [
 	"build-essential",
 	"libssl-dev",
 	"libffi-dev",
@@ -45,18 +47,14 @@ SYSCTL_PATH = "/etc/sysctl.conf"
 
 
 
-
-# OPEN SSL 
-OPENSSL = 'openssl'
-REQ = 'req'
-CA = 'ca'
-
 # Strongswan directory structure
 IPSEC_D_PRIVATE 	= '/etc/ipsec.d/private/'
 IPSEC_D_CACERTS 	= '/etc/ipsec.d/cacerts/'
 IPSEC_D_CERTS 		= '/etc/ipsec.d/certs/'
 IPSEC_D_CRLS		= '/etc/ipsec.d/crls/'
 IPSEC_D_REQS 		= '/etc/ipsec.d/reqs/'
+CA_KEY				= 'caKey.pem'
+CA_CERT				= 'caCert.pem'
 
 
 
