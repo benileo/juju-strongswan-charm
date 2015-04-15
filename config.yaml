@@ -60,6 +60,11 @@ options:
     default: 'beenswervin.com'
     description: "The fully qualified domain name of the IPsec gateway"
 
+  allow_ssh:
+    type: boolean
+    default: True
+    description: 'Will we allow ssh to the machine'
+
   
 
   # this is a major work in progress....

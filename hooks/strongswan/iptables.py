@@ -6,26 +6,23 @@ IP Tables
 import subprocess as sp
 
 from strongswan import (
-	IKE,
-	INPUT,
-	ACCEPT,
 	INSERT,
-	UDP,
-	ESP,
-	AH,
 	IPTABLES,
-	NAT_T,
 	IPTABLES_SAVE,
-	_check_output
+	ALLOW_IKE,
+	ALLOW_ESP,
+	ALLOW_SSH,
+	ALLOW_NAT_T,
+	ALLOW_AH,
+	ALLOW_EST_CONN,
+	_check_output,
+	CHARM_CONFIG
 )
 from charmhelpers.core import (
 	hookenv
 )
 
-
-config = hookenv.config()
-
-
+# update the rule chains and then save the rules
 def configure_iptables():
 	_filter()
 	_nat()
@@ -33,19 +30,29 @@ def configure_iptables():
 
 
 
+# update filter
 def _filter():
 
-	# allow IKE no questions asked.
-	make_rule( [INPUT, '-p', UDP , '--dport' , IKE , '-j', ACCEPT ], INSERT )
-	# NAT-T doesn't ALWAYS originate on port 4500
-	make_rule( [INPUT, '-p', UDP, '--dport', NAT_T , '-j', ACCEPT ] , INSERT) 
+	# allow IKE and NAT-T 
+	make_rule(ALLOW_IKE, INSERT)
+	make_rule(ALLOW_NAT_T, INSERT) 
 
 	# allow either AH or ESP
-	if config.get("ipsec_protocol") == "esp":
-		make_rule( [INPUT, '-p', ESP, '-j', ACCEPT ] , INSERT)
+	if CHARM_CONFIG.get("ipsec_protocol") == "esp":
+		make_rule(ALLOW_ESP, INSERT)
 	else:
-		make_rule( [INPUT, '-p', AH, '-j', ACCEPT ] , INSERT )
+		make_rule(ALLOW_AH, INSERT)
+
+	# allow ssh
+	if CHARM_CONFIG.get("allow_ssh"):
+		make_rule(ALLOW_SSH, INSERT)
+
+	# allow established connection back in, non-ipsec.
+	if CHARM_CONFIG.get("public_network_enabled"):
+		make_rule(ALLOW_EST_CONN, INSERT)
+
 		
+	
 	return 
 
 def _nat():
