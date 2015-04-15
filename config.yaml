@@ -55,15 +55,11 @@ options:
     default: True
     description: 'Will the security gateway provide access to the rest of the internet?'
 
-  fqdn:
-    type: string
-    default: 'beenswervin.com'
-    description: "The fully qualified domain name of the IPsec gateway"
-
+  # do actions need ssh juju?
   allow_ssh:
     type: boolean
     default: True
-    description: 'Will we allow ssh to the machine'
+    description: 'Will we allow ssh to the machine, turn this off after the machine has been set up.'
 
   
 

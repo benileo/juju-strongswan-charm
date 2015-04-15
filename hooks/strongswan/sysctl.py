@@ -33,6 +33,4 @@ def configure_sysctl():
 
 # Make copy of sysctl.conf and /etc/hosts for sys admin reference
 def cp_sysctl_file():
-	_check_output(['cp', '/etc/sysctl.conf', '/etc/sysctl.conf.original'])
-	hookenv.log("Copy of sysctl file created: /etc/sysctl.conf.original", level=hookenv.INFO )
-	
+	_check_output(['cp', '/etc/sysctl.conf', '/etc/sysctl.conf.original'] )	
