@@ -48,14 +48,21 @@ def _filter():
 		if not rule_exists( ALLOW_ESP ):
 			make_rule(ALLOW_ESP, INSERT)
 		if rule_exists( ALLOW_AH ):
-
+			make_rule( ALLOW_AH , DELETE )
 	else:
-		if not rule_
-		make_rule(ALLOW_AH, INSERT)
+		if not rule_exists( ALLOW_AH ) : 
+			make_rule(ALLOW_AH, INSERT )
+		if rule_exists( ALLOW_ESP ) :
+			make_rule( ALLOW_ESP, DELETE )
 
 	# allow ssh
 	if CHARM_CONFIG.get("allow_ssh"):
-		make_rule(ALLOW_SSH, APPEND)
+		if not rule_exists( ALLOW_SSH )
+			make_rule(ALLOW_SSH, APPEND)
+	else:
+		if rule_exists( ALLOW_SSH ) :
+			make_rule( ALLOW_SSH, DELETE )
+
 
 	# allow established connection back in, non-ipsec.
 	# this is only necessary in 2 cases
