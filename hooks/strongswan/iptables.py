@@ -16,12 +16,15 @@ from strongswan import (
 	ALLOW_SSH,
 	ALLOW_NAT_T,
 	ALLOW_AH,
+	ALLOW_DNS,
+	ALLOW_DHCP,
 	ALLOW_EST_CONN,
 	CHARM_CONFIG,
 	_check_output,
 	make_rule,
 	rule_exists
 )
+
 from charmhelpers.core import (
 	hookenv
 )
@@ -63,19 +66,44 @@ def _filter():
 		if rule_exists( ALLOW_SSH ) :
 			make_rule( ALLOW_SSH, DELETE )
 
-
-	# allow established connection back in, non-ipsec.
-	# this is only necessary in 2 cases
-	# 1. we are not a site to site VPN, in this case, 0.0.0.0/0
-	# should not be allowed
-	# 2. we are forwarding traffic (after IPsec headers are removed)
-	# to the public internet. 
-	if CHARM_CONFIG.get("public_network_enabled"):
-		make_rule(ALLOW_EST_CONN, INSERT)
+	# allow dns and dhcp
+	if not rule_exists( ALLOW_DNS ) : 
+		make_rule( ALLOW_DNS , APPEND )
+	if not rule_exists( ALLOW_DHCP ) : 
+		make_rule( ALLOW_DHCP, APPEND )
 
 
-	
-	return 
+	# PUBLIC + [ INTERNAL ]
+	if CHARM_CONFIG.get("public_internet"):
+		if not rule_exists( ALLOW_EST_CONN ) :
+			make_rule( ALLOW_EST_CONN, APPEND )
+
+	# INTERNAL ONLY #
+	else:
+
+		# NO VIRTUAL IP #
+		if not CHARM_CONFIG.get("virtual_ip_enabled"):
+
+			# ALLOW INBOUND TRAFFIC FROM INTERNAL SUBNETS #
+			for subnet in CHARM_CONFIG.get('internal_network_subnets').split(',') :
+				if subnet :
+					rule = ['INPUT', '-s', subnet , '-j', 'ACCEPT']
+						if not rule_exists( rule ) :
+							make_rule( rule, INSERT )
+
+		# VIRTUAL IP #
+		else:
+			pass
+
+
+
+
+
+
+
+
+
+
 
 def _nat():
 	pass

@@ -41,15 +41,20 @@ AH = "51"
 IKE = "500"
 NAT_T = "4500"
 SSH = '22'
+DNS = '53'
+DHC
 INSERT = '-I'
 APPEND = '-A'	
 DELETE = '-D'
-ALLOW_IKE = [INPUT, '-p', UDP , '--dport' , IKE , '-j', ACCEPT ]
-ALLOW_NAT_T = [INPUT, '-p', UDP, '--dport', NAT_T , '-j', ACCEPT ]
-ALLOW_SSH = [INPUT, '-p',  TCP, '--dport', SSH, '-j' ACCEPT]
-ALLOW_AH =  [INPUT, '-p', AH, '-j', ACCEPT ]
-ALLOW_ESP = [INPUT, '-p', ESP, '-j', ACCEPT ]
-ALLOW_EST_CONN = [INPUT, '-m', 'conntrack', '--ctstate', 'ESTABLISHED', '-j', ACCEPT ]
+ALLOW_IKE = 		[INPUT, '-p', UDP , '--dport' , IKE , '-j', ACCEPT ]
+ALLOW_NAT_T = 		[INPUT, '-p', UDP, '--dport', NAT_T , '-j', ACCEPT ]
+ALLOW_SSH =	 		[INPUT, '-p',  TCP, '--dport', SSH, '-j' ACCEPT]
+ALLOW_AH =  		[INPUT, '-p', AH, '-j', ACCEPT ]
+ALLOW_ESP = 		[INPUT, '-p', ESP, '-j', ACCEPT ]
+ALLOW_EST_CONN =	[INPUT, '-m', 'conntrack', '--ctstate', 'ESTABLISHED,RELATED', '-j', ACCEPT ]
+ALLOW_DNS = 		[INPUT, '-p', UDP, '--dport', DNS, '-j', ACCEPT ]
+ALLOW_DHCP = 		[INPUT, '-p', UDP, '--dport' '67:68', '--sport', '67:68', '-j', ACCEPT ]
+
 
 
 # SYSTEM CONTROL
