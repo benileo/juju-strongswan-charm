@@ -26,36 +26,41 @@ PYOPENSSL_DEPENDENCIES = [
 
 
 # IP TABLES 
-ACCEPT = "ACCEPT"
-DROP = "DROP"
-INPUT = "INPUT"
-OUTPUT = "OUTPUT"
-FORWARD = "FORWARD"
-NAT_TABLE = "nat"
-IPTABLES = "iptables"
-IPTABLES_SAVE = "iptables-save"
-UDP = 'udp'
-TCP = 'tcp'
-ESP = "50"
-AH = "51"
-IKE = "500"
-NAT_T = "4500"
-SSH = '22'
-INSERT = '-I'
-APPEND = '-A'	
-DELETE = '-D'
-ALLOW_IKE = [INPUT, '-p', UDP , '--dport' , IKE , '-j', ACCEPT ]
-ALLOW_NAT_T = [INPUT, '-p', UDP, '--dport', NAT_T , '-j', ACCEPT ]
-ALLOW_SSH = [INPUT, '-p',  TCP, '--dport', SSH, '-j' ACCEPT]
-ALLOW_AH =  [INPUT, '-p', AH, '-j', ACCEPT ]
-ALLOW_ESP = [INPUT, '-p', ESP, '-j', ACCEPT ]
-ALLOW_EST_CONN = [INPUT, '-m', 'conntrack', '--ctstate', 'ESTABLISHED', '-j', ACCEPT ]
+ACCEPT 			= 	"ACCEPT"
+DROP 			= 	"DROP"
+INPUT 			= 	"INPUT"
+OUTPUT 			= 	"OUTPUT"
+FORWARD 		= 	"FORWARD"
+NAT_TABLE 		= 	"nat"
+IPTABLES 		= 	"iptables"
+IPTABLES_SAVE 	= 	"iptables-save"
+UDP 			= 	'udp'
+TCP 			= 	'tcp'
+ESP 			= 	"50"
+AH 				= 	"51"
+IKE 			= 	"500"
+NAT_T 			= 	'4500'
+SSH 			= 	'22'
+DNS 			= 	'53'
+DHCP 			= 	'67:68'
+INSERT 			= 	'-I'
+APPEND 			= 	'-A'	
+DELETE 			= 	'-D'
+CHECK 			= 	'-C'
+ALLOW_IKE 		= 	[INPUT, '-p', UDP , '--dport' , IKE , '-j', ACCEPT ]
+ALLOW_NAT_T 	= 	[INPUT, '-p', UDP, '--dport', NAT_T , '-j', ACCEPT ]
+ALLOW_SSH 		= 	[INPUT, '-p',  TCP, '--dport', SSH, '-j' ACCEPT]
+ALLOW_AH 		=  	[INPUT, '-p', AH, '-j', ACCEPT ]
+ALLOW_ESP 		= 	[INPUT, '-p', ESP, '-j', ACCEPT ]
+ALLOW_EST_CONN 	= 	[INPUT, '-m', 'conntrack', '--ctstate', 'ESTABLISHED', '-j', ACCEPT ]
+ALLOW_DNS 		=	[INPUT, '-p', UDP, '--dport', DNS, '--sport', DNS, '-j', ACCEPT ]
+ALLOW_DHCP 		=	[INPUT, '-p', UDP, '--dport', DHCP,'--sport', DHCP, '-j', ACCEPT ]
 
 
 # SYSTEM CONTROL
-IPV4_FORWARD = "net.ipv4.ip_forward"
-IPV6_FORWARD = "net.ipv6.conf.all.forwarding"
-SYSCTL_PATH = "/etc/sysctl.conf"
+IPV4_FORWARD 	= 	"net.ipv4.ip_forward"
+IPV6_FORWARD 	= 	"net.ipv6.conf.all.forwarding"
+SYSCTL_PATH 	= 	"/etc/sysctl.conf"
 
 
 
@@ -91,21 +96,14 @@ def _check_output( cmd , fatal=False, message=None ):
 # if the rule does not already exist, make the rule.
 def make_rule(cmd, rule_type):
 	try:
-		cmd.insert(0, rule_type)
-		cmd.insert(0, IPTABLES)
-		_check_call(rule, fatal=False, message="Creating IPTables rule")
+		cmd.insert( 0, CHECK )
+		cmd.insert( 0, IPTABLES )
+		sp.check_call( rule, stdout=sp.DEVNULL, stderr=sp.DEVNULL )
 	except sp.CalledProcessError:
-		rule[1] = rule_type
-		sp.call(rule)
-	return
-
-
-
-def rule_exists(rule):
-	try:
-		rule.insert(0, "-C")
-		rule.insert(0, IPTABLES)
-		rval = sp.check_call( rule, stdout=sp.DEVNULL, stderr=sp.DEVNULL )
-	except:
-		return False
-	return True
+		if rule_type != DELETE :
+			cmd[1] = rule_type
+			_check_output(rule, fatal=False, message="Creating IPTables rule")
+	else:
+		if rule_type == DELETE :
+			cmd[1] = DELETE
+			_check_output(rule, fatal=False, message="Deleting IPTables rule")
