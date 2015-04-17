@@ -15,6 +15,8 @@ from strongswan import (
 	ALLOW_SSH,
 	ALLOW_NAT_T,
 	ALLOW_AH,
+	ALLOW_DNS,
+	ALLOW_DHCP,
 	ALLOW_EST_CONN,
 	ALLOW_DNS,
 	ALLOW_DHCP,
@@ -22,6 +24,7 @@ from strongswan import (
 	_check_output,
 	make_rule,
 )
+
 from charmhelpers.core import (
 	hookenv
 )
@@ -70,14 +73,25 @@ def _filter():
 	# case 1: ALLOW ACCESS to 0.0.0.0/0
 	# anything initiated outbound will be allowed back in 
 	if CHARM_CONFIG.get("public_network_enabled"):
-		make_rule(ALLOW_EST_CONN)
+
+		#make_rule(ALLOW_EST_CONN, APPEND)
+
 	else:
+		# NO VIRTUAL IP #
+		if not CHARM_CONFIG.get("virtual_ip_enabled"):
+
+			# ALLOW INBOUND TRAFFIC FROM INTERNAL SUBNETS #
+			for subnet in CHARM_CONFIG.get('internal_network_subnets').split(',') :
+				if subnet :
+					rule = ['INPUT', '-s', subnet , '-j', 'ACCEPT']
+						if not rule_exists( rule ) :
+							make_rule( rule, INSERT )
+
+		# VIRTUAL IP #
+		else:
+			pass
 
 
-
-
-	make_rule(ALLOW_EST_CONN, INSERT)
-	return 
 
 def _nat():
 	pass
