@@ -40,12 +40,7 @@ options:
     default: '10.50.9.0/24'
     description: 'Virtual IP subnet'
 
-  # internal_network_enabled:
-  #   type: boolean
-  #   default: False
-  #   description: 'Will the security gateway provide access to an internal subnet?'
-
-  internal_network_subnets:
+  private_subnets:
     type: string
     default: '10.10.10.0/24,'
     description: 'Comma seperated list of internal subnets we are providing access to'

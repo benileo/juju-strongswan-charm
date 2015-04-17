@@ -2,32 +2,11 @@
 """
 IP Tables
 """
-
-import subprocess as sp
-
-from strongswan import (
-	INSERT,
-	APPEND,
-	DELETE,
-	IPTABLES_SAVE,
-	ALLOW_IKE,
-	ALLOW_ESP,
-	ALLOW_SSH,
-	ALLOW_NAT_T,
-	ALLOW_AH,
-	ALLOW_DNS,
-	ALLOW_DHCP,
-	ALLOW_EST_CONN,
-	ALLOW_DNS,
-	ALLOW_DHCP,
-	CHARM_CONFIG,
-	_check_output,
-	make_rule,
-)
-
 from charmhelpers.core import (
 	hookenv
 )
+from strongswan import * 
+
 
 # update the rule chains and then save the rules
 def configure_iptables():
@@ -41,55 +20,62 @@ def configure_iptables():
 # update filter chain
 def _filter():
 
-	# TODO set default policy to DROP
+	# we are creating a SG, lets make it secure....
+	# set default policy to DROP for filter tables.
+	_check_output( [IPTABLES, POLICY, FORWARD , DROP ] )
+	_check_output( [IPTABLES, POLICY, INPUT , DROP ] )
+	_check_output( [IPTABLES, POLICY, OUTPUT , DROP ] )
 
-	# allow IKE and NAT-T
-	make_rule(ALLOW_IKE, INSERT)
-	make_rule(ALLOW_NAT_T, INSERT)
+	# allow IKE and NAT-T Inbound and Outbound
+	make_rule(ALLOW_IKE, INPUT, INSERT)
+	make_rule(ALLOW_IKE, OUTPUT, INSERT )
+	make_rule(ALLOW_NAT_T, INPUT, INSERT)
+	make_rule(ALLOW_NAT_T, OUTPUT, INSERT)
 
-	# allow either AH or ESP
+	# allow either AH or ESP inbound and outbound
 	if CHARM_CONFIG.get("ipsec_protocol") == "esp":
-		make_rule(ALLOW_ESP, INSERT)
-		make_rule( ALLOW_AH , DELETE )
-	else: 
-		make_rule(ALLOW_AH, INSERT )
-		make_rule( ALLOW_ESP, DELETE )
+		make_rule(ALLOW_ESP, INPUT, INSERT)
+		make_rule(ALLOW_AH , INPUT, DELETE )
+		make_rule(ALLOW_ESP, OUTPUT, INSERT)
+		make_rule(ALLOW_AH , OUTPUT, DELETE )
+	else:
+		make_rule(ALLOW_AH, INPUT, INSERT )
+		make_rule(ALLOW_ESP, INPUT, DELETE )
+		make_rule(ALLOW_AH, OUTPUT, INSERT )
+		make_rule(ALLOW_ESP, OUTPUT, DELETE )
 
-	# allow ssh
+
+	# allow ssh inbound and outbound 
 	if CHARM_CONFIG.get("allow_ssh"):
-		make_rule(ALLOW_SSH, APPEND)
+		make_rule(ALLOW_SSH, INPUT, APPEND)
+		make_rule(ALLOW_SSH, OUTPUT, APPEND)
 	else:
-		make_rule(ALLOW_SSH, DELETE )
+		make_rule(ALLOW_SSH, INPUT, DELETE )
+		make_rule(ALLOW_SSH, OUTPUT, DELETE )
 
 	
-	# all DHCP and DNS allowed
-	# from where ....!!?? 
-	make_rule(ALLOW_DNS, APPEND)
-	make_rule(ALLOW_DHCP, APPEND)
+	# all DHCP and DNS
+	make_rule(ALLOW_DNS, INPUT, APPEND)
+	make_rule(ALLOW_DNS, OUTPUT, APPEND)
+	make_rule(ALLOW_DHCP, INPUT, APPEND)
+	make_rule(ALLOW_DHCP, OUTPUT, APPEND)
 
 	
-	# here it gets a little more complicated
-	
-	# case 1: ALLOW ACCESS to 0.0.0.0/0
-	# anything initiated outbound will be allowed back in 
-	if CHARM_CONFIG.get("public_network_enabled"):
-
-		#make_rule(ALLOW_EST_CONN, APPEND)
-
+	# can we access the rest of the internet?
+	if CHARM_CONFIG.get("public_network_enabled") :
+		make_rule( ALLOW_EST_CONNS, APPEND )
 	else:
-		# NO VIRTUAL IP #
-		if not CHARM_CONFIG.get("virtual_ip_enabled"):
+		# apt
+		pass
 
-			# ALLOW INBOUND TRAFFIC FROM INTERNAL SUBNETS #
-			for subnet in CHARM_CONFIG.get('internal_network_subnets').split(',') :
-				if subnet :
-					rule = ['INPUT', '-s', subnet , '-j', 'ACCEPT']
-						if not rule_exists( rule ) :
-							make_rule( rule, INSERT )
 
-		# VIRTUAL IP #
-		else:
-			pass
+
+
+
+
+
+
+
 
 
 

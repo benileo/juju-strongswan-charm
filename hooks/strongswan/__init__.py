@@ -31,6 +31,7 @@ DROP 			= 	"DROP"
 INPUT 			= 	"INPUT"
 OUTPUT 			= 	"OUTPUT"
 FORWARD 		= 	"FORWARD"
+POLICY 			=	"--policy"
 NAT_TABLE 		= 	"nat"
 IPTABLES 		= 	"iptables"
 IPTABLES_SAVE 	= 	"iptables-save"
@@ -47,14 +48,17 @@ INSERT 			= 	'-I'
 APPEND 			= 	'-A'	
 DELETE 			= 	'-D'
 CHECK 			= 	'-C'
-ALLOW_IKE 		= 	[INPUT, '-p', UDP , '--dport' , IKE , '-j', ACCEPT ]
-ALLOW_NAT_T 	= 	[INPUT, '-p', UDP, '--dport', NAT_T , '-j', ACCEPT ]
-ALLOW_SSH 		= 	[INPUT, '-p',  TCP, '--dport', SSH, '-j' ACCEPT]
-ALLOW_AH 		=  	[INPUT, '-p', AH, '-j', ACCEPT ]
-ALLOW_ESP 		= 	[INPUT, '-p', ESP, '-j', ACCEPT ]
-ALLOW_EST_CONN 	= 	[INPUT, '-m', 'conntrack', '--ctstate', 'ESTABLISHED', '-j', ACCEPT ]
-ALLOW_DNS 		=	[INPUT, '-p', UDP, '--dport', DNS, '--sport', DNS, '-j', ACCEPT ]
-ALLOW_DHCP 		=	[INPUT, '-p', UDP, '--dport', DHCP,'--sport', DHCP, '-j', ACCEPT ]
+ALLOW_IKE 		= 	['-p', UDP , '--dport' , IKE , '-j', ACCEPT ]
+ALLOW_NAT_T 	= 	['-p', UDP, '--dport', NAT_T , '-j', ACCEPT ]
+ALLOW_SSH 		= 	['-p',  TCP, '--dport', SSH, '-j' ACCEPT]
+ALLOW_AH 		=  	['-p', AH, '-j', ACCEPT ]
+ALLOW_ESP 		= 	['-p', ESP, '-j', ACCEPT ]
+ALLOW_EST_CONN 	= 	['-m', 'conntrack', '--ctstate', 'ESTABLISHED,RELATED', '-j', ACCEPT ]
+ALLOW_DNS 		=	['-p', UDP, '--dport', DNS, '--sport', DNS, '-j', ACCEPT ]
+ALLOW_DHCP 		=	['-p', UDP, '--dport', DHCP,'--sport', DHCP, '-j', ACCEPT ]
+
+
+# iptables -A INPUT -m policy --pol ipsec --dir in -p tcp --dport 12345 -j ACCEPT
 
 
 # SYSTEM CONTROL
@@ -94,16 +98,17 @@ def _check_output( cmd , fatal=False, message=None ):
 	hookenv.log("{0} has completed. ".format(cmd) , level=hookenv.INFO )
 
 # if the rule does not already exist, make the rule.
-def make_rule(cmd, rule_type):
+def make_rule(cmd, chain, rule_type):
 	try:
+		cmd.insert( 0, chain )
 		cmd.insert( 0, CHECK )
 		cmd.insert( 0, IPTABLES )
 		sp.check_call( rule, stdout=sp.DEVNULL, stderr=sp.DEVNULL )
 	except sp.CalledProcessError:
 		if rule_type != DELETE :
-			cmd[1] = rule_type
+			cmd[2] = rule_type
 			_check_output(rule, fatal=False, message="Creating IPTables rule")
 	else:
 		if rule_type == DELETE :
-			cmd[1] = DELETE
+			cmd[2] = DELETE
 			_check_output(rule, fatal=False, message="Deleting IPTables rule")
