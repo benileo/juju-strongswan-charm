@@ -4,6 +4,8 @@ import re
 import subprocess as sp
 from charmhelpers.core import hookenv
 
+# TO DO make this more organized and consistent with the rest of the code
+
 # Make a copy of the /etc/hosts file
 def cp_hosts_file():
 	cmd = ['cp', '/etc/hosts', '/etc/hosts.original' ]

@@ -17,14 +17,13 @@ from strongswan.archive import (
 	install_strongswan,
 	install_pyOpenSSL
 )
-from strongswan import(
-	CHARM_CONFIG,
-	AUTH,
-	SOURCE
+from strongswan.constants import (
+	CONFIG
 )
 
+
 # If we are using x509 we will have to install other dependencies
-if AUTH == 'x509':
+if CONFIG.get("authentication_method") == 'x509':
 	try:
 		import OpenSSL
 	except ImportError:
@@ -39,6 +38,7 @@ if AUTH == 'x509':
 # sytem control
 # make copies of important config files
 def pre_install():
+	bob
 	configure_iptables()
 	cp_sysctl_file()
 	configure_sysctl()
@@ -48,19 +48,21 @@ def pre_install():
 
 # install strongswan
 def install():
-	if SOURCE == 'distro':
+	source = CONFIG.get("source")
+	if source == 'distro':
 		install_strongswan()
-	elif SOURCE == 'upstream':
+	elif source == 'upstream':
 		pass
 	else:
 		hookenv.log("Install Source does not exist", level=hookenv.ERROR )
 		raise
+		#TODO raise an exception class
 
 
 # some additional checks /etc/ipsec.d/
 # create Root CA if we are using certs
 def post_install():
-	if AUTH == 'x509':
+	if CONFIG.get("authentication_method") == 'x509':
 		create_ca_cert(CN="BeenswervingINC", L="Victoria", OU="Internet Security" )
 		create_host_cert( 'server', CN="BeenswervingINC", L="Victoria", OU="Internet Security")
 

@@ -89,7 +89,7 @@ def log(message, level=None):
     command += [message]
     subprocess.call(command)
     # little mod so I can see what is going on...!
-    print(message, file=sys.stdout)
+    print(message)
 
 
 class Serializable(UserDict):

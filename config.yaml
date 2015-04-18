@@ -22,7 +22,7 @@ options:
 
   authentication_method:
     type: string
-    default: "x509"
+    default: "secret"
     description: "Method of IPsec peer authentication"
 
   ipsec_protocol:
@@ -45,7 +45,7 @@ options:
     default: '10.10.10.0/24,'
     description: 'Comma seperated list of internal subnets we are providing access to'
 
-  public_network_enabled:
+  public_network:
     type: boolean
     default: True
     description: 'Will the security gateway provide access to the rest of the internet?'

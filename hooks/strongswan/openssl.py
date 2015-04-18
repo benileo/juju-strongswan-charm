@@ -3,7 +3,7 @@
 Generate CA certificate and host certificates using OpenSSL
 """
 
-from strongswan import (
+from strongswan.constants import (
 	IPSEC_D_PRIVATE,
 	IPSEC_D_CACERTS,
 	IPSEC_D_CERTS,
