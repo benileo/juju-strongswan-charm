@@ -2,17 +2,17 @@
 """
 IP Tables
 """
-from charmhelpers.core import (
-	hookenv
-)
-from strongswan import * 
+
+from charmhelpers.core import hookenv
+from strongswan.constants import * 
+from strongswan.util import make_rule, _check_call 
 
 
 # update the rule chains and then save the rules
 def configure_iptables():
 	_filter()
 	_nat()
-	_check_output([IPTABLES_SAVE], 
+	_check_call([IPTABLES_SAVE] , quiet=True,
 			message="iptables-save has failed in non-fatal mode")
 
 
@@ -20,11 +20,9 @@ def configure_iptables():
 # update filter chain
 def _filter():
 
-	# we are creating a SG, lets make it secure....
-	# set default policy to DROP for filter tables.
-	_check_output( [IPTABLES, POLICY, FORWARD , DROP ] )
-	_check_output( [IPTABLES, POLICY, INPUT , DROP ] )
-	_check_output( [IPTABLES, POLICY, OUTPUT , DROP ] )
+	# We should always have loopback available
+	make_rule(['-i', 'lo', '-j', ACCEPT], INPUT, INSERT)
+	make_rule(['-o', 'lo', '-j', ACCEPT], OUTPUT, INSERT)
 
 	# allow IKE and NAT-T Inbound and Outbound
 	make_rule(ALLOW_IKE, INPUT, INSERT)
@@ -33,7 +31,7 @@ def _filter():
 	make_rule(ALLOW_NAT_T, OUTPUT, INSERT)
 
 	# allow either AH or ESP inbound and outbound
-	if CHARM_CONFIG.get("ipsec_protocol") == "esp":
+	if CONFIG.get("ipsec_protocol") == "esp":
 		make_rule(ALLOW_ESP, INPUT, INSERT)
 		make_rule(ALLOW_AH , INPUT, DELETE )
 		make_rule(ALLOW_ESP, OUTPUT, INSERT)
@@ -44,39 +42,44 @@ def _filter():
 		make_rule(ALLOW_AH, OUTPUT, INSERT )
 		make_rule(ALLOW_ESP, OUTPUT, DELETE )
 
-
 	# allow ssh inbound and outbound 
-	if CHARM_CONFIG.get("allow_ssh"):
-		make_rule(ALLOW_SSH, INPUT, APPEND)
-		make_rule(ALLOW_SSH, OUTPUT, APPEND)
+	if CONFIG.get("allow_ssh"):
+		make_rule(ALLOW_SSH_IN, INPUT, APPEND)
+		make_rule(ALLOW_SSH_OUT, OUTPUT, APPEND)
 	else:
-		make_rule(ALLOW_SSH, INPUT, DELETE )
-		make_rule(ALLOW_SSH, OUTPUT, DELETE )
+		make_rule(ALLOW_SSH_IN, INPUT, DELETE )
+		make_rule(ALLOW_SSH_OUT, OUTPUT, DELETE )
 
-	
-	# all DHCP and DNS
-	make_rule(ALLOW_DNS, INPUT, APPEND)
-	make_rule(ALLOW_DNS, OUTPUT, APPEND)
+	# all DNS gets through the firewall
+	if not CONFIG.get("public_network"):
+		make_rule(ALLOW_DNS_UDP_IN, INPUT, APPEND)
+		make_rule(ALLOW_DNS_UDP_OUT, OUTPUT, APPEND)
+		make_rule(ALLOW_DNS_TCP_IN, INPUT, APPEND)
+		make_rule(ALLOW_DNS_TCP_OUT, OUTPUT, APPEND)
+
+	# DHCP 
 	make_rule(ALLOW_DHCP, INPUT, APPEND)
 	make_rule(ALLOW_DHCP, OUTPUT, APPEND)
 
-	
-	# can we access the rest of the internet?
-	if CHARM_CONFIG.get("public_network_enabled") :
-		make_rule( ALLOW_EST_CONNS, APPEND )
+	# allow all established outbound connections
+	# if NO, we must allow apt-ports for install and updates
+	if CONFIG.get("public_network"):
+		make_rule(ALLOW_EST_CONN_IN, INPUT, APPEND)
+		make_rule(ALLOW_EST_CONN_OUT, OUTPUT, APPEND)
+		make_rule(ALLOW_APT_IN, INPUT, DELETE)
+		make_rule(ALLOW_APT_OUT, OUTPUT, DELETE)
 	else:
-		# apt
-		pass
+		make_rule(ALLOW_EST_CONN_IN, INPUT, DELETE)
+		make_rule(ALLOW_EST_CONN_OUT, OUTPUT, DELETE)
+		make_rule(ALLOW_APT_IN, INPUT, APPEND)
+		make_rule(ALLOW_APT_OUT, OUTPUT, APPEND)
 
+	#set default policy to DROP for filter tables.
+	_check_call( [IPTABLES, POLICY, FORWARD , DROP ] )
+	_check_call( [IPTABLES, POLICY, INPUT , DROP ] )
+	_check_call( [IPTABLES, POLICY, OUTPUT , DROP ] )
 
-
-
-
-
-
-
-
-
+	return None
 
 
 def _nat():
