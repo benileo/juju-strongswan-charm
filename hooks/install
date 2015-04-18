@@ -1,70 +1,70 @@
 #!/usr/bin/env python3
 
-from charmhelpers.core import (
-	hookenv
-)
-from strongswan.sysctl import(
-	cp_sysctl_file,
-	configure_sysctl
-)
-from strongswan.iptables import(
-	configure_iptables
-)
-from strongswan.hosts import(
-	cp_hosts_file
-)
+from charmhelpers.core import hookenv
+from strongswan.sysctl import cp_sysctl_file, configure_sysctl
+from strongswan.iptables import configure_iptables
+from strongswan.hosts import cp_hosts_file, flush_hosts_file
+from strongswan.constants import CONFIG
+from strongswan.errors import InvalidSourceError
 from strongswan.archive import (
-	install_strongswan,
+	install_strongswan_archives,
+	install_strongswan_version,
+	install_strongswan_github,
 	install_pyOpenSSL
 )
-from strongswan.constants import (
-	CONFIG
-)
 
 
-# If we are using x509 we will have to install other dependencies
-if CONFIG.get("authentication_method") == 'x509':
-	try:
-		import OpenSSL
-	except ImportError:
-		install_pyOpenSSL()
-	from strongswan.openssl import(
-		create_ca_cert,
-		create_host_cert
-	)
 
-
-# setup firewall
-# sytem control
-# make copies of important config files
 def pre_install():
-	bob
+
+	# first, setup IPtables for IPsec
 	configure_iptables()
-	cp_sysctl_file()
+
+	# second, enable ip_forwarding
+	cp_sysctl_file()		
 	configure_sysctl()
-	cp_hosts_file()
+
+	# make a copy of other important config files (for reference)
+	cp_hosts_file()			
 	
 		
 
-# install strongswan
 def install():
 	source = CONFIG.get("source")
-	if source == 'distro':
-		install_strongswan()
-	elif source == 'upstream':
-		pass
+
+	# install strongswan from the archives #
+	if source == 'archives':
+		install_strongswan_archives()
+
+	# install from the github account, most advanced. #
+	elif source == 'github' :
+		install_strongswan_github()
+
+	# install strongswan from strongswan releases #
 	else:
-		hookenv.log("Install Source does not exist", level=hookenv.ERROR )
-		raise
-		#TODO raise an exception class
+		version = '5.3.1'
+		try:
+			install_strongswan_version(version)
+		except Exception as err:
+			hookenv.log(err , level=hookenv.ERROR )
+			raise InvalidSourceError("Strongswan install source is not valid.")	
 
 
-# some additional checks /etc/ipsec.d/
+# TODO: some additional checks /etc/ipsec.d/
 # create Root CA if we are using certs
 def post_install():
+	# TODO 
 	if CONFIG.get("authentication_method") == 'x509':
+		from strongswan.openssl import create_ca_cert, create_host_cert
+		# get certificate info -->
 		create_ca_cert(CN="BeenswervingINC", L="Victoria", OU="Internet Security" )
 		create_host_cert( 'server', CN="BeenswervingINC", L="Victoria", OU="Internet Security")
+
+
+
+# some cleanup
+def cleanup():
+	flush_hosts_file()
 
 
 
@@ -72,3 +72,4 @@ if __name__ == "__main__":
 	pre_install()
 	install()
 	post_install()
+	cleanup()

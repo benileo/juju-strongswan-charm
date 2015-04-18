@@ -11,7 +11,15 @@ from strongswan.constants import (
 	CA_KEY,
 	CA_CERT
 )
-from OpenSSL import crypto
+
+# make sure that we have installed necessary dependencies for pyOpenSSL
+from strongswan.archive import install_pyOpenSSL
+try:
+	from OpenSSL import crypto
+except ImportError : 
+	install_pyOpenSSL()
+	from OpenSSL import crypto	
+
 
 # Generate a CA root certificate and private key 
 # Writes private key to /etc/ipsec.d/private/caKey. 
