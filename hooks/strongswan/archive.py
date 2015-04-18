@@ -3,24 +3,13 @@
 File containing wrapper and helpers functions
 """
 
-import subprocess as sp
+from charmhelpers.core import hookenv
+from time import sleep
+from strongswan.hosts import update_hosts_file, flush_hosts_file, get_archive_ip_addrs
+from strongswan.constants import PYOPENSSL_DEPENDENCIES
+from strongswan.util import _check_call
 
-from charmhelpers.core import(
-	hookenv
-)
-from strongswan.hosts import(
-	update_hosts_file,
-	flush_hosts_file,
-	get_archive_ip_addrs
-)
-from time import (
-	sleep
-)
-from strongswan import (
-	PYOPENSSL_DEPENDENCIES,
-	CHARM_CONFIG,
-	_check_output
-)
+
 
 def install_pyOpenSSL():
 	hookenv.log("Installing PyOpenSSL Dependencies" , level=hookenv.INFO )
@@ -28,11 +17,17 @@ def install_pyOpenSSL():
 	cmd = ["apt-get" , "install", "-y", "-qq"]
 	cmd.extend(PYOPENSSL_DEPENDENCIES)
 	run_apt_command(cmd, 300)
-	_check_output( ["pip3", "install" , "pyOpenSSL"] , fatal=True, 
-		message="Installing pyOpenSSL into Python 3 installation" )
+	_check_call( ["pip3", "install" , "pyOpenSSL"] , 
+		fatal=True, 
+		message="Installing pyOpenSSL into Python 3 installation", 
+		quiet=True
+	)
+
 
 def strongswan_pkgs():
 	return ["strongswan"]
+
+
 
 
 # installs the strongswan packages from the archives.
@@ -45,9 +40,10 @@ def install_strongswan():
 	flush_hosts_file()
 	
 
+
+
 # runs apt-get command handles dpkg locks and archive server unavailability
 def run_apt_command(cmd, timeout_interval ):
-	hookenv.log("Calling {0}".format(cmd) , level=hookenv.INFO )
 
 	apt_retry_count = 0
 	apt_retry_max = 0
@@ -58,8 +54,7 @@ def run_apt_command(cmd, timeout_interval ):
 
 	while result is None or result == dpkg_lock_error :
 		try:
-			result = sp.check_call( cmd, timeout=timeout_interval )
-
+			result = _check_call( cmd, timeout=timeout_interval, quiet=True, fatal=True )
 		except sp.CalledProcessError as e:
 			apt_retry_count += 1
 			if apt_retry_count > apt_retry_max : 
@@ -83,6 +78,3 @@ def run_apt_command(cmd, timeout_interval ):
 				_ip = dns_entries.pop()
 				update_hosts_file( _ip , "archive.ubuntu.com" )
 				update_hosts_file( _ip , "security.ubuntu.com" )
-
-	hookenv.log("{0} has completed. ".format(cmd) , level=hookenv.INFO )
-
