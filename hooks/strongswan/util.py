@@ -1,11 +1,24 @@
 
 import subprocess as sp
 from re import findall
-from time import time
+from time import time, sleep
 from os.path import getmtime
+from urllib.request import urlretrieve
+from hashlib import md5
 from charmhelpers.core import hookenv
-from strongswan.constants import CHECK, IPTABLES, DELETE
-from strongswan.errors import DnsError, NetworkError, AptLockError
+from strongswan.constants import (
+	CHECK, 
+	IPTABLES, 
+	DELETE, 
+	DL_BASE_URL,
+	CONFIG
+)
+from strongswan.errors import (
+	DnsError, 
+	NetworkError, 
+	AptLockError, 
+	InvalidHashError
+)
 
 
 # wrapper to check_call
@@ -114,6 +127,8 @@ def cp_hosts_file():
 # If the host file has been modified in the past 24 hours
 # Comment out entries for achive.ubuntu.com & security.ubuntu.com
 def flush_hosts_file():
+	hookenv.log("/etc/hosts last modifed: ".format(getmtime('/etc/hosts')) )
+	hookenv.log("current time: ".format( time() ) )
 	if  ( ( time() - getmtime('/etc/hosts') ) / 86400 ) < 1.0 :
 		update_hosts_file( '#1.2.3.4', 'archive.ubuntu.com' )
 		update_hosts_file( '#1.2.3.4', 'security.ubuntu.com' )
@@ -157,3 +172,64 @@ def get_archive_ip_addrs():
 			if i[0] == 'archive.ubuntu.com.' :
 				ip_list.append(i[4])
 	return ip_list
+
+
+# downloads the tarball and checks the hash
+def get_tarball( version ):
+
+		# build urls
+	if version == 'latest' :
+		tarball = "strongswan.tar.gz"
+		md5_hash_file = "strongswan.tar.gz.md5"
+	else:
+		tarball = "strongswan-{}.tar.gz".format(version)
+		md5_hash_file = "strongswan-{}.tar.gz.md5".format(version)
+
+	try:
+		hookenv.log("Retrieving {}{}".format(DL_BASE_URL, tarball), 
+			level=hookenv.INFO)
+		urlretrieve( "{}{}".format(DL_BASE_URL, tarball ),
+			"/tmp/{}".format(tarball) 
+		)
+		urlretrieve( "{}{}".format(DL_BASE_URL, md5_hash_file ),
+			"/tmp/{}".format(md5_hash_file)
+		)
+	except Exception as err:
+		hookenv.log(err)
+		raise
+
+	with open("/tmp/{}".format(md5_hash_file), 'r' ) as fd :
+		original_hash = fd.read().split()[0]
+	with open("/tmp/{}".format(tarball), 'rb' ) as fd :
+		tarball_hash = md5( fd.read() ).hexdigest()
+	if original_hash != tarball_hash :
+		raise InvalidHashError("Invalid hash of {}".format(tarball) )
+
+	return "/tmp/{}".format(tarball)
+
+
+
+def configure_install(base_dir):
+
+	cmd  = 'cd {}; '.format(base_dir)
+	cmd += ' ./configure --prefix=/usr --sysconfdir=/etc'
+
+	added_items = ["--prefix=/usr", "--sysconfdir=/etc"]
+
+	# In particular EAP-RADIUS,, not sure exactly what will go here			
+	# TODO depending on type of authentication we may have to append some extra
+	# should we have a sanity check on what the valid config options are? or
+	# trust that the sys admin knows what they are doing...!
+	
+
+	# add the items in the config if they are not already added.
+	for item in CONFIG.get("config_options").split(',') :
+		if item:
+			if item not in added_items:
+				cmd += ' {}'.format(item)
+				added_items.append(item)
+
+	_check_call(cmd, shell=True, fatal=True, quiet=True )
+
+
+

@@ -5,6 +5,11 @@ options:
     default: 'latest'
     description: 'Source of the strongswan installation'
 
+  config_options:
+    type: string
+    default: '--enable-mysql,--enable-nm'
+    description: 'Comma seperated list of configuration parameters when compiling. See https://wiki.strongswan.org/projects/strongswan/wiki/Autoconf'
+
   ip_forward:
     type: boolean
     default: True
@@ -50,11 +55,7 @@ options:
     default: True
     description: 'Will the security gateway provide access to the rest of the internet?'
 
-  # do actions need ssh juju?
-  allow_ssh:
-    type: boolean
-    default: True
-    description: 'Will we allow ssh to the machine, turn this off after the machine has been set up.'
+  
 
   
 

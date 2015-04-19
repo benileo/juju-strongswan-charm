@@ -1,15 +1,14 @@
 
 
 from charmhelpers.core import hookenv
-from time import sleep
-from urllib.request import urlretrieve
-from hashlib import md5
-from strongswan.util import _check_call, run_apt_command
-from strongswan.errors import InvalidHashError
+from strongswan.util import (
+	_check_call, 
+	run_apt_command, 
+	get_tarball, 
+	configure_install
+)
 from strongswan.constants import (
 	PYOPENSSL_DEPENDENCIES, 
-	CONFIG,
-	DL_BASE_URL,
 	BUILD_DEPENDENCIES
 )
 
@@ -35,61 +34,15 @@ def install_strongswan_version( version ):
 	#install dependencies
 	run_apt_command([], apt_cmd='update' )
 	run_apt_command(BUILD_DEPENDENCIES, apt_cmd='install', timeout=300 )
-
-
-	# build urls
-	if version == 'latest' :
-		tarball = "strongswan.tar.gz"
-		md5_hash_file = "strongswan.tar.gz.md5"
-	else:
-		tarball = "strongswan-{}.tar.gz".format(version)
-		md5_hash_file = "strongswan-{}.tar.gz.md5".format(version)
 	
-
-	#retrieve urls
-	try:
-		hookenv.log("Retrieving {}{}".format(DL_BASE_URL, tarball), 
-			level=hookenv.INFO)
-		urlretrieve( "{}{}".format(DL_BASE_URL, tarball ),
-			"/tmp/{}".format(tarball) 
-		)
-		urlretrieve( "{}{}".format(DL_BASE_URL, md5_hash_file ),
-			"/tmp/{}".format(md5_hash_file)
-		)
-	except Exception as err:
-		hookenv.log(err)
-		raise
-
-
-	#check hash
-	with open("/tmp/{}".format(md5_hash_file), 'r' ) as fd :
-		original_hash = fd.read().split()[0]
-	with open("/tmp/{}".format(tarball), 'rb' ) as fd :
-		tarball_hash = md5( fd.read() ).hexdigest()
-	if original_hash != tarball_hash :
-		raise InvalidHashError("Invalid hash of {}".format(tarball) )
-	
-	#unpack
-	cmd = [
-		"tar", "-xzf",
-		"/tmp/{}".format(tarball),
-		"--directory", "/tmp/"
-	]
-	_check_call(cmd, fatal=True)
+	#dl and unpack tarball into tmp directory
+	_check_call(["tar", "-xzf", get_tarball(version),
+		"--directory", "/tmp/" ], fatal=True )
 
 	#configure
-	# base_dir = '/tmp/strongswan/' if version == 'latest' else '/tmp/strongswan-{}/'.format(version)
-	# this is not ideal.... but if we want 'latest'.....
-	base_dir = _check_call( "ls -d /tmp/*strongswan*/", shell=True, 
-		check_output=True ).decode('utf-8').split('\n')[0]
-	cmd  = 	(
-		'cd {}; '
-		'./configure '
-		'--prefix=/usr '
-		'--sysconfdir=/etc'.format(base_dir)
-	)
-	_check_call(cmd, shell=True, fatal=True, quiet=True )
-
+	base_dir = (_check_call( "ls -d /tmp/*strongswan*/", shell=True, 
+		check_output=True ).decode('utf-8').split('\n')[0] ) if version == 'latest' else '/tmp/strongswan-{}/'.format(version)
+	configure_install(base_dir)
 
 	#install
 	_check_call( 'cd {}; make'.format(base_dir) , shell=True, 
@@ -111,10 +64,6 @@ def install_strongswan_github():
 # Installs the PyOpenssl Package into Python 3
 def install_pyOpenSSL():
 	hookenv.log("Installing PyOpenSSL Dependencies" , level=hookenv.INFO )
-	
-	#update apt if not done already
-	if CONFIG.get("source") != "archives" :
-		run_apt_command([], apt_cmd='update')
 
 	#install dependencies
 	run_apt_command( PYOPENSSL_DEPENDENCIES, apt_cmd='install', timeout=300 )
