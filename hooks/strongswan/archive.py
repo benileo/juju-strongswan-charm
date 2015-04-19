@@ -1,5 +1,5 @@
 
-from subprocess import check_output
+
 from charmhelpers.core import hookenv
 from time import sleep
 from urllib.request import urlretrieve
@@ -29,7 +29,7 @@ def install_strongswan_archives():
 	
 # installs strongswan from the most recent strongswan tarball
 def install_strongswan_version( version ):
-	hookenv.log("Installing Strongswan from http://download.strongswan.org\n\tVersion:\n{}".format( 
+	hookenv.log("Installing Strongswan from http://download.strongswan.org\n\tVersion:\t{}".format( 
 		version ) , level=hookenv.INFO )
 
 	#install dependencies
@@ -80,7 +80,8 @@ def install_strongswan_version( version ):
 	#configure
 	# base_dir = '/tmp/strongswan/' if version == 'latest' else '/tmp/strongswan-{}/'.format(version)
 	# this is not ideal.... but if we want 'latest'.....
-	base_dir = check_output( "ls -d /tmp/*strongswan*/", shell=True ).decode('utf-8').split('\n')[0]
+	base_dir = _check_call( "ls -d /tmp/*strongswan*/", shell=True, 
+		check_output=True ).decode('utf-8').split('\n')[0]
 	cmd  = 	(
 		'cd {}; '
 		'./configure '
@@ -91,8 +92,8 @@ def install_strongswan_version( version ):
 
 
 	#install
-	_check_call( 'cd {}; make'.format(base_dir) , shell=True, fatal=True, quiet=True )
-	_check_call( 'cd {}; make install'.format(base_dir), shell=True, fatal=True )
+	_check_call( 'cd {}; make'.format(base_dir) , shell=True, fatal=True, quiet=True, timeout=120 )
+	_check_call( 'cd {}; make install'.format(base_dir), shell=True, fatal=True, timeout=120 )
 
 
 
