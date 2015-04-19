@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 from charmhelpers.core import hookenv
 
@@ -12,6 +11,13 @@ PYOPENSSL_DEPENDENCIES = [
 	"libffi-dev",
 	"python-dev",
 	"python3-pip"
+]
+
+# if we are building from a tarball we will need #
+BUILD_DEPENDENCIES = [
+	"libgmp3-dev",
+	"gcc",
+	"make"
 ]
 
 # SYSTEM CONTROL #
@@ -93,3 +99,8 @@ ALLOW_DNS_TCP_IN	=	[
 	'-m', 'conntrack', '--ctstate', 'ESTABLISHED,RELATED',
 	'-j', ACCEPT
 ]
+
+
+
+# install urls
+DL_BASE_URL = "http://download.strongswan.org/"

@@ -2,7 +2,7 @@ options:
 
   source:
     type: string
-    default: 'archives'
+    default: 'latest'
     description: 'Source of the strongswan installation'
 
   ip_forward:

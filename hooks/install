@@ -43,12 +43,7 @@ def install():
 
 	# install strongswan from strongswan releases #
 	else:
-		version = '5.2.0'
-		try:
-			install_strongswan_version(version)
-		except Exception as err:
-			hookenv.log(err , level=hookenv.ERROR )
-			raise InvalidSourceError("Strongswan install source is not valid.")	
+		install_strongswan_version( CONFIG.get("source") )	
 
 
 # TODO: some additional checks /etc/ipsec.d/
