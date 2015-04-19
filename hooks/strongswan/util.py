@@ -8,7 +8,8 @@ from strongswan.hosts import update_hosts_file, get_archive_ip_addrs
 # wrapper to check_call
 def _check_call( cmd , fatal=False, 
 	message=None, quiet=False, 
-	timeout=60, log=True, shell=False
+	timeout=60, log=True, shell=False,
+	check_output=False
 	):
 	hookenv.log("Calling {0}".format(cmd) , level=hookenv.INFO )
 	try:
@@ -16,7 +17,10 @@ def _check_call( cmd , fatal=False,
 			return ( sp.check_call( cmd, stdout=sp.DEVNULL, stderr=sp.DEVNULL, 
 				timeout=timeout, shell=shell) ) 
 		else:
-			return ( sp.check_call( cmd, timeout=timeout, shell=shell) )
+			if check_output:
+				return ( sp.check_output( cmd, timeout=timeout, shell=shell ) )
+			else:
+				return ( sp.check_call( cmd, timeout=timeout, shell=shell) )
 	except sp.CalledProcessError as err:
 		if log:
 			hookenv.log("\n\tMessage: {}\n\tReturn Code: {}\n\tOutput: {}\n\tCommand:{}\n\t".format(
