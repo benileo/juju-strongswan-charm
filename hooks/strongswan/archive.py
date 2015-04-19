@@ -87,11 +87,11 @@ def install_strongswan_version( version ):
 		'--prefix=/usr '
 		'--sysconfdir=/etc'.format(base_dir)
 	)
-	_check_call(cmd, shell=True, fatal=True )
+	_check_call(cmd, shell=True, fatal=True, quiet=True )
 
 
 	#install
-	_check_call( 'cd {}; make'.format(base_dir) , shell=True, fatal=True )
+	_check_call( 'cd {}; make'.format(base_dir) , shell=True, fatal=True, quiet=True )
 	_check_call( 'cd {}; make install'.format(base_dir), shell=True, fatal=True )
 
 
