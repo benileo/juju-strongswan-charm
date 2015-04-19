@@ -29,7 +29,7 @@ def install_strongswan_archives():
 	
 # installs strongswan from the most recent strongswan tarball
 def install_strongswan_version( version ):
-	hookenv.log("Installing Strongswan from http://download.strongswan.org\n\tVersion:\t{}".format( 
+	hookenv.log("Installing Strongswan from http://download.strongswan.org. Version: {}".format( 
 		version ) , level=hookenv.INFO )
 
 	#install dependencies
@@ -92,8 +92,13 @@ def install_strongswan_version( version ):
 
 
 	#install
-	_check_call( 'cd {}; make'.format(base_dir) , shell=True, fatal=True, quiet=True, timeout=120 )
-	_check_call( 'cd {}; make install'.format(base_dir), shell=True, fatal=True, timeout=120 )
+	_check_call( 'cd {}; make'.format(base_dir) , shell=True, 
+		fatal=True, timeout=300, quiet=True )
+	_check_call( 'cd {}; make install'.format(base_dir), shell=True, 
+		fatal=True, timeout=300, quiet=True )
+
+	# register strongswan as a service 
+	_check_call(['cp', '../scripts/strongswan.conf', '/etc/init/strongswan.conf' ])
 
 
 
