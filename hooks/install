@@ -16,6 +16,7 @@ from strongswan.archive import (
 
 
 def pre_install():
+	exit(1)
 
 	# first, setup IPtables for IPsec
 	configure_iptables()
@@ -42,7 +43,7 @@ def install():
 
 	# install strongswan from strongswan releases #
 	else:
-		version = '5.3.1'
+		version = '5.2.0'
 		try:
 			install_strongswan_version(version)
 		except Exception as err:
