@@ -3,7 +3,7 @@
 from charmhelpers.core import hookenv
 from strongswan.sysctl import cp_sysctl_file, configure_sysctl
 from strongswan.iptables import configure_iptables
-from strongswan.hosts import cp_hosts_file, flush_hosts_file
+from strongswan.util import cp_hosts_file, flush_hosts_file
 from strongswan.constants import CONFIG
 from strongswan.errors import InvalidSourceError
 from strongswan.archive import (

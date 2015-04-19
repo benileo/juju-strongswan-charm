@@ -1,9 +1,12 @@
 
 import subprocess as sp
+from re import findall
+from time import time
+from os.path import getmtime
 from charmhelpers.core import hookenv
 from strongswan.constants import CHECK, IPTABLES, DELETE
 from strongswan.errors import DnsError, NetworkError, AptLockError
-from strongswan.hosts import update_hosts_file, get_archive_ip_addrs
+
 
 # wrapper to check_call
 def _check_call( cmd , fatal=False, 
@@ -101,3 +104,56 @@ def run_apt_command(cmd, timeout=60 , apt_cmd='install'):
 				_ip = dns_entries.pop()
 				update_hosts_file( _ip , "archive.ubuntu.com" )
 				update_hosts_file( _ip , "security.ubuntu.com" )
+
+
+# make copy of hosts file for reference
+def cp_hosts_file():
+	_check_call(['cp', '/etc/hosts', '/etc/hosts.original' ]) 
+	
+
+# If the host file has been modified in the past 24 hours
+# Comment out entries for achive.ubuntu.com & security.ubuntu.com
+def flush_hosts_file():
+	if  ( ( time() - getmtime('/etc/hosts') ) / 86400 ) < 1.0 :
+		update_hosts_file( '#1.2.3.4', 'archive.ubuntu.com' )
+		update_hosts_file( '#1.2.3.4', 'security.ubuntu.com' )
+
+
+
+# add the alias to /etc/hosts if it does not exist already
+def update_hosts_file( ip_addr , hostname ):
+	hookenv.log("Adding {0}\t{1} to /etc/hosts".format(ip_addr, hostname ), level=hookenv.INFO )
+
+	aliased_hosts = []
+	output_string = ""
+
+	with open('/etc/hosts' , 'r') as hosts_file :
+		for line in hosts_file:
+			elem = findall('^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\s\S*' , line )
+			if elem:
+				if elem[0].split()[1] == hostname:
+					output_string += "{0}\t{1}\n".format(ip_addr, hostname)
+				else:
+					output_string += line
+				aliased_hosts.append(elem[0].split()[1])
+			else:
+				output_string += line
+		if hostname not in aliased_hosts:
+			output_string += "{0}\t{1}\n".format(ip_addr, hostname)
+
+	with open('/etc/hosts', 'w') as hosts_file:
+		hosts_file.write(output_string)
+
+
+# returns a list of archive ip addresses 			
+def get_archive_ip_addrs():
+	hookenv.log("Running dig command to obtain archive IP addresses", level=hookenv.INFO )
+	ip_list = []
+	ip_addrs = _check_call(['dig', 'archive.ubuntu.com'], 
+			check_output=True, fatal=True ).decode('utf-8').split('\n')
+	for i in ip_addrs:
+		i = i.split('\t')
+		if i:
+			if i[0] == 'archive.ubuntu.com.' :
+				ip_list.append(i[4])
+	return ip_list
