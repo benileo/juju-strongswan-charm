@@ -1,7 +1,7 @@
 
 # Overview
 
-This charm provides [strongswan](http://www.strongswan.org). 
+This charm provides [StrongSwan](http://www.strongswan.org).  
 
 
 # Usage
@@ -17,9 +17,6 @@ Here is how you config:
 
 # Contact Information
 
-- [Strongswan Wiki] (https://wiki.strongswan.org)
-- [Strongswan Releases] (http://downloads.strongswan.org)
+- [Strongswan Wiki](https://wiki.strongswan.org)
+- [Strongswan Releases](http://downloads.strongswan.org)
 - Contact Ben Irving (jammin.irving@gmail.com) for bugs or suggestions.
-=======
-# juju-strongswan-charm
-Juju charm for StrongSwan
