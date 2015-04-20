@@ -1,43 +1,25 @@
-THIS README IS THE TEMPLATE FROM THE CHARM STORE. 
-FOCUSSING ON THE CODE RIGHT NOW. 
-WHEN I SUBMIT THIS CHARM TO THE STORE THIS WILL BE ON POINT. 
+
 # Overview
 
-Describe the intended usage of this charm and anything unique about how this charm relates to others here.
+This charm provides [strongswan](http://www.strongswan.org). 
 
-This README will be displayed in the Charm Store, it should be either Markdown or RST. Ideal READMEs include instructions on how to use the charm, expected usage, and charm features that your audience might be interested in. For an example of a well written README check out Hadoop: http://jujucharms.com/charms/precise/hadoop
-
-Use this as a Markdown reference if you need help with the formatting of this README: http://askubuntu.com/editing-help
-
-This charm provides [strongswan](http://www.strongswan.org). Add a description here of what the service itself actually does.
-
-Also remember to check the [icon guidelines](https://juju.ubuntu.com/docs/authors-charm-icon.html) so that your charm looks good in the Juju GUI.
 
 # Usage
 
 Step by step instructions on using the charm:
 
-    juju deploy strongswan
+    juju deploy 
 
-
-If the charm has any recommendations for running at scale, outline them in examples here. For example if you have a memcached relation that improves performance, mention it here.
-
-
-This not only helps users but gives people a place to start if they want to help you add features to your charm.
 
 # Configuration
 
-The configuration options will be listed on the charm store, however If you're making assumptions or opinionated decisions in the charm (like setting a default administrator password), you should detail that here so the user knows how to change it immediately, etc.
+Here is how you config:
 
 # Contact Information
 
-Though this will be listed in the charm store itself don't assume a user will know that, so include that information here:
-
-
-- Upstream website
-- Upstream bug tracker
-- Upstream mailing list or contact information
-- Feel free to add things if it's useful for users
+- [Strongswan Wiki] (https://wiki.strongswan.org)
+- [Strongswan Releases] (http://downloads.strongswan.org)
+- Contact Ben Irving (jammin.irving@gmail.com) for bugs or suggestions.
 =======
 # juju-strongswan-charm
 Juju charm for StrongSwan
