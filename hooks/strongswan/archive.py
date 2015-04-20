@@ -1,5 +1,4 @@
 
-
 from charmhelpers.core import hookenv
 from strongswan.util import (
 	_check_call, 

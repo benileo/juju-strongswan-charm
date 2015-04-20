@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+
+
+
+if __name__ == '__main__':
+	import sys
+	print("PATH: ", sys.path )
+
+	sys.path.append("../hooks")
+
+	from charmhelpers.core import hookenv
+
+
+	hookenv.log("ajdfjaoisfjoaiwjeoijasdjfsajf35345832409583920485902348502")

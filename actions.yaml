@@ -1,0 +1,10 @@
+# actions.yaml
+
+
+generate_ca_cert:
+  description: "Generate a Root Certificate and Key"
+  params:
+    rdns:
+      type: string
+      description: "Comma seperated list of rdns for certificate generation"
+  
