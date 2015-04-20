@@ -46,15 +46,19 @@ def install():
 		install_strongswan_version( CONFIG.get("source") )	
 
 
-# TODO: some additional checks /etc/ipsec.d/
-# create Root CA if we are using certs
+
 def post_install():
-	# TODO 
-	if CONFIG.get("authentication_method") == 'x509':
-		from strongswan.openssl import create_ca_cert, create_host_cert
-		# get certificate info -->
-		create_ca_cert(CN="BeenswervingINC", L="Victoria", OU="Internet Security" )
-		create_host_cert( 'server', CN="BeenswervingINC", L="Victoria", OU="Internet Security")
+	auth_method = CONFIG.get("auth_method")
+
+	# install pyOPenSSL and dependencies if we are using x509s
+	if ( auth_method == 'x509' or auth_method == 'rsa' ):
+		try:
+			from OpenSSL import crypto 
+		except ImportError:
+			install_pyOpenSSL()
+
+
+		
 
 
 

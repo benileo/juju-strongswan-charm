@@ -2,13 +2,13 @@ options:
 
   source:
     type: string
-    default: 'latest'
+    default: 'archives'
     description: 'Source of the strongswan installation'
 
   config_options:
     type: string
-    default: '--enable-mysql,--enable-nm'
-    description: 'Comma seperated list of configuration parameters when compiling. See https://wiki.strongswan.org/projects/strongswan/wiki/Autoconf'
+    default: ''
+    description: 'Comma seperated list of configuration parameters when compiling.'
 
   ip_forward:
     type: boolean
@@ -17,17 +17,17 @@ options:
 
   ip6_forward:
     type: boolean
-    default: False
-    description: "IPv6 traffic forwarding."
+    default: True
+    description: "IPv6 traffic forwarding"
 
   ike_version:
     type: int
     default:  2
     description: "IKE Version"
 
-  authentication_method:
+  auth_method:
     type: string
-    default: "secret"
+    default: 'rsa'
     description: "Method of IPsec peer authentication"
 
   ipsec_protocol:
@@ -47,28 +47,10 @@ options:
 
   private_subnets:
     type: string
-    default: '10.10.10.0/24,'
+    default: ''
     description: 'Comma seperated list of internal subnets we are providing access to'
 
   public_network:
     type: boolean
     default: True
     description: 'Will the security gateway provide access to the rest of the internet?'
-
-  
-
-  
-
-  # this is a major work in progress....
-  # vpn_type:
-  #   type: int
-  #   default: 1
-  #   description: "the default vpn type is rw--internal-"
-
-  # specify where to build the source
-  # source
-  #   type: 'string'
-  #   
-
-
-
