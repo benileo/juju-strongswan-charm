@@ -13,7 +13,7 @@ Step by step instructions on using the charm:
 
 # Configuration
 
-Here is how you config:
+[Configuration Options](https://wiki.strongswan.org/projects/strongswan/wiki/Autoconf)
 
 # Contact Information
 
