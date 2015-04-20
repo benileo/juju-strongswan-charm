@@ -43,12 +43,8 @@ def _filter():
 		make_rule(ALLOW_ESP, OUTPUT, DELETE )
 
 	# allow ssh inbound and outbound 
-	if CONFIG.get("allow_ssh"):
-		make_rule(ALLOW_SSH_IN, INPUT, APPEND)
-		make_rule(ALLOW_SSH_OUT, OUTPUT, APPEND)
-	else:
-		make_rule(ALLOW_SSH_IN, INPUT, DELETE )
-		make_rule(ALLOW_SSH_OUT, OUTPUT, DELETE )
+	make_rule(ALLOW_SSH_IN, INPUT, APPEND)
+	make_rule(ALLOW_SSH_OUT, OUTPUT, APPEND)
 
 	# all DNS gets through the firewall
 	if not CONFIG.get("public_network"):
