@@ -8,7 +8,7 @@ This charm provides [StrongSwan](http://www.strongswan.org).
 
 Step by step instructions on using the charm:
 
-    juju deploy 
+    juju deploy cs:~jammin-irving/trusty/strongswan
 
 
 # Configuration
