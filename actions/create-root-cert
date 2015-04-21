@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+
+# This will be mandatory for all actions if you want access to the strongswan lib code
+import sys
+sys.path.insert(0, "./hooks" )
+
+# standard imports 
+from charmhelpers.core import hookenv
+from strongswan.openssl import generate_ca
+
+
+def _f1():
+	hookenv.log("Action has been called!!!!")
+
+
+
+
+
+if __name__ == '__main__':
+	_f1()
+	
