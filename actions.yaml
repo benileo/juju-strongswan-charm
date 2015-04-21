@@ -3,3 +3,8 @@
 
 create-root-cert:
   description: "Generate a Root Certificate and Key"
+
+
+create-host-cert:
+  description: "Returns a host Certificate signed by the CA"
+
