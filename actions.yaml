@@ -4,12 +4,12 @@
 create-root-cert:
   description: "Generate a Root CA Certificate"
   params:
-  	
-  	overwrite:
-  	  type: boolean
-  	  description: "Overwrite Existing Root CA?"
-  	  default: false
-    
+  
+    overwrite:
+      type: boolean
+      description: "Overwrite Existing Root CA?"
+      default: false
+
     subject:
       type: object
       description: "Relative Distinguished Names (RDNs)"
