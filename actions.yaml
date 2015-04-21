@@ -1,6 +1,9 @@
 # actions.yaml
 
 
+
+# Action to create the Top Level Root Certificate #
+
 create-root-cert:
   description: "Generate a Root CA Certificate"
   params:
@@ -16,77 +19,41 @@ create-root-cert:
       properties:
 
         # Currently Supported by PyOpenSSL
-        CN:
+
+        cn:
           type: string
           description: "Common Name"
-        DC:
+        dc:
           type: string
           description: "Domain Component"
-        ST:
+        st:
           type: string
           description: "State or Province"
-        L:
+        l:
           type: string
           description: "Locality or Town"
-        O:
+        o:
           type: string
           description: "Organization"
-        OU:
+        ou:
           type: string
           description: "Organizational Unit"
-        SN:
+        sn:
           type: string
           description: "Serial Number"
-        UID:
+        uid:
           type: string
           description: "User ID"
 
         # TODO extensions
-
-        # Currently not supported by PyOpenSSL, supported by strongswan
-        # ND:
-        #   type: string
-        #   description: "NameDistinguisher, used with CN"
-        # N:
-        #   type: string
-        #   description: "Name"
-        # G:
-        #   type: string
-        #   description: "Given Name"
-        # S:
-        #   type: string
-        #   description: "Surname"
-        # I:
-        #   type: string
-        #   description: "Initials"
-        # T:
-        #   type: string
-        #   description: "Personal Title"
-        # E:
-        #   type: string
-        #   description: "Email Address"
-        # D:
-        #   type: string
-        #   description: "Description"
-        # ID:
-        #   type: string
-        #   description: "X.500 Unique Identifier"
-        
-        # UN:
-        #   type: string
-        #   description: "Unstructured Name"
-        # UA:
-        #   type: string
-        #   description: "Unstructured Address"
-        # EN:
-        #   type: string
-        #   description: "Employee Number"
-
-  required: ["subject.CN"]
+  required: ["subject.cn"]
 
   additionalProperties: false     
 
 
+
+
+# Action to create or host or a user certificate #
 create-host-cert:
   description: "Returns a host Certificate signed by the CA"
 
