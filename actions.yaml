@@ -2,7 +2,89 @@
 
 
 create-root-cert:
-  description: "Generate a Root Certificate and Key"
+  description: "Generate a Root CA Certificate"
+  params:
+  	
+  	overwrite:
+  	  type: boolean
+  	  description: "Overwrite Existing Root CA?"
+  	  default: false
+    
+    subject:
+      type: object
+      description: "Relative Distinguished Names (RDNs)"
+      properties:
+
+        # Currently Supported by PyOpenSSL
+        CN:
+          type: string
+          description: "Common Name"
+        DC:
+          type: string
+          description: "Domain Component"
+        ST:
+          type: string
+          description: "State or Province"
+        L:
+          type: string
+          description: "Locality or Town"
+        O:
+          type: string
+          description: "Organization"
+        OU:
+          type: string
+          description: "Organizational Unit"
+        SN:
+          type: string
+          description: "Serial Number"
+        UID:
+          type: string
+          description: "User ID"
+
+        # TODO extensions
+
+        # Currently not supported by PyOpenSSL, supported by strongswan
+        # ND:
+        #   type: string
+        #   description: "NameDistinguisher, used with CN"
+        # N:
+        #   type: string
+        #   description: "Name"
+        # G:
+        #   type: string
+        #   description: "Given Name"
+        # S:
+        #   type: string
+        #   description: "Surname"
+        # I:
+        #   type: string
+        #   description: "Initials"
+        # T:
+        #   type: string
+        #   description: "Personal Title"
+        # E:
+        #   type: string
+        #   description: "Email Address"
+        # D:
+        #   type: string
+        #   description: "Description"
+        # ID:
+        #   type: string
+        #   description: "X.500 Unique Identifier"
+        
+        # UN:
+        #   type: string
+        #   description: "Unstructured Name"
+        # UA:
+        #   type: string
+        #   description: "Unstructured Address"
+        # EN:
+        #   type: string
+        #   description: "Employee Number"
+
+  required: ["subject.CN"]
+
+  additionalProperties: false     
 
 
 create-host-cert:
