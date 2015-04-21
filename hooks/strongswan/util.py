@@ -129,7 +129,7 @@ def cp_hosts_file():
 def flush_hosts_file():
 	hookenv.log("/etc/hosts last modifed: ".format(getmtime('/etc/hosts')) )
 	hookenv.log("current time: ".format( time() ) )
-	if  ( ( time() - getmtime('/etc/hosts') ) / 86400 ) < 1.0 :
+	if  ( ( time() - getmtime('/etc/hosts') ) ) < 86400 :
 		update_hosts_file( '#1.2.3.4', 'archive.ubuntu.com' )
 		update_hosts_file( '#1.2.3.4', 'security.ubuntu.com' )
 
