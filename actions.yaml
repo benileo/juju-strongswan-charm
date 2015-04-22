@@ -46,6 +46,7 @@ create-root-cert:
           description: "User ID"
 
         # TODO extensions
+
   required: ["subject.cn"]
 
   additionalProperties: false     
@@ -57,3 +58,11 @@ create-root-cert:
 create-host-cert:
   description: "Returns a host Certificate signed by the CA"
 
+
+
+
+restart:
+  description: "Restarts the StrongSWan service"
+
+
+  
