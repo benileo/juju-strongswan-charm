@@ -13,13 +13,22 @@ create-root-cert:
       description: "Overwrite Existing Root CA?"
       default: false
 
+    lifetime:
+      type: string
+      description: "How long is the CA valid for?"
+      default: "10y"
+
+    keysize:
+      type: integer
+      description: "Key Size?"
+      default: 4096
+
     subject:
       type: object
       description: "Relative Distinguished Names (RDNs)"
       properties:
 
         # Currently Supported by PyOpenSSL
-
         cn:
           type: string
           description: "Common Name"
@@ -47,7 +56,7 @@ create-root-cert:
 
         # TODO extensions
 
-  required: ["subject.cn"]
+  # required: [subject.cn]
 
   additionalProperties: false     
 
@@ -63,6 +72,3 @@ create-host-cert:
 
 restart:
   description: "Restarts the StrongSWan service"
-
-
-  

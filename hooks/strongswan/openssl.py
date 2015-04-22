@@ -3,6 +3,8 @@
 Generate CA certificate and host certificates using OpenSSL
 """
 
+from OpenSSL import crypto
+from strongswan.util import convert_to_seconds
 from strongswan.constants import (
 	IPSEC_D_PRIVATE,
 	IPSEC_D_CACERTS,
@@ -12,17 +14,14 @@ from strongswan.constants import (
 	CA_CERT
 )
 
-# make sure that we have installed necessary dependencies for pyOpenSSL
-from OpenSSL import crypto	
-
-
+	
 # Generate a CA root certificate and private key 
 # Writes private key to /etc/ipsec.d/private/caKey. 
 def create_root_cert(  
-		subject, 
-		digest='sha1',
-		lifetime=315360000, 
-		keysize=4096 
+		subject,
+		lifetime,
+		keysize,
+		digest='sha1' 
 	):
 	
 	# create a 4096 bit key pair
@@ -36,28 +35,53 @@ def create_root_cert(
 
 	# Fill X509Name object with values passed as args
 	subj = req.get_subject()
-	
-	# how will we do this.....
+	for k,v in subject.items():
+		setattr( subj, k.upper() , v )
 
 
-	# for (key, value) in rdn.items() :
-	# 	setattr( subj, key, value )
-
-
+	# set the key and create the csr
 	req.set_pubkey( pkey )
 	req.sign( pkey, digest )
+
+
+	# create the X509 object 
 	cert = crypto.X509()
+
+	
+	# set serial number.... need help with this one
 	cert.set_serial_number( 0 )
+
+	
+	# valid from now till .... 
 	cert.gmtime_adj_notBefore( 0 )
-	cert.gmtime_adj_notAfter( 60*60*24*365*10 )
+	cert.gmtime_adj_notAfter( convert_to_seconds(lifetime) )
+
+
+	# the root CA will sign itself
 	cert.set_issuer( req.get_subject() )
+
+
+	# load the csr subject
 	cert.set_subject( req.get_subject() )
+
+
+	# load the key 
 	cert.set_pubkey( req.get_pubkey() )
+
+
+	# sign the cert 
 	cert.sign( pkey, digest )
+
+
+	# write the key and cert to the proper IPsec directories
 	with open("{0}{1}".format(IPSEC_D_PRIVATE, CA_KEY ), 'bw') as fd:
 		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, pkey ) )
+	
 	with open("{0}{1}".format(IPSEC_D_CACERTS, CA_CERT ), 'bw' ) as fd:
 		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, cert ) )
+
+
+	return None
 
 
 def create_host_cert( handle , digest='sha1' , **rdn ) :

@@ -238,7 +238,7 @@ def configure_install(base_dir):
 def get_action_params():
 	try:
 		return (
-				loads(check_call( [ "action-get", "--format", "json" ], 
+				loads(_check_call( [ "action-get", "--format", "json" ], 
 					check_output=True ).decode('utf-8') )
 			)
 	except ValueError:

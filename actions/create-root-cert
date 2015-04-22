@@ -3,6 +3,7 @@
 from charmhelpers.core import hookenv
 from os.path import exists
 from strongswan.openssl import create_root_cert
+from strongswan.util import get_action_params
 from strongswan.constants import (
 	IPSEC_D_CACERTS,
 	CA_CERT
@@ -12,9 +13,17 @@ from strongswan.constants import (
 
 if __name__ == '__main__':
 
+	# get the actions parameters
+	params = get_action_params()
 
-	# if not ( exists( IPSEC_D_CACERTS + CA_CERT ) or
-	# 	)
-		 
-	
 
+	# if overwrite is true or the certificate does not exist, create it.
+	if params.get("overwrite") or not exists(IPSEC_D_CACERTS + CA_CERT) :
+		create_root_cert( 
+				params.get("subject"),
+				params.get("lifetime"),
+				params.get("keysize") 
+		)
+	else:
+		pass 
+		# return error
