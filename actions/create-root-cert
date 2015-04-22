@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 
 from charmhelpers.core import hookenv
+from os.path import exists
 from strongswan.openssl import create_root_cert
-
-
-def _f1():
-	hookenv.log("Action has been called!!!!")
-	hookenv.log("one love")
-
+from strongswan.constants import (
+	IPSEC_D_CACERTS,
+	CA_CERT
+)
 
 
 
 if __name__ == '__main__':
-	_f1()
+
+
+	# if not ( exists( IPSEC_D_CACERTS + CA_CERT ) or
+	# 	)
+		 
 	
+

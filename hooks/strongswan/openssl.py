@@ -18,13 +18,32 @@ from OpenSSL import crypto
 
 # Generate a CA root certificate and private key 
 # Writes private key to /etc/ipsec.d/private/caKey. 
-def create_ca_cert(  digest='sha1', **rdn ):
+def create_root_cert(  
+		subject, 
+		digest='sha1',
+		lifetime=315360000, 
+		keysize=4096 
+	):
+	
+	# create a 4096 bit key pair
 	pkey = crypto.PKey()
-	pkey.generate_key( crypto.TYPE_RSA, 4096 )
+	pkey.generate_key( crypto.TYPE_RSA, keysize )
+
+
+	# create the certificate signing request
 	req = crypto.X509Req()
+
+
+	# Fill X509Name object with values passed as args
 	subj = req.get_subject()
-	for (key, value) in rdn.items() :
-		setattr( subj, key, value )
+	
+	# how will we do this.....
+
+
+	# for (key, value) in rdn.items() :
+	# 	setattr( subj, key, value )
+
+
 	req.set_pubkey( pkey )
 	req.sign( pkey, digest )
 	cert = crypto.X509()
