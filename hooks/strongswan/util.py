@@ -5,6 +5,7 @@ from time import time, sleep
 from os.path import getmtime
 from urllib.request import urlretrieve
 from hashlib import md5
+from json import loads
 from charmhelpers.core import hookenv
 from strongswan.constants import (
 	CHECK, 
@@ -232,4 +233,14 @@ def configure_install(base_dir):
 	_check_call(cmd, shell=True, fatal=True, quiet=True )
 
 
+
+
+def get_action_params():
+	try:
+		return (
+				loads(check_call( [ "action-get", "--format", "json" ], 
+					check_output=True ).decode('utf-8') )
+			)
+	except ValueError:
+		hookenv.log("Unable to return valid JSON from action-get command", level=hookenv.ERROR)
 
