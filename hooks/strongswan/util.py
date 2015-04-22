@@ -1,6 +1,6 @@
 
 import subprocess as sp
-from re import findall
+import re
 from time import time, sleep
 from os.path import getmtime
 from urllib.request import urlretrieve
@@ -145,7 +145,7 @@ def update_hosts_file( ip_addr , hostname ):
 
 	with open('/etc/hosts' , 'r') as hosts_file :
 		for line in hosts_file:
-			elem = findall('^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\s\S*' , line )
+			elem = re.findall('^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\s\S*' , line )
 			if elem:
 				if elem[0].split()[1] == hostname:
 					output_string += "{0}\t{1}\n".format(ip_addr, hostname)
@@ -244,3 +244,20 @@ def get_action_params():
 	except ValueError:
 		hookenv.log("Unable to return valid JSON from action-get command", level=hookenv.ERROR)
 
+
+
+
+def convert_to_seconds( lifetime ) :
+	s = re.split(r'(\d*)(\D)', lifetime )
+	_type = s[2]
+	_quantity = int(s[1]) 
+	if _type == 's' : 
+		return _quantity
+	elif _type ==  'm' :
+		return (_quantity * 60)
+	elif _type == 'h' :
+		return (_quantity * 60 * 60 )
+	elif _type == 'd' :
+		return (_quantity * 60 * 60 * 24)
+	elif _type == 'y' :
+		return (_quantity * 60 * 60 * 24 * 365 ) 
