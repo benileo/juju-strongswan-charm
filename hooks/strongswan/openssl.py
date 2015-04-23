@@ -4,6 +4,9 @@ Generate CA certificate and host certificates using OpenSSL
 """
 
 from OpenSSL import crypto
+from random import randint
+from math import ceil
+from time import time
 from strongswan.util import convert_to_seconds
 from strongswan.constants import (
 	IPSEC_D_PRIVATE,
@@ -63,13 +66,12 @@ def create_cert_request( pkey, subject, digest='sha1' ):
 def create_certificate( 
 		req, 
 		issuerCert, 
-		issuerKey, 
-		serial,  
+		issuerKey,  
 		lifetime,
 		digest='sha1' 
 	):
 	cert = crypto.X509()
-	cert.set_serial_number(serial)
+	cert.set_serial_number( generate_serial() )
 	cert.gmtime_adj_notBefore(0)
 	cert.gmtime_adj_notAfter( convert_to_seconds(lifetime) )
 	cert.set_issuer( issuerCert.get_subject() )
@@ -84,23 +86,21 @@ def create_root_cert(
 		subject,
 		lifetime,
 		keysize,
-		serial,
 		digest='sha1' 
 	):
 	
 	# create the cakey and cacert
 	k = create_key_pair( crypto.TYPE_RSA, keysize )
 	r = create_cert_request( k, subject )
-	c = create_certificate(r,r,k,serial,lifetime)
+	c = create_certificate(r,r,k,lifetime)
 	dump_ca_cert(c)
 	dump_ca_key(k)
 
 	# create the server key and cert
 	create_host_cert(
 		subject,
-		str( convert_to_seconds(lifetime) - 86400 ),
+		lifetime,
 		keysize,
-		serial,
 		SERVER_CERT_NAME
 	)
 
@@ -108,8 +108,6 @@ def create_host_cert(
 		subject,
 		lifetime,
 		keysize,
-		serial,
-		name,
 		digest='sha1'
 	):
 	k = create_key_pair( crypto.TYPE_RSA, keysize )
@@ -118,8 +116,20 @@ def create_host_cert(
 		r, 
 		load_ca_cert(),
 		load_ca_key(),
-		serial,
 		lifetime
 	)
+	name = generate_serial() # generate a random name...
 	dump_key(k,name)
-	dump_cert(c,name)	
+	dump_cert(c,name)
+
+
+
+def generate_serial():
+	_time = str( ceil( time() ) )
+	_rnum = str( randint( 0, 2**100 ) )
+	_ser = _rnum + _time
+	if ( len(_ser) % 2 ) != 0 :
+		_ser += '8' 
+	return int(_ser)
+
+
