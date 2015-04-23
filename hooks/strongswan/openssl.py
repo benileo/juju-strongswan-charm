@@ -21,7 +21,7 @@ def create_key_pair( keytype, bits ):
 
 
 def create_cert_request( pkey, subject, digest='sha1' ):
-	req = X509Req()
+	req = crypto.X509Req()
 	subj = req.get_subject()
 	for key, value in subject.items():
 		if key == "e":
@@ -35,9 +35,10 @@ def create_cert_request( pkey, subject, digest='sha1' ):
 
 def create_certificate( 
 		req, 
-		(issuerCert, issuerKey), 
+		issuerCert, 
+		issuerKey, 
 		serial, 
-		(notBefore, notAfter),
+		notBefore, 
 		lifetime,
 		digest='sha1' 
 	):
@@ -52,7 +53,7 @@ def create_certificate(
 	return cert 
 
 	
-
+# create and sign our own certificate
 def create_root_cert(  
 		subject,
 		lifetime,
@@ -62,7 +63,7 @@ def create_root_cert(
 	
 	k = create_key_pair( crypto.TYPE_RSA, keysize )
 	r = create_cert_request( k, subject )
-	c = create_certificate(r, (r,k), 0, (0, lifetime) )
+	c = create_certificate(r,r,k,0,0,lifetime)
 
 	# write the key and cert to the proper IPsec directories
 	with open("{0}{1}".format(IPSEC_D_PRIVATE, CA_KEY ), 'bw') as fd:
