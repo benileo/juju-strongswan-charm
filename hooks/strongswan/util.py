@@ -236,6 +236,8 @@ def configure_install(base_dir):
 
 def convert_to_seconds( lifetime ) :
 	s = re.split(r'(\d*)(\D)', lifetime )
+	if len(s) == 1:
+		return s[0]
 	_type = s[2]
 	_quantity = int(s[1]) 
 	if _type == 's' : 
