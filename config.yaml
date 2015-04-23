@@ -20,11 +20,6 @@ options:
     default: True
     description: "IPv6 traffic forwarding"
 
-  ike_version:
-    type: int
-    default:  2
-    description: "IKE Version"
-
   auth_method:
     type: string
     default: 'rsa'
@@ -34,16 +29,6 @@ options:
     type: string
     default: "esp"
     description: "IPsec protocol"
-
-  virtual_ip_enabled:
-    type: boolean
-    default: True
-    description: "Virtual IP"
-
-  virtual_ip_subnet:
-    type: string
-    default: '10.50.9.0/24'
-    description: 'Virtual IP subnet'
 
   private_subnets:
     type: string
