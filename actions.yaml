@@ -5,7 +5,9 @@
 # Action to create the Top Level Root Certificate #
 
 create-root-cert:
+
   description: "Generate a Root CA Certificate"
+
   params:
   
     overwrite:
@@ -57,11 +59,7 @@ create-root-cert:
           type: string
           description: "Email Address"
 
-        # TODO extensions
-
-  # required: [subject.cn]
-
-  additionalProperties: false
+      required: [cn] 
 
 
 
@@ -69,7 +67,7 @@ create-root-cert:
 # Action to create or host or a user certificate #
 create-host-cert:
   description: "Returns a host Certificate signed by the CA"
-
+  #to do
 
 
 
