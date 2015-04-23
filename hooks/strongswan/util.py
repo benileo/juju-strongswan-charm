@@ -237,17 +237,18 @@ def configure_install(base_dir):
 # returns actions parameters in json format
 def action_get():
 	try:
-		return (
-				loads(_check_call( [ "action-get", "--format", "json" ], 
-					check_output=True ).decode('utf-8') )
-			)
+		data = _check_call([ "action-get", "--format", "json" ], 
+					check_output=True)
+		if data:
+			loads(data.decode('utf-8'))
 	except ValueError:
-		hookenv.log("Unable to return valid JSON from action-get command", level=hookenv.ERROR)
-
+		action_fail("Action Get: Invalid json")
+	return data
 
 def action_fail( message ):
 	cmd = """action-fail "{}" """.format(message) 
 	_check_call( cmd, shell=True )
+	hookenv.log( message, level=hookenv.ERROR )
 
 
 
