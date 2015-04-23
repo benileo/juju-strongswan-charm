@@ -1,7 +1,5 @@
 # actions.yaml
 
-
-
 # Action to create the Top Level Root Certificate #
 
 create-root-cert:
@@ -62,12 +60,58 @@ create-root-cert:
       required: [cn] 
 
 
-
-
-# Action to create or host or a user certificate #
+# Action to create a host or a user certificate #
 create-host-cert:
+
   description: "Returns a host Certificate signed by the CA"
-  #to do
+  
+  params:
+
+    lifetime:
+      type: string
+      description: "How long is the host certificate valid for?"
+      default: "5y"
+
+    keysize:
+      type: integer
+      description: "Key Size?"
+      default: 2048
+
+    subject:
+      type: object
+      description: "Relative Distinguished Names (RDNs)"
+      properties:
+
+        # Currently Supported by PyOpenSSL
+        cn:
+          type: string
+          description: "Common Name"
+        dc:
+          type: string
+          description: "Domain Component"
+        st:
+          type: string
+          description: "State or Province"
+        l:
+          type: string
+          description: "Locality or Town"
+        o:
+          type: string
+          description: "Organization"
+        ou:
+          type: string
+          description: "Organizational Unit"
+        sn:
+          type: string
+          description: "Serial Number"
+        uid:
+          type: string
+          description: "User ID"
+        e:
+          type: string
+          description: "Email Address"
+
+      required: [cn]     
 
 
 

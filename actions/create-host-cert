@@ -2,15 +2,17 @@
  
 from charmhelpers.core import hookenv
 from strongswan.openssl import create_host_cert
-
-
-def _f1():
-	hookenv.log("Action has been called!!!!")
-	
-
-
-
+from strongswan.actions import action_get, action_set, action_fail
 
 if __name__ == '__main__':
-	_f1()
 	
+	params = action_get()
+
+	if params:
+		create_host_cert(
+			params.get("subject"), 
+			params.get("lifetime"),
+			params.get("keysize")
+		)
+	else:
+		pass
