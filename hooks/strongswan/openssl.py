@@ -14,9 +14,45 @@ from strongswan.constants import (
 	CA_CERT
 )
 
+def create_key_pair( keytype, bits ):
+	pkey = crypto.PKey()
+	pkey.generate_key( keytype, bits )
+	return pkey
+
+
+def create_cert_request( pkey, subject, digest='sha1' ):
+	req = X509Req()
+	subj = req.get_subject()
+	for key, value in subject.items():
+		if key == "e":
+			setattr(subj, "emailAddress", value )
+		else:
+			setattr(subj, key.upper(), value )
+	req.set_pubkey(pkey)
+	req.sign(pkey, digest )
+	return req
+
+
+def create_certificate( 
+		req, 
+		(issuerCert, issuerKey), 
+		serial, 
+		(notBefore, notAfter),
+		lifetime,
+		digest='sha1' 
+	):
+	cert = crypto.X509()
+	cert.set_serial_number(serial)
+	cert.gmtime_adj_notBefore(0)
+	cert.gmtime_adj_notAfter( convert_to_seconds(lifetime) )
+	cert.set_issuer( issuerCert.get_subject() )
+	cert.set_subject( req.get_subject() )
+	cert.set_pubkey( req.get_pubkey() )
+	cert.sign( issuerKey, digest )
+	return cert 
+
 	
-# Generate a CA root certificate and private key 
-# Writes private key to /etc/ipsec.d/private/caKey. 
+
 def create_root_cert(  
 		subject,
 		lifetime,
@@ -24,64 +60,17 @@ def create_root_cert(
 		digest='sha1' 
 	):
 	
-	# create a 4096 bit key pair
-	pkey = crypto.PKey()
-	pkey.generate_key( crypto.TYPE_RSA, keysize )
-
-
-	# create the certificate signing request
-	req = crypto.X509Req()
-
-
-	# Fill X509Name object with values passed as args
-	subj = req.get_subject()
-	for k,v in subject.items():
-		setattr( subj, k.upper() , v )
-
-
-	# set the key and create the csr
-	req.set_pubkey( pkey )
-	req.sign( pkey, digest )
-
-
-	# create the X509 object 
-	cert = crypto.X509()
-
-	
-	# set serial number.... need help with this one
-	cert.set_serial_number( 0 )
-
-	
-	# valid from now till .... 
-	cert.gmtime_adj_notBefore( 0 )
-	cert.gmtime_adj_notAfter( convert_to_seconds(lifetime) )
-
-
-	# the root CA will sign itself
-	cert.set_issuer( req.get_subject() )
-
-
-	# load the csr subject
-	cert.set_subject( req.get_subject() )
-
-
-	# load the key 
-	cert.set_pubkey( req.get_pubkey() )
-
-
-	# sign the cert 
-	cert.sign( pkey, digest )
-
+	k = create_key_pair( crypto.TYPE_RSA, keysize )
+	r = create_cert_request( k, subject )
+	c = create_certificate(r, (r,k), 0, (0, lifetime) )
 
 	# write the key and cert to the proper IPsec directories
 	with open("{0}{1}".format(IPSEC_D_PRIVATE, CA_KEY ), 'bw') as fd:
-		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, pkey ) )
+		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, k ) )
 	
 	with open("{0}{1}".format(IPSEC_D_CACERTS, CA_CERT ), 'bw' ) as fd:
-		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, cert ) )
+		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, c ) )
 
-
-	return None
 
 
 def create_host_cert( handle , digest='sha1' , **rdn ) :
