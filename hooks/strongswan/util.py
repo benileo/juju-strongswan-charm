@@ -234,8 +234,8 @@ def configure_install(base_dir):
 
 
 
-
-def get_action_params():
+# returns actions parameters in json format
+def action_get():
 	try:
 		return (
 				loads(_check_call( [ "action-get", "--format", "json" ], 
@@ -245,6 +245,14 @@ def get_action_params():
 		hookenv.log("Unable to return valid JSON from action-get command", level=hookenv.ERROR)
 
 
+def action_fail( message ):
+	cmd = """action-fail "{}" """.format(message) 
+	_check_call( cmd, shell=True )
+
+
+
+def action_set():
+	pass
 
 
 def convert_to_seconds( lifetime ) :

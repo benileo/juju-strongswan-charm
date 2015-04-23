@@ -53,12 +53,15 @@ create-root-cert:
         uid:
           type: string
           description: "User ID"
+        e:
+          type: string
+          description: "Email Address"
 
         # TODO extensions
 
   # required: [subject.cn]
 
-  additionalProperties: false     
+  additionalProperties: false
 
 
 
