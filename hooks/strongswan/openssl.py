@@ -11,8 +11,35 @@ from strongswan.constants import (
 	IPSEC_D_CERTS,
 	IPSEC_D_REQS,
 	CA_KEY,
-	CA_CERT
+	CA_CERT,
+	SERVER_CERT_NAME
 )
+
+def load_ca_cert():
+	with open("{0}{1}".format(IPSEC_D_CACERTS, CA_CERT ), 'br' ) as fd:
+		cacert = crypto.load_certificate( crypto.FILETYPE_PEM, fd.read() )
+	return cacert
+
+def load_ca_key():
+	with open("{0}{1}".format(IPSEC_D_PRIVATE, CA_KEY ) , 'br' ) as fd:
+		cakey = crypto.load_privatekey( crypto.FILETYPE_PEM, fd.read() )
+	return cakey
+
+def dump_ca_key(k):
+	with open("{0}{1}".format(IPSEC_D_PRIVATE, CA_KEY ), 'bw') as fd:
+		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, k ) )
+
+def dump_ca_cert(c):
+	with open("{0}{1}".format(IPSEC_D_CACERTS, CA_CERT ), 'bw' ) as fd:
+		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, c ) )
+
+def dump_key(pkey,keyname):
+	with open("{0}{1}Key.pem".format(IPSEC_D_PRIVATE, keyname ), 'bw' ) as fd :
+		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, pkey ) )
+
+def dump_cert(cert, certname):
+	with open("{0}{1}Cert.pem".format( IPSEC_D_CERTS, certname ) , 'bw' ) as fd :
+		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, cert ) )
 
 def create_key_pair( keytype, bits ):
 	pkey = crypto.PKey()
@@ -37,8 +64,7 @@ def create_certificate(
 		req, 
 		issuerCert, 
 		issuerKey, 
-		serial, 
-		notBefore, 
+		serial,  
 		lifetime,
 		digest='sha1' 
 	):
@@ -52,50 +78,48 @@ def create_certificate(
 	cert.sign( issuerKey, digest )
 	return cert 
 
-	
+
 # create and sign our own certificate
 def create_root_cert(  
 		subject,
 		lifetime,
 		keysize,
+		serial,
 		digest='sha1' 
 	):
 	
+	# create the cakey and cacert
 	k = create_key_pair( crypto.TYPE_RSA, keysize )
 	r = create_cert_request( k, subject )
-	c = create_certificate(r,r,k,0,0,lifetime)
+	c = create_certificate(r,r,k,serial,lifetime)
+	dump_ca_cert(c)
+	dump_ca_key(k)
 
-	# write the key and cert to the proper IPsec directories
-	with open("{0}{1}".format(IPSEC_D_PRIVATE, CA_KEY ), 'bw') as fd:
-		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, k ) )
-	
-	with open("{0}{1}".format(IPSEC_D_CACERTS, CA_CERT ), 'bw' ) as fd:
-		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, c ) )
+	# create the server key and cert
+	create_host_cert(
+		subject,
+		str( convert_to_seconds(lifetime) - 86400 ),
+		keysize,
+		serial,
+		SERVER_CERT_NAME
+	)
 
-
-
-def create_host_cert( handle , digest='sha1' , **rdn ) :
-	pkey = crypto.PKey()
-	pkey.generate_key( crypto.TYPE_RSA, 2048 )
-	req = crypto.X509Req()
-	subj = req.get_subject()
-	for (key, value) in rdn.items():
-		setattr(subj,key,value)
-	req.set_pubkey(pkey)
-	req.sign( pkey, digest )
-	cert = crypto.X509()
-	cert.set_serial_number( 1 )
-	cert.gmtime_adj_notBefore( 0 )
-	cert.gmtime_adj_notAfter( 60*60*24*365*5 )
-	with open("{0}{1}".format(IPSEC_D_CACERTS, CA_CERT ), 'br' ) as fd:
-		cacert = crypto.load_certificate( crypto.FILETYPE_PEM, fd.read() )
-	cert.set_issuer( cacert.get_subject() )
-	cert.set_subject( req.get_subject() )
-	cert.set_pubkey( req.get_pubkey() )
-	with open("{0}{1}".format(IPSEC_D_PRIVATE, CA_KEY ) , 'br' ) as fd:
-		cakey = crypto.load_privatekey( crypto.FILETYPE_PEM, fd.read() )
-	cert.sign(cakey, digest)
-	with open("{0}{1}Key.pem".format(IPSEC_D_PRIVATE, handle ), 'bw' ) as fd :
-		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, pkey ) )
-	with open("{0}{1}Cert.pem".format( IPSEC_D_CERTS, handle ) , 'bw' ) as fd :
-		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, cert ) )
+def create_host_cert(
+		subject,
+		lifetime,
+		keysize,
+		serial,
+		name,
+		digest='sha1'
+	):
+	k = create_key_pair( crypto.TYPE_RSA, keysize )
+	r = create_cert_request( k, subject )
+	c = create_certificate(
+		r, 
+		load_ca_cert(),
+		load_ca_key(),
+		serial,
+		lifetime
+	)
+	dump_key(k,name)
+	dump_cert(c,name)	

@@ -21,7 +21,8 @@ if __name__ == '__main__':
 			create_root_cert( 
 				params.get("subject"),
 				params.get("lifetime"),
-				params.get("keysize") 
+				params.get("keysize"),
+				0 
 			)
 		else:
 			action_fail("Root Cerficate Authority already exists. Pass overwrite=true to overwrite.")

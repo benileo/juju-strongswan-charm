@@ -34,6 +34,7 @@ IPSEC_D_CRLS		= '/etc/ipsec.d/crls/'
 IPSEC_D_REQS 		= '/etc/ipsec.d/reqs/'
 CA_KEY				= 'caKey.pem'
 CA_CERT				= 'caCert.pem'
+SERVER_CERT_NAME	= 'SERVER'
 
 
 
