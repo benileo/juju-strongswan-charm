@@ -71,7 +71,7 @@ def create_certificate(
 		digest='sha1' 
 	):
 	cert = crypto.X509()
-	cert.set_serial_number( generate_serial() )
+	cert.set_serial_number(generate_serial())
 	cert.gmtime_adj_notBefore(0)
 	cert.gmtime_adj_notAfter( convert_to_seconds(lifetime) )
 	cert.set_issuer( issuerCert.get_subject() )
@@ -108,6 +108,7 @@ def create_host_cert(
 		subject,
 		lifetime,
 		keysize,
+		name=None,
 		digest='sha1'
 	):
 	k = create_key_pair( crypto.TYPE_RSA, keysize )
@@ -118,9 +119,9 @@ def create_host_cert(
 		load_ca_key(),
 		lifetime
 	)
-	name = generate_serial() # generate a random name...
-	dump_key(k,name)
-	dump_cert(c,name)
+	_name = name if name else str( c.get_serial_number() )
+	dump_key(k,_name)
+	dump_cert(c,_name)
 
 
 

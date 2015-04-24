@@ -57,7 +57,9 @@ create-root-cert:
           type: string
           description: "Email Address"
 
-      required: [cn] 
+      required: [cn]
+
+  additionalProperties: false
 
 
 # Action to create a host or a user certificate #
@@ -111,7 +113,9 @@ create-host-cert:
           type: string
           description: "Email Address"
 
-      required: [cn]     
+      required: [cn]
+
+  additionalProperties: false   
 
 
 
