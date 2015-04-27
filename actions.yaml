@@ -1,34 +1,26 @@
-# actions.yaml
-
-# Action to create the Top Level Root Certificate #
+restart:
+  description: "Restarts the StrongSWan service"
 
 create-root-cert:
-
   description: "Generate a Root CA Certificate"
-
   params:
-  
     overwrite:
       type: boolean
       description: "Overwrite Existing Root CA?"
       default: false
-
     lifetime:
       type: string
       description: "How long is the CA valid for?"
       default: "10y"
-
     keysize:
       type: integer
       description: "Key Size?"
       default: 4096
-
+      enum: [1024,2048,4096,8192]
     subject:
       type: object
       description: "Relative Distinguished Names (RDNs)"
       properties:
-
-        # Currently Supported by PyOpenSSL
         cn:
           type: string
           description: "Common Name"
@@ -56,35 +48,30 @@ create-root-cert:
         e:
           type: string
           description: "Email Address"
-
       required: [cn]
-
   additionalProperties: false
 
-
-# Action to create a host or a user certificate #
 create-host-cert:
-
   description: "Returns a host Certificate signed by the CA"
-  
   params:
-
     lifetime:
       type: string
       description: "How long is the host certificate valid for?"
       default: "5y"
-
     keysize:
       type: integer
       description: "Key Size?"
       default: 2048
-
+      enum: [1024,2048,4096,8192]
+    out:
+      type: string
+      description: "Out format of the certificate"
+      emum: [gzip,pkcs12]
+      default: "pkcs12"
     subject:
       type: object
       description: "Relative Distinguished Names (RDNs)"
       properties:
-
-        # Currently Supported by PyOpenSSL
         cn:
           type: string
           description: "Common Name"
@@ -112,12 +99,5 @@ create-host-cert:
         e:
           type: string
           description: "Email Address"
-
       required: [cn]
-
   additionalProperties: false   
-
-
-
-restart:
-  description: "Restarts the StrongSWan service"
