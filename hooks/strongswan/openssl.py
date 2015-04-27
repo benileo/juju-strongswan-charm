@@ -7,6 +7,7 @@ from OpenSSL import crypto
 from random import randint
 from math import ceil
 from time import time
+from os.path import exists
 from strongswan.util import convert_to_seconds
 from strongswan.constants import (
 	IPSEC_D_PRIVATE,
@@ -15,7 +16,8 @@ from strongswan.constants import (
 	IPSEC_D_REQS,
 	CA_KEY,
 	CA_CERT,
-	SERVER_CERT_NAME
+	SERVER_CERT_NAME,
+	EXPORT_DIR
 )
 
 def load_ca_cert():
@@ -81,6 +83,16 @@ def create_certificate(
 	return cert 
 
 
+def create_pkcs12( pkey, cert ):
+	p12 = crypto.PKCS12()
+	p12.set_certificate(cert)
+	p12.set_privatekey(pkey)
+	cacert = load_ca_cert()
+	p12.set_ca_certificates([cacert])
+	return ( p12.export() )
+
+
+
 # create and sign our own certificate
 def create_root_cert(  
 		subject,
@@ -97,18 +109,23 @@ def create_root_cert(
 	dump_ca_key(k)
 
 	# create the server key and cert
-	create_host_cert(
-		subject,
-		lifetime,
-		keysize,
-		SERVER_CERT_NAME
+	k = create_key_pair( crypto.TYPE_RSA, keysize )
+	r = create_cert_request( k, subject )
+	c = create_certificate( r, 
+		load_ca_cert(),
+		load_ca_key(),
+		lifetime
 	)
+
+	#dump the key and server certificate to appropriate directories 
+	dump_key(k, SERVER_CERT_NAME )
+	dump_cert(c, SERVER_CERT_NAME )
 
 def create_host_cert(
 		subject,
 		lifetime,
 		keysize,
-		name=None,
+		out,
 		digest='sha1'
 	):
 	k = create_key_pair( crypto.TYPE_RSA, keysize )
@@ -119,10 +136,7 @@ def create_host_cert(
 		load_ca_key(),
 		lifetime
 	)
-	_name = name if name else str( c.get_serial_number() )
-	dump_key(k,_name)
-	dump_cert(c,_name)
-
+	return ( create_outfile( out, k, c ) )  
 
 
 def generate_serial():
@@ -134,3 +148,36 @@ def generate_serial():
 	return int(_ser)
 
 
+def create_outfile( out, key, certificate ):
+	
+	outpath = out_path()
+
+	if out is 'pkcs12':
+		pkcs12 = create_pkcs12( key, certificate )
+		outpath = "{}.p12".format( outpath )
+		with open( outpath, 'bw' ) as fd:
+			fd.write( pkcs12 )
+
+	elif out is 'tar.gz' :
+		pass 
+		# todo 
+
+	return outpath 
+
+
+def out_path():
+
+	_exists = False
+
+	while not _exists :
+
+		_rnum = str( randint( 0, 10000 ) )
+		_cert_name = "cert" + _rnum
+
+		if ( exists("{}{}.tar.gz".format(EXPORT_DIR, _cert_name) ) or
+			exists("{}{}.p12".format(EXPORT_DIR, _cert_name ) ) ):
+			continue
+		else:
+			_exists = True
+
+	return (EXPORT_DIR + _cert_name)
