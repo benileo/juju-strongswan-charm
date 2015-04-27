@@ -36,6 +36,9 @@ CA_KEY				= 'caKey.pem'
 CA_CERT				= 'caCert.pem'
 SERVER_CERT_NAME	= 'SERVER'
 
+# added directory for storing user keypair for exporting
+EXPORT_DIR 			= '/home/ubuntu/'
+
 
 
 # IP TABLES RELATED #
