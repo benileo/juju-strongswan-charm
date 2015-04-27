@@ -25,9 +25,10 @@ from strongswan.errors import (
 def _check_call( cmd , fatal=False, 
 	message=None, quiet=False, 
 	timeout=60, log=True, shell=False,
-	check_output=False
+	check_output=False, log_cmd=True
 	):
-	hookenv.log("Calling {0}".format(cmd) , level=hookenv.INFO )
+	if log_cmd:
+		hookenv.log("Calling {0}".format(cmd) , level=hookenv.INFO )
 	try:
 		if quiet:
 			return ( sp.check_call( cmd, stdout=sp.DEVNULL, stderr=sp.DEVNULL, 
@@ -58,15 +59,16 @@ def make_rule(cmd, chain, rule_type):
 		cmd.insert( 0, chain )
 		cmd.insert( 0, CHECK )
 		cmd.insert( 0, IPTABLES )
-		_check_call(cmd, message="Checking IPtables rule", fatal=True, log=False, quiet=True )
+		_check_call(cmd, message="Checking IPtables rule", fatal=True, 
+			log=False, quiet=True, log_cmd=False )
 	except sp.CalledProcessError:
 		if rule_type != DELETE :
 			cmd[1] = rule_type
-			_check_call(cmd, fatal=True, message="Creating IPTables rule")
+			_check_call(cmd, fatal=True, message="Creating IPTables rule", log_cmd=False)
 	else:
 		if rule_type == DELETE :
 			cmd[1] = DELETE
-			_check_call(cmd, fatal=True, message="Deleting IPTables rule")
+			_check_call(cmd, fatal=True, message="Deleting IPTables rule", log_cmd=False)
 
 
 
