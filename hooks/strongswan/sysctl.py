@@ -20,12 +20,9 @@ def configure_sysctl():
 	
 	if CONFIG.get("ip_forward") :
 		_dict[IPV4_FORWARD] = 1
-	
-	if CONFIG.get("ip6_forward") :
 		_dict[IPV6_FORWARD] = 1
 	
 	create( dumps(_dict) , SYSCTL_PATH )
-
 
 
 # Make copy of sysctl.conf and /etc/hosts for sys admin reference

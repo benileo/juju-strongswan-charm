@@ -1,40 +1,28 @@
 options:
-
   source:
     type: string
     default: 'archives'
     description: 'Source of the strongswan installation'
-
   config_options:
     type: string
     default: ''
     description: 'Comma seperated list of configuration parameters when compiling.'
-
   ip_forward:
     type: boolean
     default: True
-    description: "IPv4 traffic forwarding" 
-
-  ip6_forward:
-    type: boolean
-    default: True
-    description: "IPv6 traffic forwarding"
-
+    description: "IPv4 and IPv6 traffic forwarding" 
   auth_method:
     type: string
     default: 'rsa'
     description: "Method of IPsec peer authentication"
-
   ipsec_protocol:
     type: string
     default: "esp"
     description: "IPsec protocol"
-
   private_subnets:
     type: string
     default: ''
     description: 'Comma seperated list of internal subnets we are providing access to'
-
   public_network:
     type: boolean
     default: True
