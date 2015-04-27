@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-IP Tables
-"""
 
 from charmhelpers.core import hookenv
 from strongswan.constants import * 
@@ -19,6 +15,7 @@ def configure_iptables():
 
 # update filter chain
 def _filter():
+	hookenv.log("Configuring iptables firewall for IPsec", level=hookenv.INFO )
 
 	# We should always have loopback available
 	make_rule(['-i', 'lo', '-j', ACCEPT], INPUT, INSERT)
@@ -74,8 +71,6 @@ def _filter():
 	_check_call( [IPTABLES, POLICY, FORWARD , DROP ] )
 	_check_call( [IPTABLES, POLICY, INPUT , DROP ] )
 	_check_call( [IPTABLES, POLICY, OUTPUT , DROP ] )
-
-	return None
 
 
 def _nat():
