@@ -68,9 +68,10 @@ def _filter():
 		make_rule(ALLOW_APT_OUT, OUTPUT, APPEND)
 
 	#set default policy to DROP for filter tables.
-	_check_call( [IPTABLES, POLICY, FORWARD , DROP ] )
-	_check_call( [IPTABLES, POLICY, INPUT , DROP ] )
-	_check_call( [IPTABLES, POLICY, OUTPUT , DROP ] )
+	hookenv.log("Setting default policy to drop for all filter rule chains", level=hookenv.INFO)
+	_check_call( [IPTABLES, POLICY, FORWARD , DROP ], log_cmd=False )
+	_check_call( [IPTABLES, POLICY, INPUT , DROP ], log_cmd=False )
+	_check_call( [IPTABLES, POLICY, OUTPUT , DROP ] log_cmd=False )
 
 
 def _nat():

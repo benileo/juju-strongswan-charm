@@ -2,7 +2,9 @@
 import subprocess as sp
 import re
 from time import time, sleep
-from os.path import getmtime
+from os.path import getmtime #, exists
+# from os import chmod, chown
+# from pwd import getpwnam
 from urllib.request import urlretrieve
 from hashlib import md5
 from charmhelpers.core import hookenv
@@ -129,8 +131,6 @@ def cp_hosts_file():
 # If the host file has been modified in the past 24 hours
 # Comment out entries for achive.ubuntu.com & security.ubuntu.com
 def flush_hosts_file():
-	hookenv.log("/etc/hosts last modifed: ".format(getmtime('/etc/hosts')) )
-	hookenv.log("current time: ".format( time() ) )
 	if  ( ( time() - getmtime('/etc/hosts') ) ) < 86400 :
 		update_hosts_file( '#1.2.3.4', 'archive.ubuntu.com' )
 		update_hosts_file( '#1.2.3.4', 'security.ubuntu.com' )
@@ -187,6 +187,7 @@ def get_tarball( version ):
 		tarball = "strongswan-{}.tar.gz".format(version)
 		md5_hash_file = "strongswan-{}.tar.gz.md5".format(version)
 
+	# TODO handle retrys and bad urls
 	try:
 		hookenv.log("Retrieving {}{}".format(DL_BASE_URL, tarball), 
 			level=hookenv.INFO)
@@ -251,3 +252,4 @@ def convert_to_seconds( lifetime ) :
 		return (_quantity * 60 * 60 * 24)
 	elif _type == 'y' :
 		return (_quantity * 60 * 60 * 24 * 365 ) 
+
