@@ -56,7 +56,7 @@ def install_strongswan_version( version ):
 
 
 # install strongswan from github
-def install_strongswan_github():
+def install_strongswan_upstream():
 	pass
 
 

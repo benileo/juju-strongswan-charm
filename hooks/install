@@ -9,7 +9,7 @@ from strongswan.errors import InvalidSourceError
 from strongswan.archive import (
 	install_strongswan_archives,
 	install_strongswan_version,
-	install_strongswan_github,
+	install_strongswan_upstream,
 	install_pyOpenSSL
 )
 
@@ -38,8 +38,8 @@ def install():
 		install_strongswan_archives()
 
 	# install from the github account, most advanced. #
-	elif source == 'github' :
-		install_strongswan_github()
+	elif source == 'upstream' :
+		install_strongswan_upstream()
 
 	# install strongswan from strongswan releases #
 	else:
