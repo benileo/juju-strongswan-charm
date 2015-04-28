@@ -2,7 +2,7 @@
 from charmhelpers.core import hookenv
 from strongswan.errors import ExportDirDoesNotExist
 from os.path import exists
-l
+
 
 # Charm config file #
 CONFIG = hookenv.config()
