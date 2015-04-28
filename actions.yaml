@@ -2,7 +2,7 @@ restart:
   description: "Restarts the StrongSWan service"
 
 create-root-cert:
-  description: "Generate a Root CA Certificate"
+  description: "Generate a Root CA Certificate and Host Certificate. Run Once."
   params:
     overwrite:
       type: boolean
@@ -51,8 +51,8 @@ create-root-cert:
       required: [cn]
   additionalProperties: false
 
-create-host-cert:
-  description: "Returns a host Certificate signed by the CA"
+create-user-cert:
+  description: "Returns a user certificate, private key and the CA cert."
   params:
     lifetime:
       type: string

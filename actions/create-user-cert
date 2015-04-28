@@ -8,8 +8,14 @@ from pwd import getpwnam
 from grp import getgrnam
 
 def create():
+	"""
+	@params
+	@return
+	@description: Creates a user certificate signed by the CA
+	and packages it up in either pkcs12 or a tar file and places the package
+	in the /home/ubuntu directory for easy access via the juju scp command.
+	"""
 	params = action_get()
-
 	if params:
 		file_path = create_host_cert(
 			params.get("subject"), 
@@ -18,12 +24,8 @@ def create():
 			params.get("out")
 		)
 		if file_path:
+			chown(file_path, getpwnam('ubuntu').pw_uid, getgrnam('ubuntu').gr_gid ) #grrr
 			action_set(outpath=file_path)
-			action_set(message=("Use juju scp command to copy this file path to your machine. " 
-				"Remove the file from the remote server after (recommended)." ) )
-			set_permissions( file_path )
-			hookenv.log("User/host certificate created and is located: {}".format(
-				file_path), level=hookenv.INFO )
 		else:
 			action_fail("Out file must be either tar.gz, pkcs12 or gzip.")
 	else:
@@ -31,18 +33,6 @@ def create():
 
 
 
-# I DONT like this...
-# the problem stems from the fact
-# 1) I can't return the certificate directly via the juju action
-# 2) juju scp runs in the context of the ubuntu user
-def set_permissions( file_path ):
-	uid = getpwnam('ubuntu').pw_uid
-	guid = getgrnam('ubuntu').gr_gid
-	chown(file_path, uid, guid )
-
-
 if __name__ == '__main__':
 	create()
 	
-	
-
