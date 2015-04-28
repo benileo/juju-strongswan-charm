@@ -27,7 +27,7 @@ def action_fail( message ):
 def action_set( **kwargs ):
 	cmd = "action-set"
 	for key, value in kwargs.items():
-		cmd = """{} {}="{}""""".format(
+		cmd = """{} {}="{}" """.format(
 			cmd,
 			key,
 			value

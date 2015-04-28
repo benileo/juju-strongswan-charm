@@ -148,13 +148,13 @@ def create_outfile( out, key, certificate ):
 	
 	outpath = out_path()
 
-	if out is 'pkcs12':
+	if out == 'pkcs12':
 		pkcs12 = create_pkcs12( key, certificate )
 		outpath = "{}.p12".format( outpath )
 		with open( outpath, 'bw' ) as fd:
 			fd.write( pkcs12 )
 
-	elif out is 'tar.gz' :
+	elif out == 'tar.gz' :
 		pass 
 		# todo 
 
