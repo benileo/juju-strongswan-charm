@@ -71,7 +71,7 @@ def _filter():
 	hookenv.log("Setting default policy to drop for all filter rule chains", level=hookenv.INFO)
 	_check_call( [IPTABLES, POLICY, FORWARD , DROP ], log_cmd=False )
 	_check_call( [IPTABLES, POLICY, INPUT , DROP ], log_cmd=False )
-	_check_call( [IPTABLES, POLICY, OUTPUT , DROP ] log_cmd=False )
+	_check_call( [IPTABLES, POLICY, OUTPUT , DROP ], log_cmd=False )
 
 
 def _nat():
