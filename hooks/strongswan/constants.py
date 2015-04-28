@@ -1,8 +1,14 @@
 
 from charmhelpers.core import hookenv
+from strongswan.errors import ExportDirDoesNotExist
+from os.path import exists
+l
 
 # Charm config file #
 CONFIG = hookenv.config()
+
+# install urls
+DL_BASE_URL = "http://download.strongswan.org/"
 
 # If we are using x509s we will need these #
 PYOPENSSL_DEPENDENCIES = [
@@ -37,7 +43,10 @@ CA_CERT				= 'caCert.pem'
 SERVER_CERT_NAME	= 'SERVER'
 
 # added directory for storing user keypair for exporting
-EXPORT_DIR 			= '/home/ubuntu/'
+# this is not acceptable because scp now won't work..
+if not exists('/home/ubuntu/'):
+	raise ExportDirDoesNotExist
+EXPORT_DIR 		= '/home/ubuntu/'
 
 
 
@@ -106,5 +115,4 @@ ALLOW_DNS_TCP_IN	=	[
 
 
 
-# install urls
-DL_BASE_URL = "http://download.strongswan.org/"
+
