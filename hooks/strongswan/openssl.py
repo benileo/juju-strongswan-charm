@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-Generate CA certificate and host certificates using OpenSSL
-"""
 
 from OpenSSL import crypto
 from random import randint
