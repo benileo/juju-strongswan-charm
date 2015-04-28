@@ -15,12 +15,12 @@ options:
     type: string
     default: 'rsa' 
     description: "Method of IPsec peer authentication"
-    enum: [rsa,x509,psk,secret]
+    #enum: [ "rsa", "x509", "psk", "secret" ]  #TODO Eliptical Curve
   ipsec_protocol:
     type: string
-    default: "esp" # todo enumeration of valid values
+    default: "esp" 
     description: "IPsec protocol"
-    enum: [ah,esp]
+    #enum: ["ah","esp"]
   private_subnets:
     type: string
     default: ''

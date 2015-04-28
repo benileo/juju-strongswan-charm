@@ -164,13 +164,14 @@ def create_outfile( out, key, cert ):
 			fd.write( pkcs12 )
 
 	elif out == 'tar.gz' or out == 'gzip' :
-		temp_dir = "/tmp/__tmp__/"
+		temp_dir = "/tmp/certs/"
 		outpath += ".tar.gz"
 		_check_call([ "mkdir", temp_dir ])
 		_check_call([ "cp", IPSEC_D_CACERTS + CA_CERT, temp_dir ])
 		dump_cert(cert, "", temp_dir)
 		dump_key(key, "", temp_dir)
-		_check_call(["tar", "-czpf", outpath, temp_dir])
+		cmd = """cd /tmp/; tar -czpf {} {}""".format( outpath, "certs" )
+		_check_call( cmd , shell=True )
 		_check_call(["rm", "-Rf", temp_dir ])
 
 	else:
