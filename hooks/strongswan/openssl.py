@@ -4,9 +4,9 @@ from random import randint
 from math import ceil
 from time import time
 from os.path import exists
-from strongswan.util import convert_to_seconds
+from strongswan.util import convert_to_seconds, _check_call
 from strongswan.constants import (
-	IPSEC_D_PRIVATE,
+	IPSEC_D_PRIVATE	,
 	IPSEC_D_CACERTS,
 	IPSEC_D_CERTS,
 	IPSEC_D_REQS,
@@ -34,12 +34,12 @@ def dump_ca_cert(c):
 	with open("{0}{1}".format(IPSEC_D_CACERTS, CA_CERT ), 'bw' ) as fd:
 		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, c ) )
 
-def dump_key(pkey,keyname):
-	with open("{0}{1}Key.pem".format(IPSEC_D_PRIVATE, keyname ), 'bw' ) as fd :
+def dump_key(pkey, keyname, directory):
+	with open("{0}{1}Key.pem".format(directory, keyname ), 'bw' ) as fd :
 		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, pkey ) )
 
-def dump_cert(cert, certname):
-	with open("{0}{1}Cert.pem".format( IPSEC_D_CERTS, certname ) , 'bw' ) as fd :
+def dump_cert(cert, certname, directory):
+	with open("{0}{1}Cert.pem".format( directory , certname ) , 'bw' ) as fd :
 		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, cert ) )
 
 def create_key_pair( keytype, bits ):
@@ -114,8 +114,8 @@ def create_root_cert(
 	)
 
 	#dump the key and server certificate to appropriate directories 
-	dump_key(k, SERVER_CERT_NAME )
-	dump_cert(c, SERVER_CERT_NAME )
+	dump_key(k, SERVER_CERT_NAME, IPSEC_D_PRIVATE)
+	dump_cert(c, SERVER_CERT_NAME, IPSEC_D_CERTS)
 
 def create_host_cert(
 		subject,
@@ -144,36 +144,54 @@ def generate_serial():
 	return int(_ser)
 
 
-def create_outfile( out, key, certificate ):
-	
+def create_outfile( out, key, cert ):
+	"""
+	@params
+	out - the type of output, valid values are tar.gz or pkcs12
+	key - a PKey object containing a keypair 
+	cert - a X509 object
+	@returns
+	The path to the newly created file. In the case of the tarball, it will 
+	contain the private key, certificate and the CA cert, the pkcs12 will 
+	contain all three bundled in a .p12 file.  
+	"""	
 	outpath = out_path()
 
 	if out == 'pkcs12':
-		pkcs12 = create_pkcs12( key, certificate )
+		pkcs12 = create_pkcs12( key, cert )
 		outpath = "{}.p12".format( outpath )
 		with open( outpath, 'bw' ) as fd:
 			fd.write( pkcs12 )
 
-	elif out == 'tar.gz' :
-		pass 
-		# todo 
+	elif out == 'tar.gz' or out == 'gzip' :
+		temp_dir = "/tmp/__tmp__/"
+		outpath += ".tar.gz"
+		_check_call([ "mkdir", temp_dir ])
+		_check_call([ "cp", IPSEC_D_CACERTS + CA_CERT, temp_dir ])
+		dump_cert(cert, "", temp_dir)
+		dump_key(key, "", temp_dir)
+		_check_call(["tar", "-czpf", outpath, temp_dir])
+		_check_call(["rm", "-Rf", temp_dir ])
 
+	else:
+		outpath = ""
+		 
 	return outpath 
 
 
 def out_path():
-
+	"""
+	@return 
+	A file path to write either the tarball or the pkcs12 file. Simply creates a name with a
+	random number between zero and 1 million and checks to make sure that it does not 
+	exist already in the /home/ubuntu/ directory (where the files are placed). 
+	"""
 	_exists = False
-
 	while not _exists :
-
-		_rnum = str( randint( 0, 10000 ) )
-		_cert_name = "cert" + _rnum
-
-		if ( exists("{}{}.tar.gz".format(EXPORT_DIR, _cert_name) ) or
-			exists("{}{}.p12".format(EXPORT_DIR, _cert_name ) ) ):
+		_rnum = str( randint( 0, 1000000 ) )
+		if ( exists("{}{}.tar.gz".format(EXPORT_DIR, _rnum) ) or
+			exists("{}{}.p12".format(EXPORT_DIR, _rnum ) ) ):
 			continue
 		else:
 			_exists = True
-
-	return (EXPORT_DIR + _cert_name)
+	return (EXPORT_DIR + _rnum)
