@@ -1,19 +1,46 @@
 #!/usr/bin/env python3
- 
-from charmhelpers.core import hookenv
+
 from strongswan.openssl import create_host_cert
 from strongswan.actions import action_get, action_set, action_fail
+from os import chown 
+from pwd import getpwnam
+from grp import getgrnam
 
-if __name__ == '__main__':
-	
+def create():
 	params = action_get()
 
 	if params:
-		create_host_cert(
+		file_path = create_host_cert(
 			params.get("subject"), 
 			params.get("lifetime"),
 			params.get("keysize"),
 			params.get("out")
 		)
+
+		if file_path:
+			action_set(outpath=file_path)
+			action_set(message="""Use juju scp command to copy this file path to your machine. 
+				Remove the file from the remote server after (recommended).""")
+			set_permissions( file_path )
+		else:
+			action_fail("No path returned from action create-host-certificate")
 	else:
-		pass
+		action_fail("No parameters passed to action create-host-certificate")
+
+
+# I DONT like this...
+# the problem stems from the fact
+# 1) I can't return the certificate directly via the juju action
+# 2) juju scp runs in the context of the ubuntu user
+def set_permissions( file_path ):
+	uid = getpwnam('ubuntu').pw_uid
+	guid = getgrnam('ubuntu').gr_gid
+	chown(file_path, uid, guid )
+
+
+if __name__ == '__main__':
+
+	create()
+	
+	
+
