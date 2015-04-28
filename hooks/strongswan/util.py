@@ -1,19 +1,22 @@
 
 import subprocess as sp
 import re
+from json import dumps
 from time import time, sleep
-from os.path import getmtime #, exists
-# from os import chmod, chown
-# from pwd import getpwnam
+from os.path import getmtime
 from urllib.request import urlretrieve
 from hashlib import md5
 from charmhelpers.core import hookenv
+from charmhelpers.core.sysctl import create
 from strongswan.constants import (
 	CHECK, 
 	IPTABLES, 
 	DELETE, 
 	DL_BASE_URL,
-	CONFIG
+	CONFIG,
+	IPV6_FORWARD,
+	IPV4_FORWARD,
+	SYSCTL_PATH
 )
 from strongswan.errors import (
 	DnsError, 
@@ -251,5 +254,20 @@ def convert_to_seconds( lifetime ) :
 	elif _type == 'd' :
 		return (_quantity * 60 * 60 * 24)
 	elif _type == 'y' :
-		return (_quantity * 60 * 60 * 24 * 365 ) 
+		return (_quantity * 60 * 60 * 24 * 365 )
+
+
+def configure_sysctl():
+	_dict = {}
+	
+	if CONFIG.get("ip_forward") :
+		_dict[IPV4_FORWARD] = 1
+		_dict[IPV6_FORWARD] = 1
+	
+	create( dumps(_dict) , SYSCTL_PATH )
+
+
+def cp_sysctl_file():
+	_check_call(['cp', '/etc/sysctl.conf', '/etc/sysctl.conf.original'] )
+	
 
