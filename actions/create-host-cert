@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from charmhelpers.core import hookenv
 from strongswan.openssl import create_host_cert
 from strongswan.actions import action_get, action_set, action_fail
 from os import chown 
@@ -16,16 +17,18 @@ def create():
 			params.get("keysize"),
 			params.get("out")
 		)
-
 		if file_path:
 			action_set(outpath=file_path)
-			action_set(message="""Use juju scp command to copy this file path to your machine. 
-				Remove the file from the remote server after (recommended).""")
+			action_set(message=("Use juju scp command to copy this file path to your machine. " 
+				"Remove the file from the remote server after (recommended)." ) )
 			set_permissions( file_path )
+			hookenv.log("User/host certificate created and is located: {}".format(
+				file_path), level=hookenv.INFO )
 		else:
-			action_fail("No path returned from action create-host-certificate")
+			action_fail("Out file must be either tar.gz, pkcs12 or gzip.")
 	else:
 		action_fail("No parameters passed to action create-host-certificate")
+
 
 
 # I DONT like this...
@@ -39,7 +42,6 @@ def set_permissions( file_path ):
 
 
 if __name__ == '__main__':
-
 	create()
 	
 	

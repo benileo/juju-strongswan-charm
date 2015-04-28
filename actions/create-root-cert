@@ -23,6 +23,10 @@ if __name__ == '__main__':
 				params.get("lifetime"),
 				params.get("keysize")
 			)
+			hookenv.log("Root CA certificate created.", level=hookenv.INFO)
+			hookenv.log("Written into standard /etc/ipsec.d/cacerts directory", level=hookenv.INFO)
+			hookenv.log("Local certificate created and signed by the CA", level=hookenv.INFO)
+			hookenv.log("Written into standard /etc/ipsec.d/certs directory", level=hookenv.INFO)
 		else:
 			action_fail("Root Cerficate Authority already exists. Pass overwrite=true to overwrite.")
 	else:

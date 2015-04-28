@@ -66,7 +66,7 @@ create-host-cert:
     out:
       type: string
       description: "Out format of the certificate"
-      emum: [gzip,pkcs12]
+      emum: [tar.gz,pkcs12,gzip]
       default: "pkcs12"
     subject:
       type: object
