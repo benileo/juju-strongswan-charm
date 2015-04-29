@@ -1,5 +1,7 @@
 
+from re import match
 from charmhelpers.core import hookenv
+from strongswan.errors import InvalidVersion
 from strongswan.util import (
 	_check_call, 
 	run_apt_command, 
@@ -11,26 +13,32 @@ from strongswan.constants import (
 	BUILD_DEPENDENCIES
 )
 
-# installs the strongswan packages from the archives.
 def install_strongswan_archives():
-	hookenv.log("Installing Strongswan from the archives" , level=hookenv.INFO )
-
-	#update
+	"""
+	@params None
+	@return None
+	@description Installs strongswan from the Ubuntu Archives. Runs
+	apt-get update, apt-get install. 
+	"""
+	hookenv.log("Installing Strongswan from the ubuntu archives", level=hookenv.INFO )
 	run_apt_command([], apt_cmd='update' )
-
-	#determine the packages to install -> based on config
-	#TODO
-
-	#install
+	#determine the packages to install -> based on config TODO
 	run_apt_command(['strongswan'], apt_cmd='install', timeout=300 )
 	
 	
 # installs strongswan from the most recent strongswan tarball
 def install_strongswan_version( version ):
-	hookenv.log("Installing Strongswan from http://download.strongswan.org. Version: {}".format( 
-		version ) , level=hookenv.INFO )
+	"""
+	@params The version number of Strongswan to install. Special value is 'latest'
+	@return None
+	@description: Installs Strongswan from the tarballs posted by StrongSWan 
+	maintainers. Unpacks the tarball and configures. Additional config options
+	can be passed as an option in the config file (config_options).
+	@exception: InvalidVersion `If the version number is not of valid form or 'latest'
+	"""
+	if(	version.upper() != 'LATEST'  or not re.match(r'^[1-9]\.[0-9]\.[0-9]$' , version ) ): 
+		raise InvalidVersion("Version must be in the format 5.3.1 or 'latest'")
 
-	#install dependencies
 	run_apt_command([], apt_cmd='update' )
 	run_apt_command(BUILD_DEPENDENCIES, apt_cmd='install', timeout=300 )
 	
@@ -53,23 +61,22 @@ def install_strongswan_version( version ):
 	_check_call(['cp', '../scripts/strongswan.conf', '/etc/init/strongswan.conf' ])
 
 
+def install_pyOpenSSL():
+	"""
+	@params None
+	@return None
+	@description Installs the PyOpenSSL Dependencies and Python Pip 
+	"""
+	hookenv.log("Installing PyOpenSSL Dependencies" , level=hookenv.INFO )
+	run_apt_command( PYOPENSSL_DEPENDENCIES )
+	_check_call( [ "pip3", "install" , "pyOpenSSL"] , fatal=True, quiet=True )
+
+
 
 
 # install strongswan from github
 def install_strongswan_upstream():
+	"""
+	TODO
+	"""
 	pass
-
-
-# Installs the PyOpenssl Package into Python 3
-def install_pyOpenSSL():
-	hookenv.log("Installing PyOpenSSL Dependencies" , level=hookenv.INFO )
-
-	#install dependencies
-	run_apt_command( PYOPENSSL_DEPENDENCIES, apt_cmd='install', timeout=300 )
-
-	# install into python3 
-	_check_call( [ "pip3", "install" , "pyOpenSSL"] , 
-		fatal=True, 
-		message="Installing pyOpenSSL into Python 3 installation", 
-		quiet=True
-	)
