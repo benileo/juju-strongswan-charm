@@ -16,22 +16,24 @@ from strongswan.constants import (
 	CONFIG,
 	IPV6_FORWARD,
 	IPV4_FORWARD,
-	SYSCTL_PATH
+	SYSCTL_PATH,
+	DPKG_LOCK_ERROR
 )
 from strongswan.errors import (
-	DnsError, 
 	NetworkError, 
-	AptLockError, 
+	AptError, 
 	InvalidHashError
 )
 
 
-# wrapper to check_call
 def _check_call( cmd , fatal=False, 
 	message=None, quiet=False, 
 	timeout=60, log=True, shell=False,
 	check_output=False, log_cmd=True
 	):
+	"""
+	TODO
+	"""
 	if log_cmd:
 		hookenv.log("Calling {0}".format(cmd) , level=hookenv.INFO )
 	try:
@@ -56,9 +58,10 @@ def _check_call( cmd , fatal=False,
 			raise
 	
 
-
-# if the rule does not already exist, make the rule.
 def make_rule(cmd, chain, rule_type):
+	"""
+	TODO
+	"""
 	try:
 		cmd = list(cmd)
 		cmd.insert( 0, chain )
@@ -76,77 +79,78 @@ def make_rule(cmd, chain, rule_type):
 			_check_call(cmd, fatal=True, message="Deleting IPTables rule", log_cmd=False)
 
 
-
-# runs apt-get command handles dpkg locks and archive server unavailability
-# TODO, i believe apt-get returns if it can't contact a DNS server
-# handle this error appropriately
-def run_apt_command(cmd, timeout=60 , apt_cmd='install'):
-
-	apt_retry_count = 0
-	apt_retry_max = 0
-	apt_retry_wait = 10
-	dpkg_lock_error = 100
-	timed_out = False
-	result = None
-
-	# build the command list
-	cmd.insert(0, '-qq' )
-	if apt_cmd == 'install' :
-		cmd.insert(0, '-y' )
-	cmd.insert(0, apt_cmd)
-	cmd.insert(0, 'apt-get')
-		
-
-	# call the apt command
-	while result is None or result == dpkg_lock_error :
-		try:
-			result = _check_call( cmd, timeout=timeout, quiet=True, fatal=True )
-		
-		# Unable to get that lock
-		except sp.CalledProcessError as e:
-			apt_retry_count += 1
-			if apt_retry_count > apt_retry_max : 
-				raise AptLockError("Unable to acquire DPKG Lock")
-			result = e.returncode
-			sleep(apt_retry_wait)
-
-		# The command has timed out - wonder why - lets try some DNS hacks.
-		except sp.TimeoutExpired:
-			hookenv.log("{0} command has timed out....".format(cmd), level=hookenv.INFO )
-			if not timed_out :
-				timed_out = True
-				dns_entries = get_archive_ip_addrs()
-				if not dns_entries:
-					raise DnsError("Dns Error")
-			if not dns_entries:
-				raise NetworkError("Unable to contact an archive server.")
-			else:
-				_ip = dns_entries.pop()
-				update_hosts_file( _ip , "archive.ubuntu.com" )
-				update_hosts_file( _ip , "security.ubuntu.com" )
+def apt_install( pkgs ):
+	"""
+	@params: pkgs is a list of packages
+	@description: call apt-get update then call apt-get install
+	If we can't reach the first archive server, we cycle all the 
+	archive servers returned from a DNS lookup by modifying the hosts file.
+	@return None
+	@exception AptError if we can't get the dpkg lock after 10 tries with intervals of 10 seconds.
+	@exception NetworkError if we can't contact a single archive server
+	"""
+	if isinstance( pkgs, type(list) ):
+		for cmd in [ "apt-get update -qq" , ["apt-get", "install", "-y", "-qq" ] ] : 
+			apt_retry_count = 0
+			apt_retry_max = 10
+			apt_retry_wait = 10
+			timed_out = False
+			result = None
+			while result == DPKG_LOCK_ERROR or result == None :
+				try:
+					if 'install' in cmd :
+						result = _check_call( cmd.extend(pkgs), timeout=300, fatal=True, quiet=True )
+					else:
+						result = _check_call( cmd, shell=True, timeout=100, fatal=True, quiet=True )
+				except sp.CalledProcessError as e:
+					apt_retry_count += 1
+					if apt_retry_count > apt_retry_max : 
+						raise AptError("Fatal Apt-error, check DNS or apt-lock")
+					else:
+						result = e.returncode
+						sleep(apt_retry_wait)
+				except sp.TimeoutExpired:
+					hookenv.log("{0} Time Out".format(cmd), level=hookenv.INFO )
+					if not timed_out : 
+						dns_entries = get_archive_ip_addrs():
+					if not dns_entries:
+						raise NetworkError("Unable to contact archive server")
+					else:
+						_ip = dns_entries.pop()
+						update_hosts_file( _ip , "archive.ubuntu.com" )
+						update_hosts_file( _ip , "security.ubuntu.com" )
 
 
-# make copy of hosts file for reference
 def cp_hosts_file():
+	"""
+	Copy the hosts file for reference
+	"""
 	_check_call(['cp', '/etc/hosts', '/etc/hosts.original' ]) 
 	
 
-# If the host file has been modified in the past 24 hours
-# Comment out entries for achive.ubuntu.com & security.ubuntu.com
 def flush_hosts_file():
+	"""
+	If the hosts file has been modified in the past 24 hours
+	We will make sure we comment out the entries for the archive servers
+	This is to prevent future upgrades from using a defined server in the hosts file
+	"""
 	if  ( ( time() - getmtime('/etc/hosts') ) ) < 86400 :
 		update_hosts_file( '#1.2.3.4', 'archive.ubuntu.com' )
 		update_hosts_file( '#1.2.3.4', 'security.ubuntu.com' )
 
 
-
-# add the alias to /etc/hosts if it does not exist already
 def update_hosts_file( ip_addr , hostname ):
+	"""
+	@params ip_addr is a dotted quad IP address
+			hostname is the alias for this IP
+	@return None
+	@description Finds all existing (non commented) lines in the /etc/hosts
+	file and adds the ip_addr, hostname to the file if and only if 
+	it does not exist already. 
+	"""
 	hookenv.log("Adding {0}\t{1} to /etc/hosts".format(ip_addr, hostname ), level=hookenv.INFO )
-
 	aliased_hosts = []
 	output_string = ""
-
 	with open('/etc/hosts' , 'r') as hosts_file :
 		for line in hosts_file:
 			elem = re.findall('^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\s\S*' , line )
@@ -160,14 +164,15 @@ def update_hosts_file( ip_addr , hostname ):
 				output_string += line
 		if hostname not in aliased_hosts:
 			output_string += "{0}\t{1}\n".format(ip_addr, hostname)
-
 	with open('/etc/hosts', 'w') as hosts_file:
 		hosts_file.write(output_string)
 
-
-# returns a list of archive ip addresses 			
+			
 def get_archive_ip_addrs():
-	hookenv.log("Running dig command to obtain archive IP addresses", level=hookenv.INFO )
+	"""
+	@params None
+	@return A list of IP addresses for archive.ubuntu.com
+	"""
 	ip_list = []
 	ip_addrs = _check_call(['dig', 'archive.ubuntu.com'], 
 			check_output=True, fatal=True ).decode('utf-8').split('\n')
@@ -179,10 +184,13 @@ def get_archive_ip_addrs():
 	return ip_list
 
 
-# downloads the tarball and checks the hash
 def get_tarball( version ):
-
-		# build urls
+	"""
+	@params version: the version of strongswan to fetch
+	@description: grabs the strongswan tarball for the requested version
+	and checks the tarball against the md5 hash
+	@returns: the file path where the tarball was downloading to /tmp/
+	"""
 	if version == 'latest' :
 		tarball = "strongswan.tar.gz"
 		md5_hash_file = "strongswan.tar.gz.md5"
@@ -214,32 +222,31 @@ def get_tarball( version ):
 	return "/tmp/{}".format(tarball)
 
 
-
 def configure_install(base_dir):
-
+	"""
+	@params base_dir: the base directory where the strongswan tarball was unpacked to.
+	@return None
+	@description pulls the comma sperated list of config options from the config file 
+	and changes to the strongswan src directory and configures the install. Two options are
+	included by default because we will break a lot of other stuff if they are not. 
+	TODO: certain packages have dependencies, sanity check?
+	"""
 	cmd  = 'cd {}; '.format(base_dir)
 	cmd += ' ./configure --prefix=/usr --sysconfdir=/etc'
-
 	added_items = ["--prefix=/usr", "--sysconfdir=/etc"]
-
-	# In particular EAP-RADIUS,, not sure exactly what will go here			
-	# TODO depending on type of authentication we may have to append some extra
-	# should we have a sanity check on what the valid config options are? or
-	# trust that the sys admin knows what they are doing...!
-	
-
-	# add the items in the config if they are not already added.
 	for item in CONFIG.get("config_options").split(',') :
 		if item:
 			if item not in added_items:
 				cmd += ' {}'.format(item)
 				added_items.append(item)
-
 	_check_call(cmd, shell=True, fatal=True, quiet=True )
 
 
-
 def convert_to_seconds( lifetime ) :
+	"""
+	@params lifetime of a certificate in form 10y, 10d, 10h, 10m, or 10s
+	@returns Number of seconds
+	"""
 	s = re.split(r'(\d*)(\D)', lifetime )
 	if len(s) == 1:
 		return int(s[0])
@@ -258,16 +265,20 @@ def convert_to_seconds( lifetime ) :
 
 
 def configure_sysctl():
+	"""
+	@description Reads Config file, and creates a sysctl.conf file
+	"""
 	_dict = {}
-	
 	if CONFIG.get("ip_forward") :
 		_dict[IPV4_FORWARD] = 1
 		_dict[IPV6_FORWARD] = 1
-	
 	create( dumps(_dict) , SYSCTL_PATH )
 
 
 def cp_sysctl_file():
+	"""
+	Copies the sysctl file for future reference
+	"""
 	_check_call(['cp', '/etc/sysctl.conf', '/etc/sysctl.conf.original'] )
 	
 
