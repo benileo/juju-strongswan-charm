@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from charmhelpers.core import hookenv
-from strongswan.iptables import configure_iptables
+import strongswan.iptables as iptables
 from strongswan.constants import CONFIG
 from strongswan.errors import InvalidSourceError
 from strongswan.util import (
@@ -14,58 +14,47 @@ from strongswan.archive import (
 	install_strongswan_archives,
 	install_strongswan_version,
 	install_strongswan_upstream,
-	install_pyOpenSSL
+	install_dep
 )
 
 
-
 def pre_install():
-	#exit(1)
-
-	# first, setup IPtables for IPsec
-	configure_iptables()
-
-	# second, enable ip_forwarding
-	cp_sysctl_file()		
+	"""
+	@description:
+	1. install dependencies 
+	2. configure IPtables for IPsec 
+	3. enable IP forwarding, make 
+	4. copy sysctl.conf and hosts file for future reference
+	"""
+	install_dep()
+	cp_hosts_file()
+	cp_sysctl_file()
+	iptables.filter()
+	iptables.nat()
+	iptables.save()
 	configure_sysctl()
 
-	# make a copy of other important config files (for reference)
-	cp_hosts_file()			
 	
-		
-
 def install():
+	"""
+	@description: Install Strongswan in 1 of 3 ways.
+	1. From the ubuntu archives
+	2. From upstream github repo
+	3. From stable strongswan releaes
+	"""
 	source = CONFIG.get("source")
-
-	# install strongswan from the archives #
 	if source == 'archives':
 		install_strongswan_archives()
-
-	# install from the github account, most advanced. #
 	elif source == 'upstream' :
 		install_strongswan_upstream()
-
-	# install strongswan from strongswan releases #
 	else:
-		install_strongswan_version( CONFIG.get("source") )	
-
+		install_strongswan_version( CONFIG.get("source") )
 
 
 def post_install():
-	auth_method = CONFIG.get("auth_method")
-
-	# install pyOPenSSL and dependencies if we are using x509s
-	if ( auth_method == 'x509' or auth_method == 'rsa' ):
-		try:
-			from OpenSSL import crypto 
-		except ImportError:
-			install_pyOpenSSL()
-
-
-		
-
-# some cleanup
-def cleanup():
+	"""
+	@description: Some post-install checks
+	"""
 	flush_hosts_file()
 
 
@@ -74,4 +63,3 @@ if __name__ == "__main__":
 	pre_install()
 	install()
 	post_install()
-	cleanup()
