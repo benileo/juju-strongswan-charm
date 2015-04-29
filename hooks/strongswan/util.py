@@ -89,7 +89,7 @@ def apt_install( pkgs ):
 	@exception AptError if we can't get the dpkg lock after 10 tries with intervals of 10 seconds.
 	@exception NetworkError if we can't contact a single archive server
 	"""
-	if isinstance( pkgs, type(list) ):
+	if isinstance( pkgs, list ):
 		for cmd in [ "apt-get update -qq" , ["apt-get", "install", "-y", "-qq" ] ] : 
 			apt_retry_count = 0
 			apt_retry_max = 10
@@ -99,7 +99,9 @@ def apt_install( pkgs ):
 			while result == DPKG_LOCK_ERROR or result == None :
 				try:
 					if 'install' in cmd :
-						result = _check_call( cmd.extend(pkgs), timeout=300, fatal=True, quiet=True )
+						_cmd = list(cmd)
+						_cmd.extend(pkgs)
+						result = _check_call(_cmd, timeout=300, fatal=True, quiet=True )
 					else:
 						result = _check_call( cmd, shell=True, timeout=100, fatal=True, quiet=True )
 				except sp.CalledProcessError as e:
@@ -112,14 +114,15 @@ def apt_install( pkgs ):
 				except sp.TimeoutExpired:
 					hookenv.log("{0} Time Out".format(cmd), level=hookenv.INFO )
 					if not timed_out : 
-						dns_entries = get_archive_ip_addrs():
+						dns_entries = get_archive_ip_addrs()
 					if not dns_entries:
 						raise NetworkError("Unable to contact archive server")
 					else:
 						_ip = dns_entries.pop()
 						update_hosts_file( _ip , "archive.ubuntu.com" )
 						update_hosts_file( _ip , "security.ubuntu.com" )
-
+	else:
+		hookenv.log("apt_install must be passed a list of packages", level=hookenv.ERROR )
 
 def cp_hosts_file():
 	"""
