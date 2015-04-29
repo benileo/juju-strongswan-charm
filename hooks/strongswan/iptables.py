@@ -4,16 +4,18 @@ from strongswan.constants import *
 from strongswan.util import make_rule, _check_call 
 
 
-# update the rule chains and then save the rules
-def configure_iptables():
-	_filter()
-	_nat()
+def save():
+	"""
+	@description: saves iptables rules
+	"""
 	_check_call([IPTABLES_SAVE] , quiet=True )
 
 
-
 # update filter chain
-def _filter():
+def filter():
+	"""
+	@description: configures filter table
+	"""
 	hookenv.log("Configuring iptables firewall for IPsec", level=hookenv.INFO )
 
 	# We should always have loopback available
@@ -73,5 +75,9 @@ def _filter():
 	_check_call( [IPTABLES, POLICY, OUTPUT , DROP ], log_cmd=False )
 
 
-def _nat():
+def nat():
+	"""
+	@description: configures 
+	Configures IPtables fil
+	"""
 	pass
