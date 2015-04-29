@@ -9,16 +9,6 @@ class InvalidSourceError(Exception):
 		return repr(self.value)
 
 
-
-class DnsError(Exception):
-	def __init__(self, arg):
-		self.args = arg
-
-	def __str__(self):
-		return repr(self.value)
-
-
-
 class NetworkError(Exception):
 	def __init__(self, arg):
 		self.args = arg
@@ -27,14 +17,13 @@ class NetworkError(Exception):
 		return repr(self.value)
 
 
-class AptLockError(Exception):
+class AptError(Exception):
 	def __init__(self, arg):
 		self.args = arg
 
 	def __str__(self):
 		return repr(self.value)
 	
-
 
 
 class InvalidHashError(Exception):
@@ -47,6 +36,15 @@ class InvalidHashError(Exception):
 
 
 class ExportDirDoesNotExist(Exception):
+	def __init__(self, arg):
+		self.args = arg
+
+	def __str__(self):
+		return repr(self.value)
+
+
+
+class InvalidVersion(Exception):
 	def __init__(self, arg):
 		self.args = arg
 
