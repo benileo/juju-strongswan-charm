@@ -26,6 +26,8 @@ BUILD_DEPENDENCIES = [
 	"make"
 ]
 
+DPKG_LOCK_ERROR = 100
+
 # SYSTEM CONTROL #
 IPV4_FORWARD 	= 	"net.ipv4.ip_forward"
 IPV6_FORWARD 	= 	"net.ipv6.conf.all.forwarding"
