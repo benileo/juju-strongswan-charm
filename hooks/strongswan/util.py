@@ -26,13 +26,22 @@ from strongswan.errors import (
 )
 
 
-def _check_call( cmd , fatal=False, 
-	message=None, quiet=False, 
-	timeout=60, log=True, shell=False,
-	check_output=False, log_cmd=True
+def _check_call( cmd , fatal=False, message=None, quiet=False, 
+	timeout=60, log=True, shell=False, check_output=False, log_cmd=True
 	):
 	"""
-	TODO
+	@params	cmd: the list of command line args to call (can be string if Shell=True)
+			fatal: do we raise an exception if one is thrown?
+			message: the message to log to juju-log
+			quiet: direct stdout and stderr to /dev/null
+			timeout: timeout
+			log: if an exception is thrown do we log to juju-log?
+			shell: execute using the shell
+			check_output: call check_output instead of check_call (we want output!)
+			log_cmd: do we log the cmd called to juju-log? this is to silence the iptables calls
+	@return None
+	@description
+	A wrapper to subprocess.check_output and check_call 
 	"""
 	if log_cmd:
 		hookenv.log("Calling {0}".format(cmd) , level=hookenv.INFO )
@@ -58,36 +67,42 @@ def _check_call( cmd , fatal=False,
 			raise
 	
 
-def make_rule(cmd, chain, rule_type):
+def make_rule(cmd, chain, rule_type, table=None ):
 	"""
-	TODO
+	@params cmd: a list of iptables command arguments (without iptables, rule_type, or chain )
+			chain: the iptables chain we are modifying 
+			rule_type: INSERT, DELETE, APPEND, FLUSH
+			table: what table are we modifying (default is filter)
+	@return None
+	@description first checks to see if the rule already exists, if it does not, the check call
+	will thrown an Exception, handler of the exception makes the rule. Opposite logic for delete,
+	if the rule exists, then no exception will be thrown and we delete the rule.
 	"""
 	try:
 		cmd = list(cmd)
 		cmd.insert( 0, chain )
 		cmd.insert( 0, CHECK )
 		cmd.insert( 0, IPTABLES )
-		_check_call(cmd, message="Checking IPtables rule", fatal=True, 
-			log=False, quiet=True, log_cmd=False )
+		_check_call(cmd, fatal=True, log=False, quiet=True, log_cmd=False )
 	except sp.CalledProcessError:
 		if rule_type != DELETE :
 			cmd[1] = rule_type
-			_check_call(cmd, fatal=True, message="Creating IPTables rule", log_cmd=False)
+			_check_call(cmd, fatal=True, log_cmd=False)
 	else:
 		if rule_type == DELETE :
 			cmd[1] = DELETE
-			_check_call(cmd, fatal=True, message="Deleting IPTables rule", log_cmd=False)
+			_check_call(cmd, fatal=True, log_cmd=False)
 
 
 def apt_install( pkgs ):
 	"""
-	@params: pkgs is a list of packages
+	@params: pkgs is a list of packages to install
 	@description: call apt-get update then call apt-get install
 	If we can't reach the first archive server, we cycle all the 
 	archive servers returned from a DNS lookup by modifying the hosts file.
 	@return None
 	@exception AptError if we can't get the dpkg lock after 10 tries with intervals of 10 seconds.
-	@exception NetworkError if we can't contact a single archive server
+	@exception NetworkError if we can't contact a single archive server.
 	"""
 	if isinstance( pkgs, list ):
 		for cmd in [ "apt-get update -qq" , ["apt-get", "install", "-y", "-qq" ] ] : 
