@@ -23,12 +23,16 @@ CA_CERT				= 	'caCert.pem'
 SERVER_CERT_NAME	= 	'SERVER'
 
 
-PYOPENSSL_DEPENDENCIES = [
+APT_DEPENDENCIES = [
 	"build-essential",
 	"libssl-dev",
 	"libffi-dev",
 	"python-dev",
 	"python3-pip"
+]
+PIP_DEPENDENCIES = [
+	"python-iptables",
+	"pyOpenSSL"
 ]
 
 BUILD_DEPENDENCIES = [

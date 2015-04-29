@@ -9,8 +9,9 @@ from strongswan.util import (
 	configure_install
 )
 from strongswan.constants import (
-	PYOPENSSL_DEPENDENCIES, 
-	BUILD_DEPENDENCIES
+	APT_DEPENDENCIES, 
+	BUILD_DEPENDENCIES,
+	PIP_DEPENDENCIES
 )
 
 def install_strongswan_archives():
@@ -53,24 +54,24 @@ def install_strongswan_version( version ):
 	configure_install(base_dir)
 
 	#install
-	_check_call( 'cd {}; make'.format(base_dir) , shell=True, 
-		fatal=True, timeout=300, quiet=True )
-	_check_call( 'cd {}; make install'.format(base_dir), shell=True, 
-		fatal=True, timeout=300, quiet=True )
+	_check_call( 'cd {}; make'.format(base_dir), shell=True, fatal=True, timeout=300, quiet=True )
+	_check_call( 'cd {}; make install'.format(base_dir), shell=True, fatal=True, timeout=300, quiet=True )
 
 	# register strongswan as a service 
 	_check_call(['cp', '../scripts/strongswan.conf', '/etc/init/strongswan.conf' ])
 
 
-def install_pyOpenSSL():
+def install_dep():
 	"""
 	@params None
 	@return None
-	@description Installs the PyOpenSSL Dependencies and Python Pip 
+	@description Installs the PyOpenSSL Dependencies and Python-Pip then installs
+	python-iptables and PyOpenSSL into Python 3 installation
 	"""
-	hookenv.log("Installing PyOpenSSL Dependencies" , level=hookenv.INFO )
-	apt_install( PYOPENSSL_DEPENDENCIES )
-	_check_call( [ "pip3", "install" , "pyOpenSSL"] , fatal=True, quiet=True )
+	hookenv.log("Installing dependencies" , level=hookenv.INFO )
+	apt_install( APT_DEPENDENCIES )
+	for dep in PIP_DEPENDENCIES :
+		_check_call( [ "pip3", "install" , dep ] , fatal=True, quiet=True )
 
 
 
