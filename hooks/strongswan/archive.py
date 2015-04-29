@@ -42,9 +42,14 @@ def install_strongswan_version( version ):
 	#dl and unpack tarball into tmp directory
 	_check_call(["tar", "-xzf", get_tarball(version), "--directory", "/tmp/" ] , fatal=True )
 
-	#configure # this is soo ugly...
-	base_dir = (_check_call( "ls -d /tmp/*strongswan*/", shell=True, 
-		check_output=True ).decode('utf-8').split('\n')[0] ) if version == 'latest' else '/tmp/strongswan-{}/'.format(version)
+	#get the base dir path
+	if version.upper() == "LATEST":
+		cmd = "ls -d /tmp/*strongswan*/"
+		base_dir = _check_call(cmd, shell=True, check_output=True ).decode('utf-8').split('\n')[0]
+	else:
+		base_dir = '/tmp/strongswan-{}/'.format(version)
+	
+	#configure install 
 	configure_install(base_dir)
 
 	#install
