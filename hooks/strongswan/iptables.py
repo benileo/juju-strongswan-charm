@@ -8,8 +8,7 @@ from strongswan.util import make_rule, _check_call
 def configure_iptables():
 	_filter()
 	_nat()
-	_check_call([IPTABLES_SAVE] , quiet=True,
-			message="iptables-save has failed in non-fatal mode")
+	_check_call([IPTABLES_SAVE] , quiet=True )
 
 
 

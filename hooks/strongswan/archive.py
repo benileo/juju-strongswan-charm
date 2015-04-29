@@ -4,7 +4,7 @@ from charmhelpers.core import hookenv
 from strongswan.errors import InvalidVersion
 from strongswan.util import (
 	_check_call, 
-	run_apt_command, 
+	apt_install, 
 	get_tarball, 
 	configure_install
 )
@@ -21,9 +21,8 @@ def install_strongswan_archives():
 	apt-get update, apt-get install. 
 	"""
 	hookenv.log("Installing Strongswan from the ubuntu archives", level=hookenv.INFO )
-	run_apt_command([], apt_cmd='update' )
 	#determine the packages to install -> based on config TODO
-	run_apt_command(['strongswan'], apt_cmd='install', timeout=300 )
+	apt_install(['strongswan'])
 	
 	
 # installs strongswan from the most recent strongswan tarball
@@ -38,15 +37,13 @@ def install_strongswan_version( version ):
 	"""
 	if(	version.upper() != 'LATEST'  or not re.match(r'^[1-9]\.[0-9]\.[0-9]$' , version ) ): 
 		raise InvalidVersion("Version must be in the format 5.3.1 or 'latest'")
-
-	run_apt_command([], apt_cmd='update' )
-	run_apt_command(BUILD_DEPENDENCIES, apt_cmd='install', timeout=300 )
+	
+	apt_install(BUILD_DEPENDENCIES)
 	
 	#dl and unpack tarball into tmp directory
-	_check_call(["tar", "-xzf", get_tarball(version),
-		"--directory", "/tmp/" ], fatal=True )
+	_check_call(["tar", "-xzf", get_tarball(version), "--directory", "/tmp/" ] , fatal=True )
 
-	#configure
+	#configure # this is soo ugly...
 	base_dir = (_check_call( "ls -d /tmp/*strongswan*/", shell=True, 
 		check_output=True ).decode('utf-8').split('\n')[0] ) if version == 'latest' else '/tmp/strongswan-{}/'.format(version)
 	configure_install(base_dir)
@@ -68,7 +65,7 @@ def install_pyOpenSSL():
 	@description Installs the PyOpenSSL Dependencies and Python Pip 
 	"""
 	hookenv.log("Installing PyOpenSSL Dependencies" , level=hookenv.INFO )
-	run_apt_command( PYOPENSSL_DEPENDENCIES )
+	apt_install( PYOPENSSL_DEPENDENCIES )
 	_check_call( [ "pip3", "install" , "pyOpenSSL"] , fatal=True, quiet=True )
 
 
