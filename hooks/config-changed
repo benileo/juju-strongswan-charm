@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 
-from strongswan.sysctl import configure_sysctl
+from strongswan.util import configure_sysctl
 from strongswan.iptables import configure_iptables
 from strongswan.constants import CONFIG
 

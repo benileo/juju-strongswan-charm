@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 
 from charmhelpers.core import hookenv
-from strongswan.sysctl import cp_sysctl_file, configure_sysctl
 from strongswan.iptables import configure_iptables
-from strongswan.util import cp_hosts_file, flush_hosts_file
 from strongswan.constants import CONFIG
 from strongswan.errors import InvalidSourceError
+from strongswan.util import (
+	cp_hosts_file, 
+	flush_hosts_file, 
+	cp_sysctl_file, 
+	configure_sysctl
+)
 from strongswan.archive import (
 	install_strongswan_archives,
 	install_strongswan_version,
@@ -59,8 +63,6 @@ def post_install():
 
 
 		
-
-
 
 # some cleanup
 def cleanup():
