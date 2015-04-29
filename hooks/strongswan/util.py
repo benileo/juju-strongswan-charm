@@ -4,7 +4,8 @@ import re
 from json import dumps
 from time import time, sleep
 from os.path import getmtime
-from urllib.request import urlretrieve
+from urllib.request import urlopen
+from urllib.error import URLError
 from hashlib import md5
 from charmhelpers.core import hookenv
 from charmhelpers.core.sysctl import create
@@ -208,36 +209,28 @@ def get_tarball( version ):
 	@description: grabs the strongswan tarball for the requested version
 	and checks the tarball against the md5 hash
 	@returns: the file path where the tarball was downloading to /tmp/
+	@raises an InvalidHashError after 5 hash mismatches
 	"""
-	if version == 'latest' :
+	if version.upper() == 'LATEST' :
 		tarball = "strongswan.tar.gz"
 		md5_hash_file = "strongswan.tar.gz.md5"
 	else:
 		tarball = "strongswan-{}.tar.gz".format(version)
 		md5_hash_file = "strongswan-{}.tar.gz.md5".format(version)
 
-	# TODO handle retrys and bad urls
-	try:
-		hookenv.log("Retrieving {}{}".format(DL_BASE_URL, tarball), 
-			level=hookenv.INFO)
-		urlretrieve( "{}{}".format(DL_BASE_URL, tarball ),
-			"/tmp/{}".format(tarball) 
-		)
-		urlretrieve( "{}{}".format(DL_BASE_URL, md5_hash_file ),
-			"/tmp/{}".format(md5_hash_file)
-		)
-	except Exception as err:
-		hookenv.log(err)
-		raise
+	for i in range(5):
+		try:
+			hookenv.log("Retrieving {}{}".format(DL_BASE_URL, tarball), level=hookenv.INFO)
+			urlopen_write( DL_BASE_URL + tarball, "/tmp/" + tarball )
+			urlopen_write( DL_BASE_URL + md5_hash_file, "/tmp/" + md5_hash_file )
+			check_hash("/tmp/" + md5_hash_file, "/tmp/" + tarball )
+		except InvalidHashError:
+			if i == 4:
+				raise
+		else:
+			break
 
-	with open("/tmp/{}".format(md5_hash_file), 'r' ) as fd :
-		original_hash = fd.read().split()[0]
-	with open("/tmp/{}".format(tarball), 'rb' ) as fd :
-		tarball_hash = md5( fd.read() ).hexdigest()
-	if original_hash != tarball_hash :
-		raise InvalidHashError("Invalid hash of {}".format(tarball) )
-
-	return "/tmp/{}".format(tarball)
+	return ( "/tmp/" + tarball )
 
 
 def configure_install(base_dir):
@@ -300,3 +293,41 @@ def cp_sysctl_file():
 	_check_call(['cp', '/etc/sysctl.conf', '/etc/sysctl.conf.original'] )
 	
 
+def urlopen_write( url, path ):
+	"""
+	@params url: the url to retrieve
+			path: the file path to write the object to
+	@return None
+	@exeption URLError is raised if we can't get the url after 5 tries
+	"""
+	retry_count = 0
+	retry_max = 5
+	retry_wait = 5
+	while retry_count < retry_max :
+		try:
+			req = urlopen(url)
+			with open( path, "bw" ) as fd:
+				fd.write( req.read() )
+		except URLError:
+			retry_count += 1
+			sleep(retry_wait)
+		else:
+			break
+	if retry_count == retry_max:
+		raise URLError("Unable to retrieve " + url )
+
+
+def check_hash(hash_file_path, tar_file_path):
+	"""
+	@params tar_file_path is the path of the tarball
+			hash_file_path is the path of the hash file
+	@description check the hash of the downloaded tarball
+	@exception Raise InvalidHashError if the hash of the tarball
+	does not match the published md5 hash.
+	"""
+	with open( hash_file_path, 'rb' ) as fd:
+		original_hash = fd.read().split()[0].decode('utf-8')
+	with open( tar_file_path, 'rb' ) as fd:
+		tar_hash = md5( fd.read() ).hexdigest()
+	if original_hash != tar_hash :
+		raise InvalidHashError("Hash did not match")

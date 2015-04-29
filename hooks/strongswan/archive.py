@@ -21,7 +21,6 @@ def install_strongswan_archives():
 	apt-get update, apt-get install. 
 	"""
 	hookenv.log("Installing Strongswan from the ubuntu archives", level=hookenv.INFO )
-	#determine the packages to install -> based on config TODO
 	apt_install(['strongswan'])
 	
 	
@@ -35,7 +34,7 @@ def install_strongswan_version( version ):
 	can be passed as an option in the config file (config_options).
 	@exception: InvalidVersion `If the version number is not of valid form or 'latest'
 	"""
-	if(	version.upper() != 'LATEST'  or not re.match(r'^[1-9]\.[0-9]\.[0-9]$' , version ) ): 
+	if(	version.upper() != 'LATEST' and not match(r'^[1-9]\.[0-9]\.[0-9]$' , version ) ): 
 		raise InvalidVersion("Version must be in the format 5.3.1 or 'latest'")
 	
 	apt_install(BUILD_DEPENDENCIES)
