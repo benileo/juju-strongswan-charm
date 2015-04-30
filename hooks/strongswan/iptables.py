@@ -2,7 +2,7 @@
 from charmhelpers.core import hookenv
 from strongswan.constants import (
 	CONFIG, FILTER, NAT, INSERT, APPEND, DELETE,
-	ACCEPT,
+	ACCEPT, DROP, SSH, IKE, NAT_T, 
 )
 from strongswan.util import _check_call 
 import iptc
@@ -43,15 +43,150 @@ def filter():
 	rule.target = create_target(ACCEPT)
 	table.make_rule(rule, table._output, INSERT )
 
-	# allow IKE, NAT-T inbound & outbound
+	# allow IKE, inbound & outbound
 	rule = iptc.Rule()
 	rule.protocol = "udp"
 	match = rule.create_match("udp")
-	match.dport = "500"
+	match.dport = IKE
 	rule.add_match(match)
 	rule.target = rule.create_target(ACCEPT)
 	table.make_rule(rule, table._input, INSERT)
 	table.make_rule(rule, table._output, INSERT)
+
+	# allow NAT-T, inbound & outbound
+	rule = iptc.Rule()
+	rule.protocol = "udp"
+	match = rule.create_match("udp")
+	match.dport = NAT_T
+	rule.add_match(match)
+	rule.target = rule.create_target(ACCEPT)
+	table.make_rule(rule, table._input, INSERT)
+	table.make_rule(rule, table._output, INSERT)
+
+	# esp 
+	rule = iptc.Rule()
+	rule.protocol = "esp"
+	rule.target = rule.create_target(ACCEPT)
+	table.make_rule(rule, table._input, INSERT)
+	table.make_rule(rule, table._output, INSERT)
+
+	# ssh in 
+	rule = iptc.Rule()
+	rule.protocol = "tcp"
+	match = rule.create_match("tcp")
+	match.sport = SSH
+	match.dport = "49152:65535"
+	rule.add_match(match)
+	rule.target = rule.create_target(ACCEPT)
+	table.make_rule(rule, table._input, APPEND)
+
+	# ssh out
+	rule = iptc.Rule()
+	rule.protocol = "tcp"
+	match = rule.create_match("tcp")
+	match.dport = SSH 
+	match.sport = "49152:65535"
+	rule.add_match(match)
+	rule.target = rule.create_target(ACCEPT)
+	table.make_rule(rule, table._output, APPEND)
+
+	
+	if CONFIG.get("public_network") :
+		# allow all est conns out
+		rule = ipt
+		# delete dns udp in 
+		rule = iptc.Rule()
+		rule.protocol = "udp"
+		match = rule.create_match("udp")
+		match.sport = "53"
+		match.state = "ESTABLISHED,RELATED"
+		rule.add_match(match)
+		rule.target = rule.create_target(ACCEPT)
+		table.make_rule( rule, table._input, DELETE )
+
+		# delete dns udp out
+		rule = iptc.Rule()
+		rule.protocol = "udp"
+		match = rule.create_match("udp")
+		match.dport = "53"
+		match.state = "NEW,ESTABLISHED"
+		rule.add_match(match)
+		rule.target = rule.create_target(ACCEPT)
+		table.make_rule( rule, table._output, DELETE )
+
+		# delete dns tcp in 
+		rule = iptc.Rule()
+		rule.protocol = "tcp"
+		match = rule.create_match("tcp")
+		match.sport = "53"
+		match.state = "ESTABLISHED,RELATED"
+		rule.add_match(match)
+		rule.target = rule.create_target(ACCEPT)
+		table.make_rule( rule, table._input, DELETE )
+
+		# delete dns tcp out 
+		rule = iptc.Rule()
+		rule.protocol = "tcp"
+		match = rule.create_match("tcp")
+		match.dport = "53"
+		match.state = "NEW,ESTABLISHED"
+		rule.add_match(match)
+		rule.target = rule.create_target(ACCEPT)
+		table.make_rule( rule, table._output, DELETE )
+
+	else:
+		# dns udp in 
+		rule = iptc.Rule()
+		rule.protocol = "udp"
+		match = rule.create_match("udp")
+		match.sport = "53"
+		match.state = "ESTABLISHED,RELATED"
+		rule.add_match(match)
+		rule.target = rule.create_target(ACCEPT)
+		table.make_rule( rule, table._input, APPEND )
+
+		# udp out
+		rule = iptc.Rule()
+		rule.protocol = "udp"
+		match = rule.create_match("udp")
+		match.dport = "53"
+		match.state = "NEW,ESTABLISHED"
+		rule.add_match(match)
+		rule.target = rule.create_target(ACCEPT)
+		table.make_rule( rule, table._output, APPEND )
+
+		#tcp in 
+		rule = iptc.Rule()
+		rule.protocol = "tcp"
+		match = rule.create_match("tcp")
+		match.sport = "53"
+		match.state = "ESTABLISHED,RELATED"
+		rule.add_match(match)
+		rule.target = rule.create_target(ACCEPT)
+		table.make_rule( rule, table._input, APPEND )
+
+		#tcp out 
+		rule = iptc.Rule()
+		rule.protocol = "tcp"
+		match = rule.create_match("tcp")
+		match.dport = "53"
+		match.state = "NEW,ESTABLISHED"
+		rule.add_match(match)
+		rule.target = rule.create_target(ACCEPT)
+		table.make_rule( rule, table._output, APPEND )
+
+	#dhcp #this needs to be reviewed
+	rule = iptc.Rule()
+	rule.protocol = "udp"
+	match = create_match("udp")
+	match.dport = "67:68"
+	match.sport = "67:68"
+	rule.add_match(match)
+	rule.target = rule.create_target(ACCEPT)
+	table.make_rule(rule, table._input, APPEND)
+	table.make_rule(rule, table._output, APPEND)
+
+	#
 
 
 
@@ -88,38 +223,9 @@ class Table:
 
 
 
-# 	# allow IKE and NAT-T Inbound and Outbound
-# 	make_rule(ALLOW_IKE, INPUT, INSERT)
-# 	make_rule(ALLOW_IKE, OUTPUT, INSERT )
-# 	make_rule(ALLOW_NAT_T, INPUT, INSERT)
-# 	make_rule(ALLOW_NAT_T, OUTPUT, INSERT)
 
-# 	# allow either AH or ESP inbound and outbound
-# 	if CONFIG.get("ipsec_protocol") == "esp":
-# 		make_rule(ALLOW_ESP, INPUT, INSERT)
-# 		make_rule(ALLOW_AH , INPUT, DELETE )
-# 		make_rule(ALLOW_ESP, OUTPUT, INSERT)
-# 		make_rule(ALLOW_AH , OUTPUT, DELETE )
-# 	else:
-# 		make_rule(ALLOW_AH, INPUT, INSERT )
-# 		make_rule(ALLOW_ESP, INPUT, DELETE )
-# 		make_rule(ALLOW_AH, OUTPUT, INSERT )
-# 		make_rule(ALLOW_ESP, OUTPUT, DELETE )
 
-# 	# allow ssh inbound and outbound 
-# 	make_rule(ALLOW_SSH_IN, INPUT, APPEND)
-# 	make_rule(ALLOW_SSH_OUT, OUTPUT, APPEND)
 
-# 	# all DNS gets through the firewall
-# 	if not CONFIG.get("public_network"):
-# 		make_rule(ALLOW_DNS_UDP_IN, INPUT, APPEND)
-# 		make_rule(ALLOW_DNS_UDP_OUT, OUTPUT, APPEND)
-# 		make_rule(ALLOW_DNS_TCP_IN, INPUT, APPEND)
-# 		make_rule(ALLOW_DNS_TCP_OUT, OUTPUT, APPEND)
-
-# 	# DHCP 
-# 	make_rule(ALLOW_DHCP, INPUT, APPEND)
-# 	make_rule(ALLOW_DHCP, OUTPUT, APPEND)
 
 # 	# allow all established outbound connections
 # 	# if NO, we must allow apt-ports for install and updates
@@ -140,19 +246,3 @@ class Table:
 # 	_check_call( [IPTABLES, POLICY, INPUT , DROP ], log_cmd=False )
 # 	_check_call( [IPTABLES, POLICY, OUTPUT , DROP ], log_cmd=False )
 
-
-# def _loopback():
-# 	"""
-# 	Allow all inbound and outbound traffic to the loopback in_interface
-# 	"""
-# 	rule = iptc.Rule()
-# 	rule.in_interface = 'lo'
-# 	rule.target = rule.create_target(ACCEPT)
-# 	create(rule, filter_table.chains[2]
-
-
-
-# 	make_rule( rule, FILTER, INPUT, INSERT )
-# 	rule.out_interface = 'lo'
-# 	rule.in_interface = None
-# 	make_rule( rule, FILTER, OUTPUT, INPUT)

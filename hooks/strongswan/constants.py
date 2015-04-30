@@ -21,6 +21,16 @@ IPSEC_D_CRLS		= 	'/etc/ipsec.d/crls/'
 CA_KEY				= 	'caKey.pem'
 CA_CERT				= 	'caCert.pem'
 SERVER_CERT_NAME	= 	'SERVER'
+INSERT 				= 	'INSERT'
+APPEND 				= 	'APPEND'
+DELETE				= 	'DELETE'
+FILTER				=	'FILTER'
+NAT 				= 	'NAT'
+ACCEPT 				= 	"ACCEPT"
+DROP 				= 	"DROP"
+SSH 				=	"22"
+IKE					= 	"500"
+NAT_T				=	"4500"
 
 
 APT_DEPENDENCIES = [
@@ -41,36 +51,12 @@ BUILD_DEPENDENCIES = [
 	"make"
 ]
 
-# IP TABLES RELATED #
-ACCEPT 			= 	"ACCEPT"
-DROP 			= 	"DROP"
-INPUT 			= 	"INPUT"
-OUTPUT 			= 	"OUTPUT"
-FORWARD 		= 	"FORWARD"
-POLICY 			=	"--policy"
-NAT_TABLE 		= 	"nat"
-IPTABLES 		= 	"iptables"
-IPTABLES_SAVE 	= 	"iptables-save"
-UDP 			= 	'udp'
-TCP 			= 	'tcp'
-ESP 			= 	"50"
-AH 				= 	"51"
-IKE 			= 	"500"
-NAT_T 			= 	'4500'
-SSH 			= 	'22'
-DNS 			= 	'53'
-DHCP 			= 	'67:68'
-JUJU 			=	'17017'
-INSERT 			= 	'-I'
-APPEND 			= 	'-A'	
-DELETE 			= 	'-D'
-CHECK 			= 	'-C'
-ALLOW_IKE 		= 	['-p', UDP , '--dport' , IKE , '--sport', IKE, '-j', ACCEPT ]
-ALLOW_NAT_T 	= 	['-p', UDP, '--dport', NAT_T , '--sport', NAT_T, '-j', ACCEPT ]
-ALLOW_SSH_IN 	= 	['-p',  TCP, '--dport', SSH, '-j', ACCEPT]
-ALLOW_SSH_OUT 	= 	['-p',  TCP, '--sport', SSH, '-j', ACCEPT]
-ALLOW_AH 		=  	['-p', AH, '-j', ACCEPT ]
-ALLOW_ESP 		= 	['-p', ESP, '-j', ACCEPT ]
+
+
+	
+
+
+
 ALLOW_APT_OUT	= 	['-p', TCP, '--dport', '80', '--sport', '49152:65535', '-j', ACCEPT ]
 ALLOW_APT_IN	= 	['-p', TCP, '--dport', '49152:65535', '--sport', '80', '-j', ACCEPT ]
 ALLOW_DHCP		=	['-p', UDP, '--dport', DHCP, '--sport', DHCP, '-j', ACCEPT ]
