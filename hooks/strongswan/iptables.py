@@ -1,26 +1,35 @@
 
 from charmhelpers.core import hookenv
-from strongswan.constants import * 
-from strongswan.util import make_rule, _check_call 
+from strongswan.constants import (
+	CONFIG, INPUT, OUTPUT, 
+)
+from strongswan.util import _check_call 
+import iptc
 
+filter_table = iptc.Table(iptc.Table.FILTER)
+nat_table = iptc.Table(iptc.Table.NAT)
 
 def save():
 	"""
 	@description: saves iptables rules
 	"""
-	_check_call([IPTABLES_SAVE] , quiet=True )
+	_check_call( ["iptables-save"] , quiet=True )
+
+def nat():
+	"""
+	@description: configures 
+	Configures IPtables nat table
+	"""
+	pass
 
 
-# update filter chain
 def filter():
 	"""
 	@description: configures filter table
 	"""
 	hookenv.log("Configuring iptables firewall for IPsec", level=hookenv.INFO )
+	_loopback()
 
-	# We should always have loopback available
-	make_rule(['-i', 'lo', '-j', ACCEPT], INPUT, INSERT)
-	make_rule(['-o', 'lo', '-j', ACCEPT], OUTPUT, INSERT)
 
 	# allow IKE and NAT-T Inbound and Outbound
 	make_rule(ALLOW_IKE, INPUT, INSERT)
@@ -75,9 +84,35 @@ def filter():
 	_check_call( [IPTABLES, POLICY, OUTPUT , DROP ], log_cmd=False )
 
 
-def nat():
-	"""
-	@description: configures 
-	Configures IPtables fil
-	"""
-	pass
+def _loopback():
+	rule = iptc.Rule()
+	rule.in_interface = 'lo'
+	rule.target = rule.create_target(ACCEPT)
+	make_rule( rule, FILTER, INPUT, INSERT )
+	rule.out_interface = 'lo'
+	rule.in_interface = None
+	make_rule( rule, FILTER, OUTPUT, INPUT)
+
+def make_rule(rule, table, chain, rtype ) :
+	if table == FILTER :
+		if rtype == INSERT :
+			iptc.Chain(iptc.Table(iptc.Table.FILTER), chain ).insert_rule(rule)
+		elif rtype == APPEND :
+			iptc.Chain(iptc.Table(iptc.Table.FILTER), chain ).append_rule(rule)
+		elif rtype == DELETE :
+			iptc.Chain(iptc.Table(iptc.Table.FILTER), chain ).delete_rule(rule)
+	elif table == NAT :
+		if rtype == INSERT :
+			iptc.Chain(iptc.Table(iptc.Table.NAT), chain ).insert_rule(rule)
+		elif rtype == APPEND :
+			iptc.Chain(iptc.Table(iptc.Table.NAT), chain ).append_rule(rule)
+		elif rtype == DELETE :
+			iptc.Chain(iptc.Table(iptc.Table.NAT), chain ).delete_rule(rule)
+
+
+		
+
+
+
+
+
