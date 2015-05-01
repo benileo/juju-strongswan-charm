@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from charmhelpers.core import hookenv
-import strongswan.iptables as iptables
 from strongswan.constants import CONFIG
 from strongswan.errors import InvalidSourceError
 from strongswan.util import (
@@ -16,17 +15,22 @@ from strongswan.archive import (
 	install_strongswan_upstream,
 	install_dep
 )
+try:
+	import OpenSSL
+	import iptc
+except ImportError:
+	install_dep()
+
+import strongswan.iptables as iptables
 
 
 def pre_install():
 	"""
 	@description:
-	1. install dependencies 
-	2. configure IPtables for IPsec 
-	3. enable IP forwarding, make 
-	4. copy sysctl.conf and hosts file for future reference
+	1. configure IPtables for IPsec 
+	2. enable IP forwarding, make 
+	3. copy sysctl.conf and hosts file for future reference
 	"""
-	install_dep()
 	cp_hosts_file()
 	cp_sysctl_file()
 	iptables.filter()

@@ -10,9 +10,6 @@ from hashlib import md5
 from charmhelpers.core import hookenv
 from charmhelpers.core.sysctl import create
 from strongswan.constants import (
-	CHECK, 
-	IPTABLES, 
-	DELETE, 
 	DL_BASE_URL,
 	CONFIG,
 	IPV6_FORWARD,
@@ -66,34 +63,6 @@ def _check_call( cmd , fatal=False, message=None, quiet=False,
 			)
 		if fatal:
 			raise
-	
-
-def make_rule(cmd, chain, rule_type, table=None ):
-	"""
-	@params cmd: a list of iptables command arguments (without iptables, rule_type, or chain )
-			chain: the iptables chain we are modifying 
-			rule_type: INSERT, DELETE, APPEND, FLUSH
-			table: what table are we modifying (default is filter)
-	@return None
-	@description first checks to see if the rule already exists, if it does not, the check call
-	will thrown an Exception, handler of the exception makes the rule. Opposite logic for delete,
-	if the rule exists, then no exception will be thrown and we delete the rule.
-	"""
-	try:
-		cmd = list(cmd)
-		cmd.insert( 0, chain )
-		cmd.insert( 0, CHECK )
-		cmd.insert( 0, IPTABLES )
-		_check_call(cmd, fatal=True, log=False, quiet=True, log_cmd=False )
-	except sp.CalledProcessError:
-		if rule_type != DELETE :
-			cmd[1] = rule_type
-			_check_call(cmd, fatal=True, log_cmd=False)
-	else:
-		if rule_type == DELETE :
-			cmd[1] = DELETE
-			_check_call(cmd, fatal=True, log_cmd=False)
-
 
 def apt_install( pkgs ):
 	"""

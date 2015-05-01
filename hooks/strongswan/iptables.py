@@ -1,83 +1,246 @@
 
 from charmhelpers.core import hookenv
-from strongswan.constants import * 
-from strongswan.util import make_rule, _check_call 
+from strongswan.constants import (
+	CONFIG, FILTER, NAT, INSERT, APPEND, DELETE,
+	ACCEPT, DROP, SSH, IKE, NAT_T 
+)
+from strongswan.util import _check_call 
+import iptc
 
 
 def save():
 	"""
 	@description: saves iptables rules
 	"""
-	_check_call([IPTABLES_SAVE] , quiet=True )
+	_check_call( ["iptables-save"] , quiet=True )
+
+def nat():
+	"""
+	@description: configures 
+	Configures IPtables nat table
+	"""
+	pass
 
 
-# update filter chain
 def filter():
 	"""
 	@description: configures filter table
 	"""
 	hookenv.log("Configuring iptables firewall for IPsec", level=hookenv.INFO )
 
-	# We should always have loopback available
-	make_rule(['-i', 'lo', '-j', ACCEPT], INPUT, INSERT)
-	make_rule(['-o', 'lo', '-j', ACCEPT], OUTPUT, INSERT)
+	# create filter table object 
+	table = Table(FILTER)
 
-	# allow IKE and NAT-T Inbound and Outbound
-	make_rule(ALLOW_IKE, INPUT, INSERT)
-	make_rule(ALLOW_IKE, OUTPUT, INSERT )
-	make_rule(ALLOW_NAT_T, INPUT, INSERT)
-	make_rule(ALLOW_NAT_T, OUTPUT, INSERT)
+	# allow inbound loopback traffic
+	rule = iptc.Rule()
+	rule.in_interface = 'lo'
+	table.make_rule(rule, table._input, INSERT )
 
-	# allow either AH or ESP inbound and outbound
-	if CONFIG.get("ipsec_protocol") == "esp":
-		make_rule(ALLOW_ESP, INPUT, INSERT)
-		make_rule(ALLOW_AH , INPUT, DELETE )
-		make_rule(ALLOW_ESP, OUTPUT, INSERT)
-		make_rule(ALLOW_AH , OUTPUT, DELETE )
+	# allow outbound loopback traffic
+	rule = iptc.Rule()
+	rule.out_interface = 'lo'
+	table.make_rule(rule, table._output, INSERT )
+
+	# allow IKE, inbound & outbound
+	rule = iptc.Rule()
+	rule.protocol = "udp" 
+	match = rule.create_match("udp")
+	match.dport = IKE
+	match.sport = IKE
+	table.make_rule(rule, table._input, INSERT)
+	table.make_rule(rule, table._output, INSERT)
+
+	# allow NAT-T, inbound & outbound #review this 
+	match.dport = NAT_T
+	match.sport = NAT_T
+	table.make_rule(rule, table._input, INSERT)
+	table.make_rule(rule, table._output, INSERT)
+
+	# esp in and out.
+	rule = iptc.Rule()
+	rule.protocol = "esp" 
+	table.make_rule(rule, table._input, INSERT)
+	table.make_rule(rule, table._output, INSERT)
+
+	# ssh in 
+	rule = iptc.Rule()
+	rule.protocol = "tcp" 
+	match = rule.create_match("tcp")
+	match.sport = SSH
+	match.dport = "49152:65535"
+	table.make_rule(rule, table._input, APPEND)
+
+	# ssh out
+	match.dport = SSH 
+	match.sport = "49152:65535"
+	table.make_rule(rule, table._output, APPEND)
+
+	
+	if CONFIG.get("public_network") :
+		
+		# allow all est conns out
+		rule = iptc.Rule()
+		m = rule.create_match("conntrack")
+		m.ctstate = "ESTABLISHED,RELATED,NEW"
+		table.make_rule(rule, table._output, APPEND)
+
+		# allow all est conns in
+		m.ctstate = "ESTABLISHED,RELATED"
+		table.make_rule(rule, table._input, APPEND)
+
+		# delete all apt-out
+		rule = iptc.Rule()
+		rule.protocol = "tcp"
+		m = rule.create_match("tcp")
+		m.dport = "80"
+		m.sport = "49152:65535"
+		table.make_rule(rule, table._output, DELETE)
+
+		# delete all apt-in
+		m.sport = "80"
+		m.dport = "49152:65535"
+		table.make_rule(rule, table._input, DELETE)
+
+		# delete dns udp in 
+		rule = iptc.Rule()
+		rule.protocol = "udp"
+		match = rule.create_match("udp")
+		match.sport = "53"
+		match = rule.create_match("conntrack")
+		match.ctstate = "ESTABLISHED,RELATED"
+		table.make_rule( rule, table._input, DELETE )
+
+		# delete dns udp out
+		rule = iptc.Rule()
+		rule.protocol = "udp"
+		match = rule.create_match("udp")
+		match.dport = "53"
+		match = rule.create_match("conntrack")
+		match.ctstate = "NEW,ESTABLISHED"
+		table.make_rule( rule, table._output, DELETE )
+
+		# delete dns tcp in 
+		rule = iptc.Rule()
+		rule.protocol = "tcp"
+		match = rule.create_match("tcp")
+		match.sport = "53"
+		match = rule.create_match("conntrack")
+		match.ctstate = "ESTABLISHED,RELATED"
+		table.make_rule( rule, table._input, DELETE )
+
+		# delete dns tcp out 
+		rule = iptc.Rule()
+		rule.protocol = "tcp"
+		match = rule.create_match("tcp")
+		match.dport = "53"
+		match = rule.create_match("conntrack")
+		match.ctstate = "NEW,ESTABLISHED"
+		table.make_rule( rule, table._output, DELETE )
+
 	else:
-		make_rule(ALLOW_AH, INPUT, INSERT )
-		make_rule(ALLOW_ESP, INPUT, DELETE )
-		make_rule(ALLOW_AH, OUTPUT, INSERT )
-		make_rule(ALLOW_ESP, OUTPUT, DELETE )
+		# dns udp in 
+		rule = iptc.Rule()
+		rule.protocol = "udp"
+		match = rule.create_match("udp")
+		match.sport = "53"
+		match = rule.create_match("conntrack")
+		match.ctstate = "ESTABLISHED,RELATED"
+		table.make_rule( rule, table._input, APPEND )
 
-	# allow ssh inbound and outbound 
-	make_rule(ALLOW_SSH_IN, INPUT, APPEND)
-	make_rule(ALLOW_SSH_OUT, OUTPUT, APPEND)
+		# dns udp out
+		rule = iptc.Rule()
+		rule.protocol = "udp"
+		match = rule.create_match("udp")
+		match.dport = "53"
+		match = rule.create_match("conntrack")
+		match.ctstate = "NEW,ESTABLISHED"
+		table.make_rule( rule, table._output, APPEND )
 
-	# all DNS gets through the firewall
-	if not CONFIG.get("public_network"):
-		make_rule(ALLOW_DNS_UDP_IN, INPUT, APPEND)
-		make_rule(ALLOW_DNS_UDP_OUT, OUTPUT, APPEND)
-		make_rule(ALLOW_DNS_TCP_IN, INPUT, APPEND)
-		make_rule(ALLOW_DNS_TCP_OUT, OUTPUT, APPEND)
+		# dns tcp in 
+		rule = iptc.Rule()
+		rule.protocol = "tcp"
+		match = rule.create_match("tcp")
+		match.sport = "53"
+		match = rule.create_match("conntrack")
+		match.ctstate = "ESTABLISHED,RELATED"
+		table.make_rule( rule, table._input, APPEND )
 
-	# DHCP 
-	make_rule(ALLOW_DHCP, INPUT, APPEND)
-	make_rule(ALLOW_DHCP, OUTPUT, APPEND)
+		# dns tcp out 
+		rule = iptc.Rule()
+		rule.protocol = "tcp"
+		match = rule.create_match("tcp")
+		match.dport = "53"
+		match = rule.create_match("conntrack")
+		match.ctstate = "NEW,ESTABLISHED"
+		table.make_rule( rule, table._output, APPEND )
 
-	# allow all established outbound connections
-	# if NO, we must allow apt-ports for install and updates
-	if CONFIG.get("public_network"):
-		make_rule(ALLOW_EST_CONN_IN, INPUT, APPEND)
-		make_rule(ALLOW_EST_CONN_OUT, OUTPUT, APPEND)
-		make_rule(ALLOW_APT_IN, INPUT, DELETE)
-		make_rule(ALLOW_APT_OUT, OUTPUT, DELETE)
-	else:
-		make_rule(ALLOW_EST_CONN_IN, INPUT, DELETE)
-		make_rule(ALLOW_EST_CONN_OUT, OUTPUT, DELETE)
-		make_rule(ALLOW_APT_IN, INPUT, APPEND)
-		make_rule(ALLOW_APT_OUT, OUTPUT, APPEND)
+		# allow all apt-out
+		rule = iptc.Rule()
+		rule.protocol = "tcp"
+		m = rule.create_match("tcp")
+		m.dport = "80"
+		m.sport = "49152:65535"
+		table.make_rule(rule, table._output, APPEND)
 
-	#set default policy to DROP for filter tables.
+		# allow all apt-in
+		m.sport = "80"
+		m.dport = "49152:65535"
+		table.make_rule(rule, table._input, APPEND)
+
+		# disallow all est conns out
+		rule = iptc.Rule()
+		m = rule.create_match("conntrack")
+		m.ctstate = "ESTABLISHED,RELATED,NEW"
+		table.make_rule(rule, table._output, DELETE)
+
+		# disallow all est conns in
+		m.ctstate = "ESTABLISHED,RELATED"
+		table.make_rule(rule, table._input, DELETE )
+
+	# dhcp #this needs to be reviewed
+	rule = iptc.Rule()
+	rule.protocol = "udp"
+	match = rule.create_match("udp")
+	match.dport = "67:68"
+	match.sport = "67:68"
+	table.make_rule(rule, table._input, APPEND)
+	table.make_rule(rule, table._output, APPEND)
+
+	
+	# set default policy to DROP for filter tables.
 	hookenv.log("Setting default policy to drop for all filter rule chains", level=hookenv.INFO)
-	_check_call( [IPTABLES, POLICY, FORWARD , DROP ], log_cmd=False )
-	_check_call( [IPTABLES, POLICY, INPUT , DROP ], log_cmd=False )
-	_check_call( [IPTABLES, POLICY, OUTPUT , DROP ], log_cmd=False )
+	#TODO
 
 
-def nat():
-	"""
-	@description: configures 
-	Configures IPtables fil
-	"""
-	pass
+
+
+
+class Table:
+	def __init__(self, table):
+		if table == FILTER :
+			self._input = iptc.Table(iptc.Table.FILTER).chains[0]
+			self._forward = iptc.Table(iptc.Table.FILTER).chains[1]
+			self._output = iptc.Table(iptc.Table.FILTER).chains[2]
+		elif table == NAT :
+			self._prerouting = iptc.Table(iptc.Table.NAT).chains[0]
+			self._input = iptc.Table(iptc.Table.NAT).chains[1]
+			self._output = iptc.Table(iptc.Table.NAT).chains[2]
+			self._postrouting = iptc.Table(iptc.Table.NAT).chains[3]
+
+	def exists(self, rule, chain):
+		for rules in chain.rules:
+			if rules.__eq__(rule):
+				return True
+		return False
+
+	def make_rule(self, rule, chain, rtype):
+		rule.target = rule.create_target(ACCEPT)
+		if rtype != DELETE :
+			if not self.exists(rule, chain):
+				if rtype == APPEND:
+					chain.append_rule(rule)
+				elif rtype == INSERT:
+					chain.insert_rule(rule)
+		else:
+			if self.exists(rule, chain):
+				chain.delete_rule(rule)
