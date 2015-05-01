@@ -7,20 +7,11 @@ options:
     type: string
     default: ''
     description: 'Comma seperated list of configuration parameters when compiling.'
-  ip_forward:
-    type: boolean
-    default: True
-    description: "IPv4 and IPv6 traffic forwarding, for security gateways (non host-host vpns)" 
   auth_method:
     type: string
     default: 'rsa' 
     description: "Method of IPsec peer authentication"
     #enum: [ "rsa", "x509", "psk", "secret" ]  #TODO Eliptical Curve
-  ipsec_protocol:
-    type: string
-    default: "esp" 
-    description: "IPsec protocol"
-    #enum: ["ah","esp"]
   private_subnets:
     type: string
     default: ''

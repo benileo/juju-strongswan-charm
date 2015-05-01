@@ -246,12 +246,11 @@ def convert_to_seconds( lifetime ) :
 
 def configure_sysctl():
 	"""
-	@description Reads Config file, and creates a sysctl.conf file
+	@description Enables IP Forwarding Always:
 	"""
 	_dict = {}
-	if CONFIG.get("ip_forward") :
-		_dict[IPV4_FORWARD] = 1
-		_dict[IPV6_FORWARD] = 1
+	_dict[IPV4_FORWARD] = 1
+	_dict[IPV6_FORWARD] = 1
 	create( dumps(_dict) , SYSCTL_PATH )
 
 
