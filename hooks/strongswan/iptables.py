@@ -2,7 +2,7 @@
 from charmhelpers.core import hookenv
 from strongswan.constants import (
 	CONFIG, FILTER, NAT, INSERT, APPEND, DELETE,
-	ACCEPT, DROP, SSH, IKE, NAT_T, 
+	ACCEPT, DROP, SSH, IKE, NAT_T 
 )
 from strongswan.util import _check_call 
 import iptc
@@ -34,74 +34,80 @@ def filter():
 	# allow inbound loopback traffic
 	rule = iptc.Rule()
 	rule.in_interface = 'lo'
-	rule.target = create_target(ACCEPT)
 	table.make_rule(rule, table._input, INSERT )
 
 	# allow outbound loopback traffic
 	rule = iptc.Rule()
 	rule.out_interface = 'lo'
-	rule.target = create_target(ACCEPT)
 	table.make_rule(rule, table._output, INSERT )
 
 	# allow IKE, inbound & outbound
 	rule = iptc.Rule()
-	rule.protocol = "udp"
+	rule.protocol = "udp" 
 	match = rule.create_match("udp")
 	match.dport = IKE
-	rule.add_match(match)
-	rule.target = rule.create_target(ACCEPT)
+	match.sport = IKE
 	table.make_rule(rule, table._input, INSERT)
 	table.make_rule(rule, table._output, INSERT)
 
-	# allow NAT-T, inbound & outbound
-	rule = iptc.Rule()
-	rule.protocol = "udp"
-	match = rule.create_match("udp")
+	# allow NAT-T, inbound & outbound #review this 
 	match.dport = NAT_T
-	rule.add_match(match)
-	rule.target = rule.create_target(ACCEPT)
+	match.sport = NAT_T
 	table.make_rule(rule, table._input, INSERT)
 	table.make_rule(rule, table._output, INSERT)
 
-	# esp 
+	# esp in and out.
 	rule = iptc.Rule()
-	rule.protocol = "esp"
-	rule.target = rule.create_target(ACCEPT)
+	rule.protocol = "esp" 
 	table.make_rule(rule, table._input, INSERT)
 	table.make_rule(rule, table._output, INSERT)
 
 	# ssh in 
 	rule = iptc.Rule()
-	rule.protocol = "tcp"
+	rule.protocol = "tcp" 
 	match = rule.create_match("tcp")
 	match.sport = SSH
 	match.dport = "49152:65535"
-	rule.add_match(match)
-	rule.target = rule.create_target(ACCEPT)
 	table.make_rule(rule, table._input, APPEND)
 
 	# ssh out
-	rule = iptc.Rule()
-	rule.protocol = "tcp"
-	match = rule.create_match("tcp")
 	match.dport = SSH 
 	match.sport = "49152:65535"
-	rule.add_match(match)
-	rule.target = rule.create_target(ACCEPT)
 	table.make_rule(rule, table._output, APPEND)
 
 	
 	if CONFIG.get("public_network") :
+		
 		# allow all est conns out
-		rule = ipt
+		rule = iptc.Rule()
+		m = rule.create_match("conntrack")
+		m.ctstate = "ESTABLISHED,RELATED,NEW"
+		table.make_rule(rule, table._output, APPEND)
+
+		# allow all est conns in
+		m.ctstate = "ESTABLISHED,RELATED"
+		table.make_rule(rule, table._input, APPEND)
+
+		# delete all apt-out
+		rule = iptc.Rule()
+		rule.protocol = "tcp"
+		m = rule.create_match("tcp")
+		m.dport = "80"
+		m.sport = "49152:65535"
+		table.make_rule(rule, table._output, DELETE)
+
+		# delete all apt-in
+		m.sport = "80"
+		m.dport = "49152:65535"
+		table.make_rule(rule, table._input, DELETE)
+
 		# delete dns udp in 
 		rule = iptc.Rule()
 		rule.protocol = "udp"
 		match = rule.create_match("udp")
 		match.sport = "53"
-		match.state = "ESTABLISHED,RELATED"
-		rule.add_match(match)
-		rule.target = rule.create_target(ACCEPT)
+		match = rule.create_match("conntrack")
+		match.ctstate = "ESTABLISHED,RELATED"
 		table.make_rule( rule, table._input, DELETE )
 
 		# delete dns udp out
@@ -109,9 +115,8 @@ def filter():
 		rule.protocol = "udp"
 		match = rule.create_match("udp")
 		match.dport = "53"
-		match.state = "NEW,ESTABLISHED"
-		rule.add_match(match)
-		rule.target = rule.create_target(ACCEPT)
+		match = rule.create_match("conntrack")
+		match.ctstate = "NEW,ESTABLISHED"
 		table.make_rule( rule, table._output, DELETE )
 
 		# delete dns tcp in 
@@ -119,9 +124,8 @@ def filter():
 		rule.protocol = "tcp"
 		match = rule.create_match("tcp")
 		match.sport = "53"
-		match.state = "ESTABLISHED,RELATED"
-		rule.add_match(match)
-		rule.target = rule.create_target(ACCEPT)
+		match = rule.create_match("conntrack")
+		match.ctstate = "ESTABLISHED,RELATED"
 		table.make_rule( rule, table._input, DELETE )
 
 		# delete dns tcp out 
@@ -129,9 +133,8 @@ def filter():
 		rule.protocol = "tcp"
 		match = rule.create_match("tcp")
 		match.dport = "53"
-		match.state = "NEW,ESTABLISHED"
-		rule.add_match(match)
-		rule.target = rule.create_target(ACCEPT)
+		match = rule.create_match("conntrack")
+		match.ctstate = "NEW,ESTABLISHED"
 		table.make_rule( rule, table._output, DELETE )
 
 	else:
@@ -140,53 +143,73 @@ def filter():
 		rule.protocol = "udp"
 		match = rule.create_match("udp")
 		match.sport = "53"
-		match.state = "ESTABLISHED,RELATED"
-		rule.add_match(match)
-		rule.target = rule.create_target(ACCEPT)
+		match = rule.create_match("conntrack")
+		match.ctstate = "ESTABLISHED,RELATED"
 		table.make_rule( rule, table._input, APPEND )
 
-		# udp out
+		# dns udp out
 		rule = iptc.Rule()
 		rule.protocol = "udp"
 		match = rule.create_match("udp")
 		match.dport = "53"
-		match.state = "NEW,ESTABLISHED"
-		rule.add_match(match)
-		rule.target = rule.create_target(ACCEPT)
+		match = rule.create_match("conntrack")
+		match.ctstate = "NEW,ESTABLISHED"
 		table.make_rule( rule, table._output, APPEND )
 
-		#tcp in 
+		# dns tcp in 
 		rule = iptc.Rule()
 		rule.protocol = "tcp"
 		match = rule.create_match("tcp")
 		match.sport = "53"
-		match.state = "ESTABLISHED,RELATED"
-		rule.add_match(match)
-		rule.target = rule.create_target(ACCEPT)
+		match = rule.create_match("conntrack")
+		match.ctstate = "ESTABLISHED,RELATED"
 		table.make_rule( rule, table._input, APPEND )
 
-		#tcp out 
+		# dns tcp out 
 		rule = iptc.Rule()
 		rule.protocol = "tcp"
 		match = rule.create_match("tcp")
 		match.dport = "53"
-		match.state = "NEW,ESTABLISHED"
-		rule.add_match(match)
-		rule.target = rule.create_target(ACCEPT)
+		match = rule.create_match("conntrack")
+		match.ctstate = "NEW,ESTABLISHED"
 		table.make_rule( rule, table._output, APPEND )
 
-	#dhcp #this needs to be reviewed
+		# allow all apt-out
+		rule = iptc.Rule()
+		rule.protocol = "tcp"
+		m = rule.create_match("tcp")
+		m.dport = "80"
+		m.sport = "49152:65535"
+		table.make_rule(rule, table._output, APPEND)
+
+		# allow all apt-in
+		m.sport = "80"
+		m.dport = "49152:65535"
+		table.make_rule(rule, table._input, APPEND)
+
+		# disallow all est conns out
+		rule = iptc.Rule()
+		m = rule.create_match("conntrack")
+		m.ctstate = "ESTABLISHED,RELATED,NEW"
+		table.make_rule(rule, table._output, DELETE)
+
+		# disallow all est conns in
+		m.ctstate = "ESTABLISHED,RELATED"
+		table.make_rule(rule, table._input, DELETE )
+
+	# dhcp #this needs to be reviewed
 	rule = iptc.Rule()
 	rule.protocol = "udp"
-	match = create_match("udp")
+	match = rule.create_match("udp")
 	match.dport = "67:68"
 	match.sport = "67:68"
-	rule.add_match(match)
-	rule.target = rule.create_target(ACCEPT)
 	table.make_rule(rule, table._input, APPEND)
 	table.make_rule(rule, table._output, APPEND)
 
-	#
+	
+	# set default policy to DROP for filter tables.
+	hookenv.log("Setting default policy to drop for all filter rule chains", level=hookenv.INFO)
+	#TODO
 
 
 
@@ -211,6 +234,7 @@ class Table:
 		return False
 
 	def make_rule(self, rule, chain, rtype):
+		rule.target = rule.create_target(ACCEPT)
 		if rtype != DELETE :
 			if not self.exists(rule, chain):
 				if rtype == APPEND:
@@ -220,29 +244,3 @@ class Table:
 		else:
 			if self.exists(rule, chain):
 				chain.delete_rule(rule)
-
-
-
-
-
-
-
-# 	# allow all established outbound connections
-# 	# if NO, we must allow apt-ports for install and updates
-# 	if CONFIG.get("public_network"):
-# 		make_rule(ALLOW_EST_CONN_IN, INPUT, APPEND)
-# 		make_rule(ALLOW_EST_CONN_OUT, OUTPUT, APPEND)
-# 		make_rule(ALLOW_APT_IN, INPUT, DELETE)
-# 		make_rule(ALLOW_APT_OUT, OUTPUT, DELETE)
-# 	else:
-# 		make_rule(ALLOW_EST_CONN_IN, INPUT, DELETE)
-# 		make_rule(ALLOW_EST_CONN_OUT, OUTPUT, DELETE)
-# 		make_rule(ALLOW_APT_IN, INPUT, APPEND)
-# 		make_rule(ALLOW_APT_OUT, OUTPUT, APPEND)
-
-# 	#set default policy to DROP for filter tables.
-# 	hookenv.log("Setting default policy to drop for all filter rule chains", level=hookenv.INFO)
-# 	_check_call( [IPTABLES, POLICY, FORWARD , DROP ], log_cmd=False )
-# 	_check_call( [IPTABLES, POLICY, INPUT , DROP ], log_cmd=False )
-# 	_check_call( [IPTABLES, POLICY, OUTPUT , DROP ], log_cmd=False )
-
