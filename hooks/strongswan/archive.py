@@ -11,7 +11,9 @@ from strongswan.util import (
 from strongswan.constants import (
 	APT_DEPENDENCIES, 
 	BUILD_DEPENDENCIES,
-	PIP_DEPENDENCIES
+	PIP_DEPENDENCIES,
+	UPSTREAM_BUILD_DEPENDENCIES, 
+	STRONGSWAN_GIT_REPO
 )
 
 def install_strongswan_archives():
@@ -50,15 +52,8 @@ def install_strongswan_version( version ):
 	else:
 		base_dir = '/tmp/strongswan-{}/'.format(version)
 	
-	#configure install 
+	# configure and install 
 	configure_install(base_dir)
-
-	#install
-	_check_call( 'cd {}; make'.format(base_dir), shell=True, fatal=True, timeout=300, quiet=True )
-	_check_call( 'cd {}; make install'.format(base_dir), shell=True, fatal=True, timeout=300, quiet=True )
-
-	# register strongswan as a service 
-	_check_call(['cp', '../scripts/strongswan.conf', '/etc/init/strongswan.conf' ])
 
 
 def install_dep():
@@ -79,6 +74,14 @@ def install_dep():
 # install strongswan from github
 def install_strongswan_upstream():
 	"""
-	TODO
+	@params None
+	@return None
+	@description
+	Installs Strongswan from the Git repository. Extra dependencies are needed to do so, 
+	including git. The install process is the same except autogen.sh must be ran first.
 	"""
-	pass
+	build_dir = "/tmp/strongswan"
+	apt_install( BUILD_DEPENDENCIES + UPSTREAM_BUILD_DEPENDENCIES )
+	_check_call(["git", "clone", STRONGSWAN_GIT_REPO, build_dir ])
+	_check_call("cd {}; ./autogen.sh".format(build_dir) , shell=True, quiet=True )
+	configure_install(build_dir)

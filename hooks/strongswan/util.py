@@ -210,6 +210,7 @@ def configure_install(base_dir):
 	and changes to the strongswan src directory and configures the install. Two options are
 	included by default because we will break a lot of other stuff if they are not. 
 	TODO: certain packages have dependencies, sanity check?
+	TODO: this also installs strongswan make make install etc.
 	"""
 	cmd  = 'cd {}; '.format(base_dir)
 	cmd += ' ./configure --prefix=/usr --sysconfdir=/etc'
@@ -220,6 +221,9 @@ def configure_install(base_dir):
 				cmd += ' {}'.format(item)
 				added_items.append(item)
 	_check_call(cmd, shell=True, fatal=True, quiet=True )
+	_check_call( 'cd {}; make'.format(base_dir), shell=True, fatal=True, timeout=300, quiet=True )
+	_check_call( 'cd {}; make install'.format(base_dir), shell=True, fatal=True, timeout=300, quiet=True )
+	_check_call(['cp', '../scripts/strongswan.conf', '/etc/init/strongswan.conf' ])
 
 
 def convert_to_seconds( lifetime ) :
