@@ -76,7 +76,7 @@ def apt_install( pkgs ):
 	@exception NetworkError if we can't contact a single archive server.
 	"""
 	if isinstance( pkgs, list ):
-		if config.get("verbose_logging"):
+		if CONFIG.get("verbose_logging"):
 			apt_cmds = [ "apt-get update" , ["apt-get", "install", "-y"] ]
 		else:
 			apt_cmds = [ "apt-get update -qq" , ["apt-get", "install", "-y", "-qq" ] ]

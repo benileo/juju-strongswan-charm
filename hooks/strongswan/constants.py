@@ -62,6 +62,6 @@ UPSTREAM_BUILD_DEPENDENCIES = [
 	"python",
 	"flex",
 	"byacc",
-	"bison"
+	"bison",
 	"gperf"
 ]

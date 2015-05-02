@@ -47,7 +47,7 @@ def install():
 	elif source == 'upstream' :
 		install_strongswan_upstream()
 	else:
-		install_strongswan_version( CONFIG.get("source") )
+		install_strongswan_version(source)
 
 
 def post_install():

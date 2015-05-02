@@ -209,7 +209,9 @@ def filter():
 	
 	# set default policy to DROP for filter tables.
 	hookenv.log("Setting default policy to drop for all filter rule chains", level=hookenv.INFO)
-	#TODO
+	table._input.set_policy("DROP")
+	table._output.set_policy("DROP")
+	table._forward.set_policy("DROP")
 
 
 
