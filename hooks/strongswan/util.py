@@ -28,15 +28,16 @@ def _check_call( cmd , fatal=False, message=None, quiet=False,
 	timeout=60, log=True, shell=False, check_output=False, log_cmd=True
 	):
 	"""
-	@params	cmd: the list of command line args to call (can be string if Shell=True)
-			fatal: do we raise an exception if one is thrown?
-			message: the message to log to juju-log
-			quiet: direct stdout and stderr to /dev/null
-			timeout: timeout
-			log: if an exception is thrown do we log to juju-log?
-			shell: execute using the shell
-			check_output: call check_output instead of check_call (we want output!)
-			log_cmd: do we log the cmd called to juju-log? this is to silence the iptables calls
+	@params	
+	cmd: the list of command line args to call (can be string if Shell=True)
+	fatal: do we raise an exception if one is thrown?
+	message: the message to log to juju-log
+	quiet: direct stdout and stderr to /dev/null
+	timeout: timeout
+	log: if an exception is thrown do we log to juju-log?
+	shell: execute using the shell
+	check_output: call check_output instead of check_call (we want output!)
+	log_cmd: do we log the cmd called to juju-log? this is to silence the iptables calls
 	@return None
 	@description
 	A wrapper to subprocess.check_output and check_call 
@@ -44,7 +45,7 @@ def _check_call( cmd , fatal=False, message=None, quiet=False,
 	if log_cmd:
 		hookenv.log("Calling {0}".format(cmd) , level=hookenv.INFO )
 	try:
-		if quiet:
+		if quiet and not CONFIG.get("verbose_logging") :
 			return ( sp.check_call( cmd, stdout=sp.DEVNULL, stderr=sp.DEVNULL, 
 				timeout=timeout, shell=shell) ) 
 		else:

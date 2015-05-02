@@ -19,3 +19,7 @@ options:
     type: boolean
     default: True
     description: 'Will the security gateway provide access to the rest of the internet?'
+  verbose_logging:
+    type: boolean
+    default: false
+    description: "Do you want to see a lot of logs, good for debugging?"
