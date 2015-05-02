@@ -9,7 +9,7 @@ from strongswan.util import (
 	configure_install
 )
 from strongswan.constants import (
-	APT_DEPENDENCIES, 
+	PYOPENSSL_DEPENDENCIES, 
 	BUILD_DEPENDENCIES,
 	PIP_DEPENDENCIES,
 	UPSTREAM_BUILD_DEPENDENCIES, 
@@ -64,7 +64,7 @@ def install_dep():
 	python-iptables and PyOpenSSL into Python 3 installation
 	"""
 	hookenv.log("Installing dependencies" , level=hookenv.INFO )
-	apt_install( APT_DEPENDENCIES )
+	apt_install( PYOPENSSL_DEPENDENCIES )
 	for dep in PIP_DEPENDENCIES :
 		_check_call( [ "pip3", "install" , dep ] , fatal=True, quiet=True )
 
@@ -80,8 +80,11 @@ def install_strongswan_upstream():
 	Installs Strongswan from the Git repository. Extra dependencies are needed to do so, 
 	including git. The install process is the same except autogen.sh must be ran first.
 	"""
+	hookenv.log("Installing Strongswan from the upstream Git repo: {}".format(
+		STRONGSWAN_GIT_REPO), level=hookenv.INFO)
+	_check_call(["rm", "-Rf", "/tmp/strongswan"], log_cmd=False, quiet=True )
 	build_dir = "/tmp/strongswan"
 	apt_install( BUILD_DEPENDENCIES + UPSTREAM_BUILD_DEPENDENCIES )
 	_check_call(["git", "clone", STRONGSWAN_GIT_REPO, build_dir ])
-	_check_call("cd {}; ./autogen.sh".format(build_dir) , shell=True, quiet=True )
-	configure_install(build_dir)
+	_check_call("cd {}; ./autogen.sh".format(build_dir) , shell=True, quiet=True, fatal=True)
+	configure_install(build_dir):
