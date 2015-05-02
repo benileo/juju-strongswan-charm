@@ -27,6 +27,7 @@ def nat():
 def filter():
 	"""
 	@description: configures filter table
+	TODO: there has to be a way to make this code more concise.
 	"""
 	hookenv.log("Configuring iptables firewall for IPsec", level=hookenv.INFO )
 
@@ -71,8 +72,8 @@ def filter():
 	match.dport = SSH
 	table.make_rule(rule, table._input, APPEND)
 
-	# ssh out
-	match.reset() 
+	# ssh out 
+	match.reset()
 	match.sport = SSH
 	table.make_rule(rule, table._output, APPEND)
 
@@ -81,29 +82,29 @@ def filter():
 		
 		# allow all est conns out
 		rule = iptc.Rule()
-		m = rule.create_match("conntrack")
-		m.ctstate = "ESTABLISHED,RELATED,NEW"
+		match = rule.create_match("conntrack")
+		match.ctstate = "ESTABLISHED,RELATED,NEW"
 		table.make_rule(rule, table._output, APPEND)
 
 		# allow all est conns in
-		m.reset()
-		m.ctstate = "ESTABLISHED,RELATED"
+		match.reset()
+		match.ctstate = "ESTABLISHED,RELATED"
 		table.make_rule(rule, table._input, APPEND)
 
 		# delete all apt-out
 		rule = iptc.Rule()
 		rule.protocol = "tcp"
-		m = rule.create_match("tcp")
-		m.dport = "80"
-		m2 = rule.create_match("conntrack")
-		m2.ctstate = "NEW,ESTABLISHED"
+		match1 = rule.create_match("tcp")
+		match1.dport = "80"
+		match2 = rule.create_match("conntrack")
+		match2.ctstate = "NEW,ESTABLISHED"
 		table.make_rule(rule, table._output, DELETE)
 
 		# delete all apt-in
-		m.reset()
-		m.sport = "80"
-		m2.reset()
-		m2.ctstate = "ESTABLISHED"
+		match1.reset()
+		match1.sport = "80"
+		match2.reset()
+		match2.ctstate = "ESTABLISHED"
 		table.make_rule(rule, table._input, DELETE)
 
 		# delete dns udp in 
@@ -182,28 +183,28 @@ def filter():
 		# allow all apt-out
 		rule = iptc.Rule()
 		rule.protocol = "tcp"
-		m = rule.create_match("tcp")
-		m.dport = "80"
-		m2 = rule.create_match("conntrack")
-		m2.ctstate = "NEW,ESTABLISHED"
+		match1 = rule.create_match("tcp")
+		match1.dport = "80"
+		match2 = rule.create_match("conntrack")
+		match2.ctstate = "NEW,ESTABLISHED"
 		table.make_rule(rule, table._output, APPEND)
 
 		# allow all apt-in
-		m.reset()
-		m.sport = "80"
-		m2.reset()
-		m2.ctstate = "ESTABLISHED"
+		match1.reset()
+		match1.sport = "80"
+		match2.reset()
+		match2.ctstate = "ESTABLISHED"
 		table.make_rule(rule, table._input, APPEND)
 
 		# disallow all est conns out
 		rule = iptc.Rule()
-		m = rule.create_match("conntrack")
-		m.ctstate = "ESTABLISHED,RELATED,NEW"
+		match = rule.create_match("conntrack")
+		match.ctstate = "ESTABLISHED,RELATED,NEW"
 		table.make_rule(rule, table._output, DELETE)
 
 		# disallow all est conns in
-		m.reset()
-		m.ctstate = "ESTABLISHED,RELATED"
+		match.reset()
+		match.ctstate = "ESTABLISHED,RELATED"
 		table.make_rule(rule, table._input, DELETE )
 
 	# dhcp #this needs to be reviewed
