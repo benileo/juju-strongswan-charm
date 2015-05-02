@@ -87,4 +87,4 @@ def install_strongswan_upstream():
 	apt_install( BUILD_DEPENDENCIES + UPSTREAM_BUILD_DEPENDENCIES )
 	_check_call(["git", "clone", STRONGSWAN_GIT_REPO, build_dir ])
 	_check_call("cd {}; ./autogen.sh".format(build_dir) , shell=True, quiet=True, fatal=True)
-	configure_install(build_dir):
+	configure_install(build_dir)
