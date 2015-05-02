@@ -15,12 +15,7 @@ from strongswan.archive import (
 	install_strongswan_upstream,
 	install_dep
 )
-try:
-	import OpenSSL
-	import iptc
-except ImportError:
-	install_dep()
-
+install_dep() #install dependencies
 import strongswan.iptables as iptables
 
 
