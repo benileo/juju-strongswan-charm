@@ -85,6 +85,7 @@ def filter():
 		table.make_rule(rule, table._output, APPEND)
 
 		# allow all est conns in
+		m.reset()
 		m.ctstate = "ESTABLISHED,RELATED"
 		table.make_rule(rule, table._input, APPEND)
 
@@ -97,6 +98,7 @@ def filter():
 		table.make_rule(rule, table._output, DELETE)
 
 		# delete all apt-in
+		m.reset()
 		m.sport = "80"
 		m.dport = "49152:65535"
 		table.make_rule(rule, table._input, DELETE)
@@ -183,6 +185,7 @@ def filter():
 		table.make_rule(rule, table._output, APPEND)
 
 		# allow all apt-in
+		m.reset()
 		m.sport = "80"
 		m.dport = "49152:65535"
 		table.make_rule(rule, table._input, APPEND)
@@ -194,6 +197,7 @@ def filter():
 		table.make_rule(rule, table._output, DELETE)
 
 		# disallow all est conns in
+		m.reset()
 		m.ctstate = "ESTABLISHED,RELATED"
 		table.make_rule(rule, table._input, DELETE )
 

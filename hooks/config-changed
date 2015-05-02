@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
-
-# from strongswan.util import configure_sysctl
-# from strongswan.iptables import configure_iptables
+import strongswan.iptables as iptables
 from strongswan.constants import CONFIG
 
-def _update():
+def system_config():
+	iptables.filter()
+	iptables.nat()
+	iptables.save()
+
+def ipsec_config():
 	pass
 
 if __name__ == "__main__":
-	_update()
+	system_config()
+	ipsec_config()
