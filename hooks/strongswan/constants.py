@@ -3,7 +3,7 @@ from charmhelpers.core import hookenv
 from strongswan.errors import ExportDirDoesNotExist
 from os.path import exists
 
-# Raise an exception is /home/ubuntu doesn't exist.
+# Raise an exception if /home/ubuntu doesn't exist.
 if not exists('/home/ubuntu/'):
 	raise ExportDirDoesNotExist("/home/ubuntu does not exist")
 
@@ -49,4 +49,17 @@ BUILD_DEPENDENCIES = [
 	"libgmp3-dev",
 	"gcc",
 	"make"
+]
+UPSTREAM_BUILD_DEPENDENCIES = [
+	"automake",
+	"autoconf",
+	"git-core",
+	"libtool",
+	"pkg-config",
+	"gettext",
+	"perl",
+	"python",
+	"flex",
+	"byacc",
+	"gperf"
 ]
