@@ -1,11 +1,13 @@
 
+import iptc
 from charmhelpers.core import hookenv
+from strongswan.util import _check_call
 from strongswan.constants import (
 	CONFIG, FILTER, NAT, INSERT, APPEND, DELETE,
 	ACCEPT, DROP, SSH, IKE, NAT_T 
 )
-from strongswan.util import _check_call 
-import iptc
+ 
+
 
 
 def save():
@@ -66,13 +68,12 @@ def filter():
 	rule = iptc.Rule()
 	rule.protocol = "tcp" 
 	match = rule.create_match("tcp")
-	match.sport = SSH
-	match.dport = "49152:65535"
+	match.dport = SSH
 	table.make_rule(rule, table._input, APPEND)
 
 	# ssh out
-	match.dport = SSH 
-	match.sport = "49152:65535"
+	match.reset() 
+	match.sport = SSH
 	table.make_rule(rule, table._output, APPEND)
 
 	
@@ -94,13 +95,15 @@ def filter():
 		rule.protocol = "tcp"
 		m = rule.create_match("tcp")
 		m.dport = "80"
-		m.sport = "49152:65535"
+		m2 = rule.create_match("conntrack")
+		m2.ctstate = "NEW,ESTABLISHED"
 		table.make_rule(rule, table._output, DELETE)
 
 		# delete all apt-in
 		m.reset()
 		m.sport = "80"
-		m.dport = "49152:65535"
+		m2.reset()
+		m2.ctstate = "ESTABLISHED"
 		table.make_rule(rule, table._input, DELETE)
 
 		# delete dns udp in 
@@ -181,13 +184,15 @@ def filter():
 		rule.protocol = "tcp"
 		m = rule.create_match("tcp")
 		m.dport = "80"
-		m.sport = "49152:65535"
+		m2 = rule.create_match("conntrack")
+		m2.ctstate = "NEW,ESTABLISHED"
 		table.make_rule(rule, table._output, APPEND)
 
 		# allow all apt-in
 		m.reset()
 		m.sport = "80"
-		m.dport = "49152:65535"
+		m2.reset()
+		m2.ctstate = "ESTABLISHED"
 		table.make_rule(rule, table._input, APPEND)
 
 		# disallow all est conns out
@@ -216,9 +221,6 @@ def filter():
 	table._input.set_policy("DROP")
 	table._output.set_policy("DROP")
 	table._forward.set_policy("DROP")
-
-
-
 
 
 class Table:
