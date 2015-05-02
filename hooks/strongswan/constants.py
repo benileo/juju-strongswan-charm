@@ -33,8 +33,8 @@ SSH 				=	"22"
 IKE					= 	"500"
 NAT_T				=	"4500"
 
-
-APT_DEPENDENCIES = [
+# these may change over time.
+PYOPENSSL_DEPENDENCIES = [
 	"build-essential",
 	"libssl-dev",
 	"libffi-dev",
@@ -62,5 +62,6 @@ UPSTREAM_BUILD_DEPENDENCIES = [
 	"python",
 	"flex",
 	"byacc",
+	"bison"
 	"gperf"
 ]
