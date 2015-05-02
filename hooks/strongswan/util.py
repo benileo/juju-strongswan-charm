@@ -25,7 +25,7 @@ from strongswan.errors import (
 
 
 def _check_call( cmd , fatal=False, message=None, quiet=False, 
-	timeout=60, log=True, shell=False, check_output=False, log_cmd=True
+	timeout=300, log=True, shell=False, check_output=False, log_cmd=True
 	):
 	"""
 	@params	
@@ -76,7 +76,11 @@ def apt_install( pkgs ):
 	@exception NetworkError if we can't contact a single archive server.
 	"""
 	if isinstance( pkgs, list ):
-		for cmd in [ "apt-get update -qq" , ["apt-get", "install", "-y", "-qq" ] ] : 
+		if config.get("verbose_logging"):
+			apt_cmds = [ "apt-get update" , ["apt-get", "install", "-y"] ]
+		else:
+			apt_cmds = [ "apt-get update -qq" , ["apt-get", "install", "-y", "-qq" ] ]
+		for cmd in apt_cmds : 
 			apt_retry_count = 0
 			apt_retry_max = 10
 			apt_retry_wait = 10
