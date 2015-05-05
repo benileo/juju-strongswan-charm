@@ -24,7 +24,7 @@ def install_strongswan_archives():
 	apt-get update, apt-get install. 
 	"""
 	hookenv.log("Installing Strongswan from the ubuntu archives", level=hookenv.INFO )
-	apt_install(['strongswan'])
+	apt_install(['strongswan'], apt_update=False)
 	
 	
 # installs strongswan from the most recent strongswan tarball
@@ -40,7 +40,7 @@ def install_strongswan_version( version ):
 	if(	version.upper() != 'LATEST' and not match(r'^[1-9]\.[0-9]\.[0-9]$' , version ) ): 
 		raise InvalidVersion("Version must be in the format 5.3.1 or 'latest'")
 	
-	apt_install(BUILD_DEPENDENCIES)
+	apt_install(BUILD_DEPENDENCIES, apt_update=False)
 	
 	#dl and unpack tarball into tmp directory
 	_check_call(["tar", "-xzf", get_tarball(version), "--directory", "/tmp/" ] , fatal=True )
@@ -84,7 +84,7 @@ def install_strongswan_upstream():
 		STRONGSWAN_GIT_REPO), level=hookenv.INFO)
 	_check_call(["rm", "-Rf", "/tmp/strongswan"], log_cmd=False, quiet=True )
 	build_dir = "/tmp/strongswan"
-	apt_install( BUILD_DEPENDENCIES + UPSTREAM_BUILD_DEPENDENCIES )
+	apt_install( BUILD_DEPENDENCIES + UPSTREAM_BUILD_DEPENDENCIES , apt_update=False)
 	_check_call(["git", "clone", STRONGSWAN_GIT_REPO, build_dir ])
 	_check_call("cd {}; ./autogen.sh".format(build_dir) , shell=True, quiet=True, fatal=True)
 	configure_install(build_dir)
