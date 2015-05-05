@@ -15,7 +15,8 @@ from strongswan.constants import (
 	IPV6_FORWARD,
 	IPV4_FORWARD,
 	SYSCTL_PATH,
-	DPKG_LOCK_ERROR
+	DPKG_LOCK_ERROR,
+	PLUGIN_DEPENDENCIES
 )
 from strongswan.errors import (
 	NetworkError, 
@@ -227,6 +228,8 @@ def configure_install(base_dir):
 	for item in CONFIG.get("configuration").split(',') :
 		if item:
 			if item not in added_items:
+				if item in PLUGIN_DEPENDENCIES:
+					apt_install( PLUGIN_DEPENDENCIES.get(item), apt_update=False ) 
 				cmd += ' {}'.format(item)
 				added_items.append(item)
 	_check_call(cmd, shell=True, fatal=True, quiet=True )

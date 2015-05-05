@@ -2,7 +2,7 @@
 
 This charm provides [StrongSwan](http://www.strongswan.org). This charm will install StrongSwan, do 'basic' VPN configurations and provide actions to create and manage certificates. 
 
-# 3 Options for installation of StrongSwan
+# Install Options
 
 1. Install StrongSwan from the Ubuntu archives (this is the default). This will install all necessary packages needed for your particular configuration:
 
