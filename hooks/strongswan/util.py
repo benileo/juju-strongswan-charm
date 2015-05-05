@@ -65,7 +65,7 @@ def _check_call( cmd , fatal=False, message=None, quiet=False,
 		if fatal:
 			raise
 
-def apt_install( pkgs ):
+def apt_install( pkgs, apt_update=True ):
 	"""
 	@params: pkgs is a list of packages to install
 	@description: call apt-get update then call apt-get install
@@ -75,11 +75,15 @@ def apt_install( pkgs ):
 	@exception AptError if we can't get the dpkg lock after 10 tries with intervals of 10 seconds.
 	@exception NetworkError if we can't contact a single archive server.
 	"""
+	verbose_install = ["apt-get", "install", "-y"]
+	verbose_update = "apt-get update"
+	quiet_install = ["apt-get", "install", "-y", "-qq" ]
+	quiet_update = "apt-get update -qq"
 	if isinstance( pkgs, list ):
 		if CONFIG.get("verbose_logging"):
-			apt_cmds = [ "apt-get update" , ["apt-get", "install", "-y"] ]
+			apt_cmds = [verbose_update,verbose_install] if apt_update else [verbose_install]
 		else:
-			apt_cmds = [ "apt-get update -qq" , ["apt-get", "install", "-y", "-qq" ] ]
+			apt_cmds = [quiet_update, quiet_install] if apt_update else [quiet_install]
 		for cmd in apt_cmds : 
 			apt_retry_count = 0
 			apt_retry_max = 10
