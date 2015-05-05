@@ -220,7 +220,7 @@ def configure_install(base_dir):
 	cmd  = 'cd {}; '.format(base_dir)
 	cmd += ' ./configure --prefix=/usr --sysconfdir=/etc'
 	added_items = ["--prefix=/usr", "--sysconfdir=/etc"]
-	for item in CONFIG.get("config_options").split(',') :
+	for item in CONFIG.get("configuration").split(',') :
 		if item:
 			if item not in added_items:
 				cmd += ' {}'.format(item)

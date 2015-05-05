@@ -2,7 +2,7 @@
 
 This charm provides [StrongSwan](http://www.strongswan.org). 
 
-# Installation of StrongSwan
+# 3 Options for installation of StrongSwan
 
 1. Install StrongSwan from the Ubuntu archives (this is the default). This will install all necessary packages needed for your particular configuration:
 
@@ -20,7 +20,7 @@ Or if you want the latest version, change myconfig.yaml to:
         strongswan:
           source: latest
 
-3. Install and build StrongSwan from source ( [git.strongswan.org](git.strongswan.org) ):
+3. Install and build StrongSwan from source ( [git.strongswan.org](http://git.strongswan.org) ):
 
         juju deploy cs:~/jammin-irving --config myconfig.yaml
 Where myconfig.yaml:
@@ -32,10 +32,9 @@ Where myconfig.yaml:
 ###Note: 
 For install options 2 and 3, refer to [https://wiki.strongswan.org/projects/strongswan/wiki/Autoconf](https://wiki.strongswan.org/projects/strongswan/wiki/Autoconf) if you need to specify some additional configuration options and add them in a comma separated list  to <i>myconfig.yaml</i> as follows: 
 
-    #myconfig.yaml
     strongswan:
       source: latest
-      config_options: --disable-md5,--enable-android,--enable-blowfish
+      configuration: --disable-md5,--enable-android,--enable-blowfish
 # Configuration
 
 
