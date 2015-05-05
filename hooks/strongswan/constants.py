@@ -65,3 +65,14 @@ UPSTREAM_BUILD_DEPENDENCIES = [
 	"bison",
 	"gperf"
 ]
+PLUGIN_DEPENDENCIES = {
+	"--enable-eap-sim-pcsc" : ["libpcsclite"],
+	"--enable-gcrypt" : ["libgcrypt11"],
+	"--enable-ldap" : ["ldap-utils"],
+	"--enable-mysql" : ["libmysqlclient18"],
+	"--enable-sql" : ["libmysqlclient18"],	
+	"--enable-sqlite" : ["libsqlite3-0"],
+	"--enable-soup" : ["libsoup2.4-1"],
+	"--enable-smp" : ["libxml2"],
+	"--enable-tnccs-11" : ["libxml2"]
+}
