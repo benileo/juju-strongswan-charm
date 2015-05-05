@@ -17,38 +17,81 @@ from strongswan.constants import (
 )
 
 def load_ca_cert():
+	"""
+	Loads the CA Cert from /etc/ipsec.d/cacerts/caCert.pem
+	"""
 	with open("{0}{1}".format(IPSEC_D_CACERTS, CA_CERT ), 'br' ) as fd:
 		cacert = crypto.load_certificate( crypto.FILETYPE_PEM, fd.read() )
 	return cacert
 
 def load_ca_key():
+	"""
+	Loads the CA Key from /etc/ipsec.d/private/caKey.pem
+	""" 
 	with open("{0}{1}".format(IPSEC_D_PRIVATE, CA_KEY ) , 'br' ) as fd:
 		cakey = crypto.load_privatekey( crypto.FILETYPE_PEM, fd.read() )
 	return cakey
 
 def dump_ca_key(k):
+	"""
+	Writes the CA key to /etc/ipsec.d/private/caKey.pem
+	@params k: instance of crypto.PKey object
+	"""
 	with open("{0}{1}".format(IPSEC_D_PRIVATE, CA_KEY ), 'bw') as fd:
 		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, k ) )
 
 def dump_ca_cert(c):
+	"""
+	Writes the CA cert to /etc/ipsec.d/cacerts/caCert.pem
+	@params c: instance of crypto.X509() object
+	"""
 	with open("{0}{1}".format(IPSEC_D_CACERTS, CA_CERT ), 'bw' ) as fd:
 		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, c ) )
 
 def dump_key(pkey, keyname, directory):
+	"""
+	Writes the key to a given filepath
+	@params
+	pkey: an instance of crypto.PKey()
+	keyname: the name of the file will be (keyname)Key.pem
+	directory: dir
+	"""
 	with open("{0}{1}Key.pem".format(directory, keyname ), 'bw' ) as fd :
 		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, pkey ) )
 
 def dump_cert(cert, certname, directory):
+	"""
+	Writes the cert to a given filepath
+	@params
+	pkey: an instance of crypto.X509()
+	keyname: the name of the file will be (certname)Cert.pem
+	directory: dir
+	"""
 	with open("{0}{1}Cert.pem".format( directory , certname ) , 'bw' ) as fd :
 		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, cert ) )
 
-def create_key_pair( keytype, bits ):
+def create_key_pair( keytype, keysize ):
+	"""
+	Create a public/private key pair using RSA/DSA 
+	@params
+	keytype: crypto.TYPE_RSA or crypto_TYPE_DSA
+	keysize: keysize in bytes
+	@return: an instance of PKey 
+	"""
 	pkey = crypto.PKey()
-	pkey.generate_key( keytype, bits )
+	pkey.generate_key( keytype, keysize )
 	return pkey
 
 
 def create_cert_request( pkey, subject, digest='sha1' ):
+	"""
+	Creates a Certificate Signing Request (CSR)
+	@params
+	pkey: instance of crypto.PKey()
+	subject: the subject of the certificate in a python dictionary
+	digest: the digest to use
+	@return crypto.X509Req() object
+	"""
 	req = crypto.X509Req()
 	subj = req.get_subject()
 	for key, value in subject.items():
@@ -68,6 +111,16 @@ def create_certificate(
 		lifetime,
 		digest='sha1' 
 	):
+	"""
+	Creates an X509() certificate
+	@params
+	req: an instance of crypto.X509Req()
+	issuerCert: the CA cert, an instance of crypto.X509()
+	issuerKey: the CA key, an instance of crypto.PKey()
+	lifetime: time from now that the certificate is valid
+	digest: digest used
+	@return signed certificate, an instance of crypto.X509()
+	"""
 	cert = crypto.X509()
 	cert.set_serial_number(generate_serial())
 	cert.gmtime_adj_notBefore(0)
@@ -80,6 +133,14 @@ def create_certificate(
 
 
 def create_pkcs12( pkey, cert ):
+	"""
+	Creates a PKCS12 certificate
+	@params
+	pkey: an instance of PKey()
+	cert: an instance of X509()
+	@return PKCS12 object as a string
+
+	"""
 	p12 = crypto.PKCS12()
 	p12.set_certificate(cert)
 	p12.set_privatekey(pkey)
@@ -88,14 +149,15 @@ def create_pkcs12( pkey, cert ):
 	return ( p12.export() )
 
 
-
-# create and sign our own certificate
 def create_root_cert(  
 		subject,
 		lifetime,
 		keysize,
 		digest='sha1' 
 	):
+	"""
+	Create your own self-signed certificate
+	"""
 	
 	# create the cakey and cacert
 	k = create_key_pair( crypto.TYPE_RSA, keysize )
@@ -111,9 +173,7 @@ def create_root_cert(
 		load_ca_cert(),
 		load_ca_key(),
 		lifetime
-	)
-
-	#dump the key and server certificate to appropriate directories 
+	) 
 	dump_key(k, SERVER_CERT_NAME, IPSEC_D_PRIVATE)
 	dump_cert(c, SERVER_CERT_NAME, IPSEC_D_CERTS)
 
@@ -124,6 +184,9 @@ def create_host_cert(
 		out,
 		digest='sha1'
 	):
+	"""
+	Creates a host/user certificate
+	"""
 	k = create_key_pair( crypto.TYPE_RSA, keysize )
 	r = create_cert_request( k, subject )
 	c = create_certificate(
@@ -136,6 +199,9 @@ def create_host_cert(
 
 
 def generate_serial():
+	"""
+	Algorithm to generate a unique serial number
+	"""
 	_time = str( ceil( time() ) )
 	_rnum = str( randint( 0, 2**100 ) )
 	_ser = _rnum + _time
