@@ -1,6 +1,6 @@
 # Overview
 
-This charm provides [StrongSwan](http://www.strongswan.org). 
+This charm provides [StrongSwan](http://www.strongswan.org). This charm will install StrongSwan, do 'basic' VPN configurations and provide actions to create and manage certificates. 
 
 # 3 Options for installation of StrongSwan
 
