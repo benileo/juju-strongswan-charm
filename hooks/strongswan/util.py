@@ -309,3 +309,6 @@ def check_hash(hash_file_path, tar_file_path):
 		tar_hash = md5( fd.read() ).hexdigest()
 	if original_hash != tar_hash :
 		raise InvalidHashError("Hash did not match")
+
+def apt_autoremove():
+	_check_call( ["apt-get", "autoremove", "-y"] )
