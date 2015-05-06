@@ -50,10 +50,10 @@ def install():
 	elif source.upper() == 'LATEST' :
 		install_strongswan_version('latest')
 
-	elif re.match(r'^[1-9]{1}\.[0-9]{1,2}.[0-9]{1,2}', source )
+	elif re.match(r'^[1-9]{1}\.[0-9]{1,2}.[0-9]{1,2}', source ):
 		install_strongswan_version(source)
 
-	elif re.match(r'^(http|https)://.*\.git$', source )
+	elif re.match(r'^(http|https)://.*\.git$', source ):
 		install_strongswan_upstream(source)
 
 	else:
