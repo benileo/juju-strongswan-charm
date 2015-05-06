@@ -235,7 +235,7 @@ def configure_install(base_dir):
 	_check_call(cmd, shell=True, fatal=True, quiet=True )
 	_check_call( 'cd {}; make'.format(base_dir), shell=True, fatal=True, timeout=300, quiet=True )
 	_check_call( 'cd {}; make install'.format(base_dir), shell=True, fatal=True, timeout=300, quiet=True )
-	_check_call(['cp', '../scripts/strongswan.conf', '/etc/init/strongswan.conf' ])
+	_check_call(['cp', '../templates/strongswan.conf', '/etc/init/strongswan.conf' ])
 
 
 def convert_to_seconds( lifetime ) :
