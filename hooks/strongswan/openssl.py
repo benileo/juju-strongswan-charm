@@ -35,7 +35,7 @@ def load_ca_key():
 def dump_ca_key(k):
 	"""
 	Writes the CA key to /etc/ipsec.d/private/caKey.pem
-	@params k: instance of crypto.PKey object
+	:param k: instance of crypto.PKey object
 	"""
 	with open("{0}{1}".format(IPSEC_D_PRIVATE, CA_KEY ), 'bw') as fd:
 		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, k ) )
@@ -43,7 +43,7 @@ def dump_ca_key(k):
 def dump_ca_cert(c):
 	"""
 	Writes the CA cert to /etc/ipsec.d/cacerts/caCert.pem
-	@params c: instance of crypto.X509() object
+	:param c: instance of crypto.X509() object
 	"""
 	with open("{0}{1}".format(IPSEC_D_CACERTS, CA_CERT ), 'bw' ) as fd:
 		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, c ) )
@@ -51,10 +51,10 @@ def dump_ca_cert(c):
 def dump_key(pkey, keyname, directory):
 	"""
 	Writes the key to a given filepath
-	@params
-	pkey: an instance of crypto.PKey()
-	keyname: the name of the file will be (keyname)Key.pem
-	directory: dir
+	
+	:param pkey: an instance of crypto.PKey()
+	:param keyname: the name of the file will be (keyname)Key.pem
+	:param directory: directory to write key 
 	"""
 	with open("{0}{1}Key.pem".format(directory, keyname ), 'bw' ) as fd :
 		fd.write(crypto.dump_privatekey( crypto.FILETYPE_PEM, pkey ) )
@@ -62,21 +62,22 @@ def dump_key(pkey, keyname, directory):
 def dump_cert(cert, certname, directory):
 	"""
 	Writes the cert to a given filepath
-	@params
-	pkey: an instance of crypto.X509()
-	keyname: the name of the file will be (certname)Cert.pem
-	directory: dir
+
+	:param pkey: an instance of crypto.X509()
+	:param keyname: the name of the file will be (certname)Cert.pem
+	:param directory: directory to write certificate
 	"""
 	with open("{0}{1}Cert.pem".format( directory , certname ) , 'bw' ) as fd :
 		fd.write(crypto.dump_certificate( crypto.FILETYPE_PEM, cert ) )
 
 def create_key_pair( keytype, keysize ):
 	"""
-	Create a public/private key pair using RSA/DSA 
-	@params
-	keytype: crypto.TYPE_RSA or crypto_TYPE_DSA
-	keysize: keysize in bytes
-	@return: an instance of PKey 
+	Create a public/private key pair using RSA/DSA
+
+	:param keytype: crypto.TYPE_RSA or crypto_TYPE_DSA
+	:param keysize: keysize in bytes
+	
+	:return: an instance of PKey 
 	"""
 	pkey = crypto.PKey()
 	pkey.generate_key( keytype, keysize )
@@ -86,11 +87,12 @@ def create_key_pair( keytype, keysize ):
 def create_cert_request( pkey, subject, digest='sha1' ):
 	"""
 	Creates a Certificate Signing Request (CSR)
-	@params
-	pkey: instance of crypto.PKey()
-	subject: the subject of the certificate in a python dictionary
-	digest: the digest to use
-	@return crypto.X509Req() object
+	
+	:param	pkey: instance of crypto.PKey()
+	:param subject: the subject of the certificate in a python dictionary
+	:param digest: the digest to use
+	
+	:return: crypto.X509Req() object
 	"""
 	req = crypto.X509Req()
 	subj = req.get_subject()
@@ -113,13 +115,14 @@ def create_certificate(
 	):
 	"""
 	Creates an X509() certificate
-	@params
-	req: an instance of crypto.X509Req()
-	issuerCert: the CA cert, an instance of crypto.X509()
-	issuerKey: the CA key, an instance of crypto.PKey()
-	lifetime: time from now that the certificate is valid
-	digest: digest used
-	@return signed certificate, an instance of crypto.X509()
+	
+	:param req: an instance of crypto.X509Req()
+	:param issuerCert: the CA cert, an instance of crypto.X509()
+	:param issuerKey: the CA key, an instance of crypto.PKey()
+	:param lifetime: time from now that the certificate is valid
+	:param digest: digest used
+	
+	:return: signed certificate, an instance of crypto.X509()
 	"""
 	cert = crypto.X509()
 	cert.set_serial_number(generate_serial())
@@ -134,12 +137,12 @@ def create_certificate(
 
 def create_pkcs12( pkey, cert ):
 	"""
-	Creates a PKCS12 certificate
-	@params
-	pkey: an instance of PKey()
-	cert: an instance of X509()
-	@return PKCS12 object as a string
-
+	Creates a PKCS12 file format
+	
+	:param pkey: an instance of PKey()
+	:param cert: an instance of X509()
+	
+	:return: PKCS12 object as a string
 	"""
 	p12 = crypto.PKCS12()
 	p12.set_certificate(cert)
@@ -200,7 +203,7 @@ def create_host_cert(
 
 def generate_serial():
 	"""
-	Algorithm to generate a unique serial number
+	:return: a unique serial number
 	"""
 	_time = str( ceil( time() ) )
 	_rnum = str( randint( 0, 2**100 ) )
@@ -212,14 +215,13 @@ def generate_serial():
 
 def create_outfile( out, key, cert ):
 	"""
-	@params
-	out - the type of output, valid values are tar.gz or pkcs12
-	key - a PKey object containing a keypair 
-	cert - a X509 object
-	@returns
-	The path to the newly created file. In the case of the tarball, it will 
-	contain the private key, certificate and the CA cert, the pkcs12 will 
-	contain all three bundled in a .p12 file.  
+	Creates a file archive in either .p12 or .tar.gz format
+
+	:param out: the type of output, valid values are tar.gz or pkcs12
+	:param key: instance of PKey()  
+	:param cert: instance of X509() 
+	
+	:return: path to archive file 
 	"""	
 	outpath = out_path()
 
@@ -248,10 +250,7 @@ def create_outfile( out, key, cert ):
 
 def out_path():
 	"""
-	@return 
-	A file path to write either the tarball or the pkcs12 file. Simply creates a name with a
-	random number between zero and 1 million and checks to make sure that it does not 
-	exist already in the /home/ubuntu/ directory (where the files are placed). 
+	:return: a unique output path in the /home/ubuntu directory 
 	"""
 	_exists = False
 	while not _exists :

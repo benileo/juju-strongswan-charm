@@ -12,11 +12,7 @@ from strongswan.constants import (
 
 def create():
 	"""
-	@params None
-	@return None
-	@description
-	Action that creates the Root CA certificate and key, then creates the
-	local server certificate and signs it with the CA. 
+	Juju action that creates a self signed Root CA, as well as a local cert
 	""" 
 	params = action_get()
 	if params:

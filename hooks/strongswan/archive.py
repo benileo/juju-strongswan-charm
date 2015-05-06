@@ -15,10 +15,7 @@ from strongswan.constants import (
 
 def install_strongswan_archives():
 	"""
-	@params None
-	@return None
-	@description Installs strongswan from the Ubuntu Archives. Runs
-	apt-get update, apt-get install. 
+	Install Strongswan and desired plugins from the ubuntu archives 
 	"""
 	hookenv.log("Installing Strongswan from the ubuntu archives", level=hookenv.INFO )
 	apt_install(['strongswan'], apt_update=False)
@@ -26,11 +23,8 @@ def install_strongswan_archives():
 	
 def install_strongswan_version( version ):
 	"""
-	@params The version number of Strongswan to install. Special value is 'latest'
-	@return None
-	@description: Installs Strongswan from the tarballs posted by StrongSWan 
-	maintainers. Unpacks the tarball and configures. Additional config options
-	can be passed as an option in the config file (config_options) 
+	Install Strongswan from a particular release
+	:param version: either latest or a release number 
 	"""
 	apt_install(BUILD_DEPENDENCIES, apt_update=False)
 	
@@ -50,9 +44,7 @@ def install_strongswan_version( version ):
 
 def install_dep():
 	"""
-	@params None
-	@return None
-	@description Installs the PyOpenSSL Dependencies and Python-Pip then installs
+	Installs the PyOpenSSL Dependencies and Python-Pip then installs
 	python-iptables and PyOpenSSL into Python 3 installation
 	"""
 	hookenv.log("Installing dependencies" , level=hookenv.INFO )
@@ -62,15 +54,10 @@ def install_dep():
 
 
 
-
-# install strongswan from github
 def install_strongswan_upstream( repository ):
 	"""
-	@params None
-	@return None
-	@description
-	Installs Strongswan from the Git repository. Extra dependencies are needed to do so, 
-	including git. The install process is the same except autogen.sh must be ran first.
+	Build and install Strongswan from source
+	:param repository: a git repository URL
 	"""
 	hookenv.log("Installing Strongswan from the upstream Git repo: {}".format(
 		repository), level=hookenv.INFO)

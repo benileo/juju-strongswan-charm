@@ -9,11 +9,7 @@ from grp import getgrnam
 
 def create():
 	"""
-	@params
-	@return
-	@description: Creates a user certificate signed by the CA
-	and packages it up in either pkcs12 or a tar file and places the package
-	in the /home/ubuntu directory for easy access via the juju scp command.
+	Creates a host/user certificate and archives it to /home/ubuntu
 	"""
 	params = action_get()
 	if params:

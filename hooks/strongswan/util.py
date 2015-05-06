@@ -29,19 +29,19 @@ def _check_call( cmd , fatal=False, message=None, quiet=False,
 	timeout=300, log=True, shell=False, check_output=False, log_cmd=True
 	):
 	"""
-	@params	
-	cmd: the list of command line args to call (can be string if Shell=True)
-	fatal: do we raise an exception if one is thrown?
-	message: the message to log to juju-log
-	quiet: direct stdout and stderr to /dev/null
-	timeout: timeout
-	log: if an exception is thrown do we log to juju-log?
-	shell: execute using the shell
-	check_output: call check_output instead of check_call (we want output!)
-	log_cmd: do we log the cmd called to juju-log? this is to silence the iptables calls
-	@return None
-	@description
-	A wrapper to subprocess.check_output and check_call 
+	A wrapper to subprocess.check_call and subprocess.check_output 
+	
+	:param cmd: A string or a list of cmd line arguments	
+	:param fatal: do we raise an exception if one is thrown?
+	:param message: the message to log to juju-log
+	:param quiet: direct stdout and stderr to /dev/null
+	:param timeout: timeout
+	:param log: if an exception is thrown do we log to juju-log?
+	:param shell: execute using the shell
+	:param check_output: call check_output instead of check_call (we want output!)
+	:param log_cmd: Log cmd argument to juju-log
+	
+	:raises CalledProcessError: only if fatal=true  
 	"""
 	if log_cmd:
 		hookenv.log("Calling {0}".format(cmd) , level=hookenv.INFO )
@@ -68,13 +68,13 @@ def _check_call( cmd , fatal=False, message=None, quiet=False,
 
 def apt_install( pkgs, apt_update=True ):
 	"""
-	@params: pkgs is a list of packages to install
-	@description: call apt-get update then call apt-get install
-	If we can't reach the first archive server, we cycle all the 
-	archive servers returned from a DNS lookup by modifying the hosts file.
-	@return None
-	@exception AptError if we can't get the dpkg lock after 10 tries with intervals of 10 seconds.
-	@exception NetworkError if we can't contact a single archive server.
+	Install a list of packages using apt-get
+
+	:param pkgs: is a list of packages to install
+	:param apt_update: run apt-get update first
+	
+	:raises AptError
+	:raises NetworkError 
 	"""
 	verbose_install = ["apt-get", "install", "-y"]
 	verbose_update = "apt-get update"
@@ -120,17 +120,12 @@ def apt_install( pkgs, apt_update=True ):
 		hookenv.log("apt_install must be passed a list of packages", level=hookenv.ERROR )
 
 def cp_hosts_file():
-	"""
-	Copy the hosts file for reference
-	"""
 	_check_call(['cp', '/etc/hosts', '/etc/hosts.original' ]) 
 	
 
 def flush_hosts_file():
 	"""
-	If the hosts file has been modified in the past 24 hours
-	We will make sure we comment out the entries for the archive servers
-	This is to prevent future upgrades from using a defined server in the hosts file
+	Flush archive entries from /etc/hosts
 	"""
 	if  ( ( time() - getmtime('/etc/hosts') ) ) < 86400 :
 		update_hosts_file( '#1.2.3.4', 'archive.ubuntu.com' )
@@ -139,12 +134,10 @@ def flush_hosts_file():
 
 def update_hosts_file( ip_addr , hostname ):
 	"""
-	@params ip_addr is a dotted quad IP address
-			hostname is the alias for this IP
-	@return None
-	@description Finds all existing (non commented) lines in the /etc/hosts
-	file and adds the ip_addr, hostname to the file if and only if 
-	it does not exist already. 
+	Adds an alias to /etc/hosts
+
+	:params ip_addr: dotted quad IPv4 address
+	hostname: is the alias for this IP 
 	"""
 	hookenv.log("Adding {0}\t{1} to /etc/hosts".format(ip_addr, hostname ), level=hookenv.INFO )
 	aliased_hosts = []
@@ -168,8 +161,7 @@ def update_hosts_file( ip_addr , hostname ):
 			
 def get_archive_ip_addrs():
 	"""
-	@params None
-	@return A list of IP addresses for archive.ubuntu.com
+	:return: IPv4 addresses of ubuntu archive servers
 	"""
 	ip_list = []
 	ip_addrs = _check_call(['dig', 'archive.ubuntu.com'], 
@@ -184,11 +176,10 @@ def get_archive_ip_addrs():
 
 def get_tarball( version ):
 	"""
-	@params version: the version of strongswan to fetch
-	@description: grabs the strongswan tarball for the requested version
-	and checks the tarball against the md5 hash
-	@returns: the file path where the tarball was downloading to /tmp/
-	@raises an InvalidHashError after 5 hash mismatches
+	Gets a Strongswan release in the form of .tar.gz
+	:params version: the version of strongswan to fetch
+	:return: path of .tar.gz 
+	:raises InvalidHashError
 	"""
 	if version.upper() == 'LATEST' :
 		tarball = "strongswan.tar.gz"
@@ -214,13 +205,11 @@ def get_tarball( version ):
 
 def configure_install(base_dir):
 	"""
-	@params base_dir: the base directory where the strongswan tarball was unpacked to.
-	@return None
-	@description pulls the comma sperated list of config options from the config file 
-	and changes to the strongswan src directory and configures the install. Two options are
-	included by default because we will break a lot of other stuff if they are not. 
-	TODO: certain packages have dependencies, sanity check?
-	TODO: this also installs strongswan make make install etc.
+	Configures and installs StrongSwan. A comma separated list of options is passed 
+	from the charm config file. Registers Strongswan.conf in /etc/init.
+
+	:params base_dir: the base directory where the strongswan tarball was unpacked to.
+	
 	"""
 	cmd  = 'cd {}; '.format(base_dir)
 	cmd += ' ./configure --prefix=/usr --sysconfdir=/etc'
@@ -233,15 +222,17 @@ def configure_install(base_dir):
 				cmd += ' {}'.format(item)
 				added_items.append(item)
 	_check_call(cmd, shell=True, fatal=True, quiet=True )
-	_check_call( 'cd {}; make'.format(base_dir), shell=True, fatal=True, timeout=300, quiet=True )
-	_check_call( 'cd {}; make install'.format(base_dir), shell=True, fatal=True, timeout=300, quiet=True )
+	_check_call( 'cd {}; make'.format(base_dir), 
+		shell=True, fatal=True, timeout=300, quiet=True )
+	_check_call( 'cd {}; make install'.format(base_dir), 
+		shell=True, fatal=True, timeout=300, quiet=True )
 	_check_call(['cp', '../templates/strongswan.conf', '/etc/init/strongswan.conf' ])
 
 
 def convert_to_seconds( lifetime ) :
 	"""
-	@params lifetime of a certificate in form 10y, 10d, 10h, 10m, or 10s
-	@returns Number of seconds
+	:params lifetime: string 10y, 10d, 10h, 10m, or 10s
+	:return # of seconds as int 
 	"""
 	s = re.split(r'(\d*)(\D)', lifetime )
 	if len(s) == 1:
@@ -262,7 +253,7 @@ def convert_to_seconds( lifetime ) :
 
 def configure_sysctl():
 	"""
-	@description Enables IP Forwarding Always:
+	Enables IP Forwarding Always:
 	"""
 	_dict = {}
 	_dict[IPV4_FORWARD] = 1
@@ -271,18 +262,18 @@ def configure_sysctl():
 
 
 def cp_sysctl_file():
-	"""
-	Copies the sysctl file for future reference
-	"""
 	_check_call(['cp', '/etc/sysctl.conf', '/etc/sysctl.conf.original'] )
 	
 
 def urlopen_write( url, path ):
 	"""
-	@params url: the url to retrieve
-			path: the file path to write the object to
-	@return None
-	@exeption URLError is raised if we can't get the url after 5 tries
+	Opens a URL and writes the result to specified directory
+
+	:params 
+	url: the url to retrieve
+	path: the file path to write the object to
+	
+	:raises URLError
 	"""
 	retry_count = 0
 	retry_max = 5
@@ -303,11 +294,14 @@ def urlopen_write( url, path ):
 
 def check_hash(hash_file_path, tar_file_path):
 	"""
-	@params tar_file_path is the path of the tarball
-			hash_file_path is the path of the hash file
-	@description check the hash of the downloaded tarball
-	@exception Raise InvalidHashError if the hash of the tarball
-	does not match the published md5 hash.
+	Check md5 hash
+	
+	:params 
+	tar_file_path: file path of the tarball
+	hash_file_path: file path of the hash file
+	
+	:raises InvalidHashError
+	
 	"""
 	with open( hash_file_path, 'rb' ) as fd:
 		original_hash = fd.read().split()[0].decode('utf-8')

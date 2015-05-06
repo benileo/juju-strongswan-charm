@@ -5,8 +5,7 @@ from json import loads
 
 def action_get():
 	"""
-	@params None
-	@return action arguments in json format
+	:return: Action arguments in a dictionary
 	"""
 	try:
 		data = _check_call([ "action-get", "--format", "json" ], 
@@ -20,21 +19,18 @@ def action_get():
 
 def action_fail( message ):
 	"""
-	@params the message to log to juju-log and action-fail command
-	@return None
+	Call action-fail command with error message
+	:param message: error message as a string
 	"""
 	cmd = """action-fail "{}" """.format(message) 
 	_check_call( cmd, shell=True )
 	hookenv.log( message, level=hookenv.ERROR )
 
 
-
-# python wrapper for action-set
 def action_set( **kwargs ):
 	"""
-	@params variable number of key value pairs
-	@return None
-	@description Set key value pairs to return from action
+	Set a variable number of key, value pairs using action-set
+	:params kwargs	
 	"""
 	cmd = "action-set"
 	for key, value in kwargs.items():

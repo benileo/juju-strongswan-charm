@@ -12,24 +12,23 @@ from strongswan.constants import (
 
 def save():
 	"""
-	@description: saves iptables rules
+	save iptables rules
 	"""
 	_check_call( ["iptables-save"] , quiet=True )
 
 def nat():
+	""" 
+	Configure nat table
 	"""
-	@description: configures 
-	Configures IPtables nat table
-	"""
-	pass
+	hookenv.log("configuring iptables filter table", level=hookenv.INFO )
+	
 
 
 def filter():
 	"""
-	@description: configures filter table
-	TODO: there has to be a way to make this code more concise.
+	Configure filter table
 	"""
-	hookenv.log("Configuring iptables firewall for IPsec", level=hookenv.INFO )
+	hookenv.log("configuring iptables filter table", level=hookenv.INFO )
 
 	# create filter table object 
 	table = Table(FILTER)
@@ -225,6 +224,9 @@ def filter():
 
 
 class Table:
+	"""
+	A container class for holding iptables information
+	"""
 	def __init__(self, table):
 		if table == FILTER :
 			self._input = iptc.Table(iptc.Table.FILTER).chains[0]
@@ -237,12 +239,27 @@ class Table:
 			self._postrouting = iptc.Table(iptc.Table.NAT).chains[3]
 
 	def exists(self, rule, chain):
+		"""
+		Does a rule already exists in a chain?
+
+		:param rule: A iptc.Rule() object
+		:param chain: An iptc.Chain() object
+
+		:return True if the rule exists, else False 
+		"""
 		for rules in chain.rules:
 			if rules.__eq__(rule):
 				return True
 		return False
 
 	def make_rule(self, rule, chain, rtype):
+		"""
+		Make a rule in a given chain
+
+		:param rule: a iptc.Rule() object
+		:param chain: a iptc.Chain() object
+		:param rtype: rule type
+		"""
 		rule.target = rule.create_target(ACCEPT)
 		if rtype != DELETE :
 			if not self.exists(rule, chain):
