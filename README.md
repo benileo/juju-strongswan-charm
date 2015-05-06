@@ -22,7 +22,7 @@ Or if you want the latest version, change myconfig.yaml to:
 
 3. Install and build StrongSwan from source, pass URL of git repository. :
 
-        juju deploy cs:~/jammin-irving --config myconfig.yaml
+        juju deploy cs:~/jammin-irving/trusty/strongswan --config myconfig.yaml
 Where myconfig.yaml:
         
         strongswan:
