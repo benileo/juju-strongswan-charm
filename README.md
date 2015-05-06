@@ -30,7 +30,7 @@ Where myconfig.yaml:
 
 
 ###Note: 
-For install options 2 and 3, refer to [https://wiki.strongswan.org/projects/strongswan/wiki/Autoconf](https://wiki.strongswan.org/projects/strongswan/wiki/Autoconf) if you need to specify some additional configuration options and add them in a comma separated list  to <i>myconfig.yaml</i> as follows: 
+For install options 2 and 3, refer to [https://wiki.strongswan.org/projects/strongswan/wiki/Autoconf](https://wiki.strongswan.org/projects/strongswan/wiki/Autoconf) if you need to specify additional configuration options, as this must be done before building strongswan. Add the options as a comma separated list (option dependencies will be installed automatically by the charm).
 
     strongswan:
       source: latest
