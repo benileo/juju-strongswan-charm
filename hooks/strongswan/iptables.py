@@ -1,13 +1,20 @@
 
-import iptc
+
 from charmhelpers.core import hookenv
 from strongswan.util import _check_call
 from strongswan.constants import (
-	CONFIG, FILTER, NAT, INSERT, APPEND, DELETE,
-	ACCEPT, DROP, SSH, IKE, NAT_T 
+	CONFIG, 
+	INSERT, 
+	APPEND, 
+	DELETE, 
+	ACCEPT, 
+	DROP, 
+	SSH, 
+	IKE, 
+	NAT_T 
 )
  
-
+import iptc
 
 
 def save():
@@ -21,6 +28,10 @@ def nat():
 	Configure nat table
 	"""
 	hookenv.log("configuring iptables filter table", level=hookenv.INFO )
+
+	# create the NAT table object
+	table = Table("NAT")
+
 	
 
 
@@ -31,7 +42,7 @@ def filter():
 	hookenv.log("configuring iptables filter table", level=hookenv.INFO )
 
 	# create filter table object 
-	table = Table(FILTER)
+	table = Table("FILTER")
 
 	# allow inbound loopback traffic
 	rule = iptc.Rule()
@@ -217,7 +228,8 @@ def filter():
 
 	
 	# set default policy to DROP for filter tables.
-	hookenv.log("Setting default policy to drop for all filter rule chains", level=hookenv.INFO)
+	hookenv.log("Setting default policy to drop for all filter rule chains", 
+		level=hookenv.INFO)
 	table._input.set_policy("DROP")
 	table._output.set_policy("DROP")
 	table._forward.set_policy("DROP")
@@ -228,11 +240,11 @@ class Table:
 	A container class for holding iptables information
 	"""
 	def __init__(self, table):
-		if table == FILTER :
+		if table == "FILTER" :
 			self._input = iptc.Table(iptc.Table.FILTER).chains[0]
 			self._forward = iptc.Table(iptc.Table.FILTER).chains[1]
 			self._output = iptc.Table(iptc.Table.FILTER).chains[2]
-		elif table == NAT :
+		elif table == "NAT" :
 			self._prerouting = iptc.Table(iptc.Table.NAT).chains[0]
 			self._input = iptc.Table(iptc.Table.NAT).chains[1]
 			self._output = iptc.Table(iptc.Table.NAT).chains[2]
