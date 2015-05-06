@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import re
+
 from charmhelpers.core import hookenv
 from strongswan.constants import CONFIG
 from strongswan.errors import InvalidSourceError
@@ -44,10 +46,27 @@ def install():
 	source = CONFIG.get("source")
 	if source == 'archives':
 		install_strongswan_archives()
-	elif source == 'upstream' :
-		install_strongswan_upstream()
-	else:
+
+	elif source.upper() == 'LATEST' :
+		install_strongswan_version('latest')
+
+	elif re.match(r'^[1-9]{1}\.[0-9]{1,2}.[0-9]{1,2}', source )
 		install_strongswan_version(source)
+
+	elif re.match(r'^(http|https)://.*\.git$', source )
+		install_strongswan_upstream(source)
+
+	else:
+		msg = (
+			"You have specified an invalid install source:\n"
+			"Valid Options are: \n"
+			"1. archives (the default)\n"
+			"2. latest\n"
+			"3. A version number such as 5.1.1\n"
+			"4. A git repository URL such as http://git.strongswan.org/strongswan.git"
+		) 
+		hookenv.log(msg)
+		raise InvalidSourceError
 
 
 def post_install():
