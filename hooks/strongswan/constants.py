@@ -10,7 +10,6 @@ if not exists('/home/ubuntu/'):
 EXPORT_DIR 			= 	'/home/ubuntu/'
 CONFIG 				= 	hookenv.config()
 DL_BASE_URL 		= 	"http://download.strongswan.org/"
-STRONGSWAN_GIT_REPO	=	"http://git.strongswan.org/strongswan.git"
 DPKG_LOCK_ERROR 	= 	100
 IPV4_FORWARD 		= 	"net.ipv4.ip_forward"
 IPV6_FORWARD 		= 	"net.ipv6.conf.all.forwarding"
