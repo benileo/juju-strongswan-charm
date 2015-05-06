@@ -39,10 +39,10 @@ def pre_install():
 	
 def install():
 	"""
-	@description: Install Strongswan in 1 of 3 ways.
+	Install Strongswan:
 	1. From the ubuntu archives
 	2. From upstream github repo
-	3. From stable strongswan releaes
+	3. From stable strongswan releases
 	"""
 	source = CONFIG.get("source")
 	if source == 'archives':
@@ -72,7 +72,7 @@ def install():
 
 def post_install():
 	"""
-	@description: Some post-install checks
+	Clean Up 
 	"""
 	flush_hosts_file()
 	apt_autoremove()

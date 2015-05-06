@@ -27,10 +27,11 @@ def nat():
 	""" 
 	Configure nat table
 	"""
-	hookenv.log("configuring iptables filter table", level=hookenv.INFO )
+	hookenv.log("configuring iptables nat table", level=hookenv.INFO )
 
 	# create the NAT table object
 	table = Table("NAT")
+
 
 	
 

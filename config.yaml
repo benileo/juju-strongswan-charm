@@ -7,14 +7,17 @@ options:
     type: string
     default: ''
     description: 'Comma seperated list of configuration parameters when NOT installing from the archives.'
-  auth_method:
-    type: string
-    default: 'rsa' 
-    description: "Method of IPsec peer authentication"
+  # auth_method:
+  #   type: string
+  #   default: 'rsa' 
+  #   description: "Method of IPsec peer authentication"
   private_subnets:
     type: string
     default: ''
     description: 'Comma seperated list of internal subnets we are providing access to'
+  virtual_ip_subnet:
+    type: string
+    default: ''
   public_network:
     type: boolean
     default: True
