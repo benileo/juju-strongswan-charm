@@ -4,9 +4,10 @@ import strongswan.iptables as iptables
 from strongswan.constants import CONFIG
 
 def system_config():
-	iptables.filter()
-	iptables.nat()
-	iptables.save()
+	#iptables.filter()
+	#iptables.nat()
+	#iptables.save()
+	pass
 
 def ipsec_config():
 	pass

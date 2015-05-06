@@ -31,9 +31,9 @@ def pre_install():
 	"""
 	cp_hosts_file()
 	cp_sysctl_file()
-	iptables.filter()
-	iptables.nat()
-	iptables.save()
+	#iptables.filter()
+	#iptables.nat()
+	#iptables.save()
 	configure_sysctl()
 
 	

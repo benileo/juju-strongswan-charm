@@ -32,10 +32,18 @@ def nat():
 	# create the NAT table object
 	table = Table("NAT")
 
+	# don't NAT outbound ipsec traffic
+	rule = iptc.Rule()
+	match = rule.create_match("policy")
+	rule.pol = "ipsec"
+	rule.dir = "out"
+	make_rule( rule, table._postrouting, INSERT )
+
+
+	# And this is where I hit the wall on ideas for the charm........
+
 
 	
-
-
 def filter():
 	"""
 	Configure filter table
