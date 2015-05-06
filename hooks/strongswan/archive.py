@@ -1,7 +1,5 @@
 
-from re import match
 from charmhelpers.core import hookenv
-from strongswan.errors import InvalidVersion
 from strongswan.util import (
 	_check_call, 
 	apt_install, 
@@ -27,25 +25,20 @@ def install_strongswan_archives():
 	apt_install(['strongswan'], apt_update=False)
 	
 	
-# installs strongswan from the most recent strongswan tarball
 def install_strongswan_version( version ):
 	"""
 	@params The version number of Strongswan to install. Special value is 'latest'
 	@return None
 	@description: Installs Strongswan from the tarballs posted by StrongSWan 
 	maintainers. Unpacks the tarball and configures. Additional config options
-	can be passed as an option in the config file (config_options).
-	@exception: InvalidVersion `If the version number is not of valid form or 'latest'
+	can be passed as an option in the config file (config_options) 
 	"""
-	if(	version.upper() != 'LATEST' and not match(r'^[1-9]\.[0-9]\.[0-9]$' , version ) ): 
-		raise InvalidVersion("Version must be in the format 5.3.1 or 'latest'")
-	
 	apt_install(BUILD_DEPENDENCIES, apt_update=False)
 	
 	#dl and unpack tarball into tmp directory
 	_check_call(["tar", "-xzf", get_tarball(version), "--directory", "/tmp/" ] , fatal=True )
 
-	#get the base dir path
+	#get the base dir path #todo make sure no strongswan dir already exists here....
 	if version.upper() == "LATEST":
 		cmd = "ls -d /tmp/*strongswan*/"
 		base_dir = _check_call(cmd, shell=True, check_output=True ).decode('utf-8').split('\n')[0]
@@ -72,7 +65,7 @@ def install_dep():
 
 
 # install strongswan from github
-def install_strongswan_upstream():
+def install_strongswan_upstream( repository ):
 	"""
 	@params None
 	@return None
@@ -81,10 +74,10 @@ def install_strongswan_upstream():
 	including git. The install process is the same except autogen.sh must be ran first.
 	"""
 	hookenv.log("Installing Strongswan from the upstream Git repo: {}".format(
-		STRONGSWAN_GIT_REPO), level=hookenv.INFO)
+		repository), level=hookenv.INFO)
 	_check_call(["rm", "-Rf", "/tmp/strongswan"], log_cmd=False, quiet=True )
 	build_dir = "/tmp/strongswan"
 	apt_install( BUILD_DEPENDENCIES + UPSTREAM_BUILD_DEPENDENCIES , apt_update=False)
-	_check_call(["git", "clone", STRONGSWAN_GIT_REPO, build_dir ])
+	_check_call(["git", "clone", repository, build_dir ])
 	_check_call("cd {}; ./autogen.sh".format(build_dir) , shell=True, quiet=True, fatal=True)
 	configure_install(build_dir)
