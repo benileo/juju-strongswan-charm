@@ -3,7 +3,7 @@
 import re
 
 from charmhelpers.core import hookenv
-from strongswan.constants import CONFIG
+from strongswan.constants import CONFIG, IKE, NAT_T
 from strongswan.errors import InvalidSourceError
 from strongswan.util import (
 	cp_hosts_file, 
@@ -31,7 +31,8 @@ def pre_install():
 	"""
 	cp_hosts_file()
 	cp_sysctl_file()
-	#iptables.filter()
+	hookenv.open_port(IKE, protocol="UDP")
+	hookenv.open_port(NAT_T, protocol="UDP")
 	#iptables.nat()
 	#iptables.save()
 	configure_sysctl()
