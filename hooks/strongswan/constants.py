@@ -1,8 +1,10 @@
 
+import re
+from os.path import exists
 from charmhelpers.core import hookenv
 from strongswan.errors import ExportDirDoesNotExist
-from os.path import exists
-import re
+
+
 
 # First we need the config
 CONFIG = hookenv.config()
