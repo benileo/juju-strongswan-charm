@@ -1,28 +1,32 @@
 options:
+
   source:
     type: string
     default: 'archives'
-    description: 'Source of the strongswan installation'
+    description: 'Source of the Strongswan installation'
+
   configuration:
     type: string
     default: ''
-    description: 'Comma seperated list of configuration parameters when NOT installing from the archives.'
+    description: 'Configuration options. See https://wiki.strongswan.org/projects/strongswan/wiki/Autoconf'
+
   verbose_logging:
     type: boolean
     default: false
-    description: "Do you want to see a lot of logs, good for debugging?"
+    description: "Run hooks in debug mode."
+
+  virtual_subnets:
+    type: string
+    default: "10.50.9.0/24,"
+    description: "Comma separated list of virtual ip subnets."
+
+  access_subnets:
+    type: string
+    default: ""
+    description: "Comma separated list of access subnets."
+
+
   # auth_method:
   #   type: string
   #   default: 'rsa' 
   #   description: "Method of IPsec peer authentication"
-  # private_subnets:
-  #   type: string
-  #   default: ''
-  #   description: 'Comma seperated list of internal subnets we are providing access to'
-  # virtual_ip_subnet:
-  #   type: string
-  #   default: ''
-  # public_network:
-  #   type: boolean
-  #   default: True
-  #   description: 'Will the security gateway provide access to the rest of the internet?'
