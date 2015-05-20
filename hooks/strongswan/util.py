@@ -76,48 +76,54 @@ def apt_install( pkgs, apt_update=True ):
 	:raises AptError
 	:raises NetworkError 
 	"""
-	verbose_install = ["apt-get", "install", "-y"]
-	verbose_update = "apt-get update"
-	quiet_install = ["apt-get", "install", "-y", "-qq" ]
-	quiet_update = "apt-get update -qq"
-	if isinstance( pkgs, list ):
-		if CONFIG.get("verbose_logging"):
-			apt_cmds = [verbose_update,verbose_install] if apt_update else [verbose_install]
-		else:
-			apt_cmds = [quiet_update, quiet_install] if apt_update else [quiet_install]
-		for cmd in apt_cmds : 
-			apt_retry_count = 0
-			apt_retry_max = 10
-			apt_retry_wait = 10
-			timed_out = False
-			result = None
-			while result == DPKG_LOCK_ERROR or result == None :
-				try:
-					if 'install' in cmd :
-						_cmd = list(cmd)
-						_cmd.extend(pkgs)
-						result = _check_call(_cmd, timeout=300, fatal=True, quiet=True )
-					else:
-						result = _check_call( cmd, shell=True, timeout=100, fatal=True, quiet=True )
-				except sp.CalledProcessError as e:
-					apt_retry_count += 1
-					if apt_retry_count > apt_retry_max : 
-						raise AptError("Fatal Apt-error, check DNS or apt-lock")
-					else:
-						result = e.returncode
-						sleep(apt_retry_wait)
-				except sp.TimeoutExpired:
-					hookenv.log("{0} Time Out".format(cmd), level=hookenv.INFO )
-					if not timed_out : 
-						dns_entries = get_archive_ip_addrs()
-					if not dns_entries:
-						raise NetworkError("Unable to contact archive server")
-					else:
-						_ip = dns_entries.pop()
-						update_hosts_file( _ip , "archive.ubuntu.com" )
-						update_hosts_file( _ip , "security.ubuntu.com" )
+
+	if not isinstance( pkgs, list ):
+		raise TypeError("packages must be in a list")
+
+	
+	_cmds = []
+	if CONFIG.get("verbose_logging"):
+		if apt_update:
+			_cmds.append("apt-get update")
+		_cmds.append(["apt-get", "install", "-y"])
 	else:
-		hookenv.log("apt_install must be passed a list of packages", level=hookenv.ERROR )
+		if apt_update:
+			_cmds.append("apt-get update -qq")
+		_cmds.append(["apt-get", "install", "-y", "-qq" ])
+	
+	for cmd in _cmds:
+
+		apt_retry_count = 0
+		apt_retry_max = 10
+		apt_retry_wait = 10
+		timed_out = False
+		result = None
+
+		while result == DPKG_LOCK_ERROR or result == None :
+			try:
+				if 'install' in cmd :
+					_cmd = list(cmd)
+					_cmd.extend(pkgs)
+					result = _check_call(_cmd, timeout=300, fatal=True, quiet=True )
+				else:
+					result = _check_call( cmd, shell=True, timeout=100, fatal=True, quiet=True )
+			except sp.CalledProcessError as e:
+				apt_retry_count += 1
+				if apt_retry_count > apt_retry_max : 
+					raise AptError("Fatal Apt-error, check DNS or apt-lock")
+				else:
+					result = e.returncode
+					sleep(apt_retry_wait)
+			except sp.TimeoutExpired:
+				hookenv.log("{0} Time Out".format(cmd), level=hookenv.INFO )
+				if not timed_out : 
+					dns_entries = get_archive_ip_addrs()
+				if not dns_entries:
+					raise NetworkError("Unable to contact archive server")
+				else:
+					_ip = dns_entries.pop()
+					update_hosts_file( _ip , "archive.ubuntu.com" )
+					update_hosts_file( _ip , "security.ubuntu.com" )
 
 def cp_hosts_file():
 	_check_call(['cp', '/etc/hosts', '/etc/hosts.original' ]) 
