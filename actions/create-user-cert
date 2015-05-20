@@ -20,7 +20,11 @@ def create():
 			params.get("out")
 		)
 		if file_path:
-			chown(file_path, getpwnam('ubuntu').pw_uid, getgrnam('ubuntu').gr_gid ) #grrr
+			chown( 
+				file_path, 
+				getpwnam('ubuntu').pw_uid, 
+				getgrnam('ubuntu').gr_gid
+			)
 			action_set(outpath=file_path)
 		else:
 			action_fail("Out file must be either tar.gz, pkcs12 or gzip.")
