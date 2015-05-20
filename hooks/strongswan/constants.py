@@ -35,7 +35,7 @@ SYSCTL_PATH = "/etc/sysctl.conf"
 IPSEC_D_PRIVATE = '/etc/ipsec.d/private/'
 IPSEC_D_CACERTS = '/etc/ipsec.d/cacerts/'
 IPSEC_D_CERTS = '/etc/ipsec.d/certs/'
-IPSEC_D_CRLS = '/etc/ipsec.d/crls/'
+#IPSEC_D_CRLS = '/etc/ipsec.d/crls/'
 CA_KEY = 'caKey.pem'
 CA_CERT	= 'caCert.pem'
 SERVER_CERT_NAME = 'SERVER'
@@ -44,7 +44,6 @@ APPEND = 'APPEND'
 DELETE = 'DELETE'
 ACCEPT = "ACCEPT"
 DROP = "DROP"
-SSH = "22"
 
 
 # these may change over time.
@@ -59,7 +58,6 @@ PIP_DEPENDENCIES = [
 	"python-iptables",
 	"pyOpenSSL"
 ]
-
 BUILD_DEPENDENCIES = [
 	"libgmp3-dev",
 	"gcc",
