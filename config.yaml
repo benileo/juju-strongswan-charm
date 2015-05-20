@@ -22,7 +22,7 @@ options:
 
   access_subnets:
     type: string
-    default: ""
+    default: "0.0.0.0/0,"
     description: "Comma separated list of access subnets."
 
 
