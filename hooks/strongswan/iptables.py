@@ -5,10 +5,8 @@ from strongswan.util import _check_call
 from strongswan.constants import (
 	CONFIG, 
 	INSERT, 
-	APPEND, 
-	DELETE, 
-	ACCEPT, 
-	DROP  
+	APPEND,  
+	ACCEPT  
 )
  
 import iptc

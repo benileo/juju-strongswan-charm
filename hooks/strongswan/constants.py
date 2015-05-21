@@ -43,9 +43,7 @@ CA_CERT	= 'caCert.pem'
 SERVER_CERT_NAME = 'SERVER'
 INSERT = 'INSERT'
 APPEND = 'APPEND'
-DELETE = 'DELETE'
 ACCEPT = "ACCEPT"
-DROP = "DROP"
 
 
 # these may change over time.
@@ -58,7 +56,8 @@ PYOPENSSL_DEPENDENCIES = [
 ]
 PIP_DEPENDENCIES = [
 	"python-iptables",
-	"pyOpenSSL"
+	"pyOpenSSL",
+	#cryptography
 ]
 BUILD_DEPENDENCIES = [
 	"libgmp3-dev",
