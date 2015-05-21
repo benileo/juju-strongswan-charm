@@ -44,6 +44,7 @@ SERVER_CERT_NAME = 'SERVER'
 INSERT = 'INSERT'
 APPEND = 'APPEND'
 ACCEPT = "ACCEPT"
+IPSEC_CONF = "/etc/ipsec.conf"
 
 
 # these may change over time.
