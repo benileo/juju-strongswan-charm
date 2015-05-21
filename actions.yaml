@@ -16,7 +16,6 @@ create-root-cert:
       type: integer
       description: "Size in bytes of the private/public key pair"
       default: 4096
-      #enum: [1024,2048,4096,8192]
     subject:
       type: object
       description: "Relative Distinguished Names (RDNs)"
@@ -62,11 +61,9 @@ create-user-cert:
       type: integer
       description: "Size in bytes of the private/public key pair"
       default: 2048
-      #enum: [1024,2048,4096,8192]
     out:
       type: string
       description: "Packaging format for user key, user cert, CA cert."
-      #enum: ["tar.gz","pkcs12","gzip"]
       default: "pkcs12"
     subject:
       type: object
