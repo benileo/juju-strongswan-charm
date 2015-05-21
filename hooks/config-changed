@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 
 import strongswan.iptables as iptables
-from strongswan.constants import CONFIG
 
-def system_config():
-	#iptables.filter()
-	#iptables.nat()
-	#iptables.save()
-	pass
 
-def ipsec_config():
-	pass
+#from strongswan.constants import CONFIG
 
-if __name__ == "__main__":
-	system_config()
-	ipsec_config()
+# todo
+# configure the nat table. use the past config to do this. close/open ports
+# do i need to open/close internal subnet ranges we will have to test this.
+# because all traffic from x.x.x.x must be allowed in/out of the machine. we must masquerade all virtual ip traffic
+# 
+
+
+
+if __name__ == "__main__" :
+	iptables.nat()
+	iptables.save()
+	
