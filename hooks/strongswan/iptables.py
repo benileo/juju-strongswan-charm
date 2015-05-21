@@ -22,26 +22,15 @@ def save():
 
 def nat():
 	""" 
-	Configure iptables nat table
-	"""
-	hookenv.log("Configuring NAT", level=hookenv.INFO )
-
-	# Flush all existing rules 
-	_check_call( ["iptables", "-t", "nat", "-F"] )
-
-	# create NAT table object
+	Configures the iptables NAT table
+	""" 
+	_check_call( ["iptables", "-t", "nat", "-F"] ) # flush existing rules
 	nat_table = Table("NAT")
-	
-	# don't NAT outbound IPsec traffic
-	rule = iptc.Rule()
-	match = rule.create_match("policy")
-	rule.pol = "ipsec"
-	rule.dir = "out"
-	nat_table.make_rule(rule, nat_table._postrouting, INSERT)
-	
-	# don't masquerade any traffic from virtual to access subnets except 0.0.0.0/0
 	access_subnets = [x for x in CONFIG['access_subnets'].split(',') if x]
 	virtual_subnets = [x for x in CONFIG['virtual_subnets'].split(',') if x]
+
+	# don't masquerade any traffic from access to virtual subnets
+	# masquerade all traffic from virutual to 0.0.0.0/0 
 	for anet in access_subnets:
 		for vnet in virtual_subnets:
 			rule = iptc.Rule()
@@ -56,6 +45,13 @@ def nat():
 				rule.set_src( anet )
 				rule.set_dst( vnet )
 				nat_table.make_rule(rule, nat_table._postrouting, INSERT)
+
+	# don't NAT outbound IPsec traffic
+	rule = iptc.Rule()
+	match = rule.create_match("policy")
+	rule.pol = "ipsec"
+	rule.dir = "out"
+	nat_table.make_rule(rule, nat_table._postrouting, INSERT)
 
 class Table:
 	"""
