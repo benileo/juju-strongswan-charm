@@ -8,8 +8,7 @@ from strongswan.constants import (
 	APPEND, 
 	DELETE, 
 	ACCEPT, 
-	DROP, 
-	SSH,  
+	DROP  
 )
  
 import iptc
@@ -23,23 +22,40 @@ def save():
 
 def nat():
 	""" 
-	Configure nat table
+	Configure iptables nat table
 	"""
-	hookenv.log("configuring iptables nat table", level=hookenv.INFO )
+	hookenv.log("Configuring NAT", level=hookenv.INFO )
 
-	# create the NAT table object
-	table = Table("NAT")
+	# Flush all existing rules 
+	_check_call( ["iptables", "-t", "nat", "-F"] )
 
-	# don't NAT outbound ipsec traffic
+	# create NAT table object
+	nat_table = Table("NAT")
+	
+	# don't NAT outbound IPsec traffic
 	rule = iptc.Rule()
 	match = rule.create_match("policy")
 	rule.pol = "ipsec"
 	rule.dir = "out"
-	make_rule( rule, table._postrouting, INSERT )
-
-
-	# And this is where I hit the wall on ideas for the charm........
-
+	nat_table.make_rule(rule, nat_table._postrouting, INSERT)
+	
+	# don't masquerade any traffic from virtual to access subnets except 0.0.0.0/0
+	access_subnets = [x for x in CONFIG['access_subnets'].split(',') if x]
+	virtual_subnets = [x for x in CONFIG['virtual_subnets'].split(',') if x]
+	for anet in access_subnets:
+		for vnet in virtual_subnets:
+			rule = iptc.Rule()
+			if anet == '0.0.0.0/0':
+				rule.set_src(vnet)
+				rule.target = rule.create_target("MASQUERADE")
+				nat_table._postrouting.append_rule(rule)
+			else:
+				rule.set_src( vnet )
+				rule.set_dst( anet )
+				nat_table.make_rule(rule, nat_table._postrouting, INSERT)
+				rule.set_src( anet )
+				rule.set_dst( vnet )
+				nat_table.make_rule(rule, nat_table._postrouting, INSERT)
 
 class Table:
 	"""
