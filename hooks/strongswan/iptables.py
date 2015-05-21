@@ -13,6 +13,15 @@ from strongswan.constants import (
  
 import iptc
 
+def flush(table):
+	"""
+	Flushes iptables rules
+
+	:param table: the table
+	"""
+	_check_call( ["iptables", "-t", table , "-F"] )
+
+
 
 def save():
 	"""
@@ -24,7 +33,6 @@ def nat():
 	""" 
 	Configures the iptables NAT table
 	""" 
-	_check_call( ["iptables", "-t", "nat", "-F"] ) # flush existing rules
 	nat_table = Table("NAT")
 	access_subnets = [x for x in CONFIG['access_subnets'].split(',') if x]
 	virtual_subnets = [x for x in CONFIG['virtual_subnets'].split(',') if x]

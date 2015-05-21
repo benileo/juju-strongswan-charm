@@ -2,18 +2,7 @@
 
 import strongswan.iptables as iptables
 
-
-#from strongswan.constants import CONFIG
-
-# todo
-# configure the nat table. use the past config to do this. close/open ports
-# do i need to open/close internal subnet ranges we will have to test this.
-# because all traffic from x.x.x.x must be allowed in/out of the machine. we must masquerade all virtual ip traffic
-# 
-
-
-
 if __name__ == "__main__" :
+	iptables.flush("nat")
 	iptables.nat()
 	iptables.save()
-	
