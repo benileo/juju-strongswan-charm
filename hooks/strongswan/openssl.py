@@ -1,9 +1,13 @@
 
-from OpenSSL import crypto
+from sys import path
+path.append( "./lib" )
+
+from lib.OpenSSL import crypto
 from random import randint
 from math import ceil
 from time import time
 from os.path import exists
+
 from strongswan.util import convert_to_seconds, _check_call
 from strongswan.constants import (
 	IPSEC_D_PRIVATE	,

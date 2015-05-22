@@ -9,8 +9,11 @@ from strongswan.constants import (
 	ACCEPT,
 	DELETE 
 )
+
+from sys import path
+path.append("./lib")
  
-import iptc
+import lib.iptc as iptc
 
 def flush(table):
 	"""
