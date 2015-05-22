@@ -9,7 +9,6 @@ from strongswan.constants import (
 	IPSEC_D_PRIVATE	,
 	IPSEC_D_CACERTS,
 	IPSEC_D_CERTS,
-	IPSEC_D_REQS,
 	CA_KEY,
 	CA_CERT,
 	SERVER_CERT_NAME,

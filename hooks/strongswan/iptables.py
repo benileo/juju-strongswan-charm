@@ -6,7 +6,8 @@ from strongswan.constants import (
 	CONFIG, 
 	INSERT, 
 	APPEND,  
-	ACCEPT  
+	ACCEPT,
+	DELETE 
 )
  
 import iptc
