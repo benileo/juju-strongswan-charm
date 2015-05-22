@@ -44,20 +44,21 @@ SERVER_CERT_NAME = 'SERVER'
 INSERT = 'INSERT'
 APPEND = 'APPEND'
 ACCEPT = "ACCEPT"
+DELETE = "DELETE"
 IPSEC_CONF = "/etc/ipsec.conf"
 
 
 # these may change over time.
 PYOPENSSL_DEPENDENCIES = [
-	"build-essential",
-	"libssl-dev",
-	"libffi-dev",
-	"python-dev",
-	"python3-pip"
+	#"build-essential",
+	#"libssl-dev",
+	#"libffi-dev",
+	#"python-dev",
+	#"python3-pip"
 ]
 PIP_DEPENDENCIES = [
-	"python-iptables",
-	"pyOpenSSL",
+	#"python-iptables",
+	#"pyOpenSSL",
 	#cryptography
 ]
 BUILD_DEPENDENCIES = [
