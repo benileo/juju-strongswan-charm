@@ -1,5 +1,8 @@
 
-
+from sys import path
+if "./lib" not in path:
+	path.append("./lib")
+	
 from charmhelpers.core import hookenv
 from strongswan.util import _check_call
 from strongswan.constants import (
@@ -9,9 +12,6 @@ from strongswan.constants import (
 	ACCEPT,
 	DELETE 
 )
-
-from sys import path
-path.append("./lib")
  
 import lib.iptc as iptc
 

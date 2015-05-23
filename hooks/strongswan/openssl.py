@@ -1,6 +1,7 @@
 
 from sys import path
-path.append( "./lib" )
+if "./lib" not in path:
+	path.append( "./lib" )
 
 from lib.OpenSSL import crypto
 from random import randint
