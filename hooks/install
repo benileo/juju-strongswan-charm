@@ -14,8 +14,7 @@ from strongswan.util import (
 from strongswan.archive import (
 	install_strongswan_archives,
 	install_strongswan_version,
-	install_strongswan_upstream,
-	install_dep
+	install_strongswan_upstream
 )
 
 
@@ -27,7 +26,6 @@ def pre_install():
 	Call open ports commands for IKE and NAT_T 
 	Configure System Control
 	"""
-	install_dep()
 	cp_hosts_file()
 	cp_sysctl_file()
 	hookenv.open_port(IKE, protocol="UDP")

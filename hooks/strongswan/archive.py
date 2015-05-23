@@ -6,10 +6,8 @@ from strongswan.util import (
 	get_tarball, 
 	configure_install
 )
-from strongswan.constants import (
-	PYOPENSSL_DEPENDENCIES, 
+from strongswan.constants import ( 
 	BUILD_DEPENDENCIES,
-	PIP_DEPENDENCIES,
 	UPSTREAM_BUILD_DEPENDENCIES
 )
 
@@ -40,19 +38,6 @@ def install_strongswan_version( version ):
 	
 	# configure and install 
 	configure_install(base_dir)
-
-
-def install_dep():
-	"""
-	Installs the PyOpenSSL Dependencies and Python-Pip then installs
-	python-iptables and PyOpenSSL into Python 3 installation
-	"""
-	hookenv.log("Installing dependencies" , level=hookenv.INFO )
-	apt_install( PYOPENSSL_DEPENDENCIES )
-	for dep in PIP_DEPENDENCIES :
-		_check_call( [ "pip3", "install" , dep ] , fatal=True, quiet=True )
-
-
 
 def install_strongswan_upstream( repository ):
 	"""
