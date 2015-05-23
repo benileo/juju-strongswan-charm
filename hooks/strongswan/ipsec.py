@@ -1,9 +1,13 @@
 
+from sys import path
+if "./lib" not in path:
+	path.append("./lib")
+
 from strongswan.constants import IPSEC_CONF
+from ipsecparse import load, dumps
 
-def open_ipsec_conf():
-	return open(IPSEC_CONF, "rw")
 
-def close_ipsec.conf(fd):
-	fd.close()
-
+class IpsecConfig(object):
+	def __init__(self):
+		with open(IPSEC_CONF, "r") as fd:
+			self.ipsec_config = load(fd.read())
